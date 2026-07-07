@@ -1,4 +1,5 @@
-﻿using System.Windows;
+﻿using Microsoft.EntityFrameworkCore;
+using System.Windows;
 using TCM_Launcher.Core.DBContext;
 using TCM_Launcher.Model.DB;
 
@@ -32,12 +33,12 @@ namespace TCM_Launcher.Services
             
         }
 
-        public List<GameProfile> GetAllGameProfiles()
+        public async Task<List<GameProfile>> GetAllGameProfiles()
         {
             try
             {
                 using var db = new LauncherDBContext();
-                return db.GameProfiles.ToList();
+                return await db.GameProfiles.ToListAsync();
             }
             catch(Exception ex)
             {

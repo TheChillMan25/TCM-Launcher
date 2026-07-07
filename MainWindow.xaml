@@ -63,14 +63,23 @@
             </StackPanel>
         </Grid>
         <StackPanel Name="ASD" Grid.Row="2">
-        <Button Name="AddProfileButton" Style="{StaticResource RoundButton}" Click="AddProfileButton_Click" Background="Transparent">
+        <Button Name="AddProfileButton"
+                Style="{StaticResource RoundButton}"
+                Click="AddProfileButton_Click"
+                Background="Transparent"
+                IsEnabled="{Binding IsVersionsLoaded}">
                 <Path   Data="{StaticResource AddIcon}"
                     Fill="#f2c480"
                     Width="20"
                     Height="20"
                     Stretch="Uniform"/>
             </Button>
-            <ListBox    ItemsSource="{Binding GameProfiles}" 
+            <TextBlock Text="Checking versions..."
+                       HorizontalAlignment="Center"
+                       Foreground="#f5f5f5"
+                       FontSize="10"
+                       Visibility="{Binding IsVersionsLoading, Converter={StaticResource BoolToVis}}"/>
+            <ListBox    ItemsSource="{Binding GameProfiles}"
                         SelectedItem="{Binding SelectedGameProfile}" 
                         Background="Transparent" 
                         BorderThickness="0"
@@ -105,10 +114,25 @@
                                 Height="60"
                                 Visibility="{Binding HasSelectedProfile, Converter={StaticResource BoolToVis}}"
                                 Stretch="Uniform"/>
-                <StackPanel Grid.Column="1" Height="80" Visibility="{Binding HasSelectedProfile, Converter={StaticResource BoolToVis}}">
-                    <Label Content="{Binding SelectedGameProfile.ProfileName, UpdateSourceTrigger=PropertyChanged}" Foreground="#f2c480"  FontSize="24" FontFamily="Arial" FontWeight="Bold"/>
-                    <Label Content="{Binding HeaderText, UpdateSourceTrigger=PropertyChanged}" Foreground="#f2c480" FontSize="20" FontFamily="Arial"/>
-                </StackPanel>
+                <Grid Grid.Column="1" Height="80" Visibility="{Binding HasSelectedProfile, Converter={StaticResource BoolToVis}}">
+                    <Grid.RowDefinitions>
+                        <RowDefinition/>
+                        <RowDefinition/>
+                    </Grid.RowDefinitions>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition/>
+                        <ColumnDefinition/>
+                    </Grid.ColumnDefinitions>
+                    <Label Grid.Row="0" Content="{Binding SelectedGameProfile.ProfileName, UpdateSourceTrigger=PropertyChanged}" Foreground="#f2c480"  FontSize="24" FontFamily="Arial" FontWeight="Bold"/>
+                    <Label Grid.Row="1" Content="{Binding HeaderText, UpdateSourceTrigger=PropertyChanged}" Foreground="#f2c480" FontSize="20" FontFamily="Arial"/>
+                    <ProgressBar Grid.Column="1" Grid.RowSpan="2" Value="{Binding DownloadProgress}" 
+                                 Visibility="{Binding IsDownloading, Converter={StaticResource BoolToVis}}" 
+                                 Height="10"
+                                 Margin="5,0,20,0" 
+                                 Foreground="#f2c480" 
+                                 Background="#FF333333" 
+                                 BorderThickness="0"/>
+                </Grid>
                 <StackPanel Grid.Column="2" Orientation="Horizontal" HorizontalAlignment="Center">
                     <Button Name="StartButton"
                             Click="StartButton_Click"

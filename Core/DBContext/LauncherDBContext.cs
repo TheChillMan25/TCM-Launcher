@@ -14,8 +14,12 @@ namespace TCM_Launcher.Core.DBContext
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
-            string dbPath = Path.Combine(Constants.AppDataPath, "launcher.db");
+            string launcherFolder = Constants.LauncherFolder;
 
+            Directory.CreateDirectory(launcherFolder);
+            
+            string dbPath = Path.Combine(launcherFolder, "launcher.db");
+            
             optionsBuilder.UseSqlite($@"Data Source={dbPath}");
         }
     }

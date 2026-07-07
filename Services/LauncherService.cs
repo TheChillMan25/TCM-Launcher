@@ -1,14 +1,11 @@
 ﻿using CmlLib.Core;
 using CmlLib.Core.Auth;
 using CmlLib.Core.Installer.Forge;
-using CmlLib.Core.Java;
 using CmlLib.Core.ProcessBuilder;
-using CmlLib.Core.Rules;
 using System.IO;
 using System.Net.Http;
 using System.Windows;
 using TCM_Launcher.Core;
-using TCM_Launcher.Model.DB;
 
 namespace TCM_Launcher.Services
 {
@@ -16,7 +13,7 @@ namespace TCM_Launcher.Services
     {
         public static LauncherService Instance { get; set; } = new LauncherService();
 
-        public async Task<string> CreateProfileAsync(string pName, string mcVersion, string fVersion)
+        public async Task<string> CreateProfileAsync(string pName, string mcVersion, string fVersion, IProgress<double> progress = null)
         {
             try
             {
@@ -24,9 +21,14 @@ namespace TCM_Launcher.Services
                 var launcher = new MinecraftLauncher(path);
                 launcher.ByteProgressChanged += (sender, args) =>
                 {
+                    if (args.TotalBytes > 0)
+                    {
+                        double percentage = (double)args.ProgressedBytes / args.TotalBytes * 100;
+                        progress?.Report(percentage);
+                    }
                     Console.WriteLine($"{args.ProgressedBytes} bytes / {args.TotalBytes} bytes");
                 };
-                return await InstallForgeAsync(launcher, mcVersion, fVersion);
+                return await InstallForgeAsync(launcher, mcVersion, fVersion, progress);
             }
             catch (Exception ex)
             {
@@ -54,6 +56,7 @@ namespace TCM_Launcher.Services
                         }
                     }
                 }
+                await launcher.InstallAsync(fileName);
                 var process = await launcher.BuildProcessAsync(fileName, new MLaunchOption
                 {
                     MaximumRamMb = profileSettings.Ram ?? Constants.DefaultRam,
@@ -86,15 +89,14 @@ namespace TCM_Launcher.Services
             
         }
 
-        private async Task<string> InstallForgeAsync(MinecraftLauncher launcher, string mcVersion, string fVersion)
+        private async Task<string> InstallForgeAsync(MinecraftLauncher launcher, string mcVersion, string fVersion, IProgress<double> progress = null)
         {
             try
             {
                 var fInstaller = new ForgeInstaller(launcher);
                 var installOptions = new ForgeInstallOptions
                 {
-                    ByteProgress = new Progress<ByteProgress>(e =>
-                        Console.WriteLine(e.ToRatio() * 100 + "%")),
+                    ByteProgress = new Progress<ByteProgress>(e => { Console.WriteLine(e); progress?.Report(e.ToRatio() * 100); }),
                     InstallerOutput = new Progress<string>(e =>
                         Console.WriteLine(e)),
                     CancellationToken = CancellationToken.None,

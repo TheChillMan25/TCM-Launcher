@@ -19,7 +19,7 @@
     <SolidColorBrush x:Key="RoundButton.Pressed.Background" Color="#222"/>
     <SolidColorBrush x:Key="RoundButton.Pressed.Foreground" Color="#f2c480"/>
     <SolidColorBrush x:Key="RoundButton.Pressed.Border" Color="Transparent"/>
-    <SolidColorBrush x:Key="RoundButton.Disabled.Background" Color="#FFF4F4F4"/>
+    <SolidColorBrush x:Key="RoundButton.Disabled.Background" Color="#333"/>
     <SolidColorBrush x:Key="RoundButton.Disabled.Border" Color="#FFADB2B5"/>
     <SolidColorBrush x:Key="RoundButton.Disabled.Foreground" Color="#f2c480"/>
     
@@ -58,8 +58,7 @@
                             <Setter Property="BorderBrush" TargetName="border" Value="{StaticResource RoundButton.Pressed.Border}"/>
                         </Trigger>
                         <Trigger Property="IsEnabled" Value="false">
-                            <Setter Property="Background" TargetName="border" Value="{StaticResource RoundButton.Disabled.Background}"/>
-                            <Setter Property="BorderBrush" TargetName="border" Value="{StaticResource RoundButton.Disabled.Border}"/>
+                            <Setter Property="Opacity" TargetName="border" Value="0.5"/>
                             <Setter Property="TextElement.Foreground" TargetName="contentPresenter" Value="{StaticResource RoundButton.Disabled.Foreground}"/>
                         </Trigger>
                     </ControlTemplate.Triggers>

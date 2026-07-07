@@ -1,10 +1,6 @@
 ﻿using System.Collections.ObjectModel;
-using System.IO;
 using System.Windows;
-using TCM_Launcher.Core;
-using TCM_Launcher.Model.DB;
 using TCM_Launcher.Model.DB.Versions;
-using TCM_Launcher.Model.UI;
 using TCM_Launcher.Model.UI.Forge;
 using TCM_Launcher.MVVM;
 using TCM_Launcher.Services;
@@ -80,15 +76,21 @@ namespace TCM_Launcher.ViewModel.UI
 
         private async Task InitializeVersions()
         {
-            Versions = new ObservableCollection<VanillaVersion>(VersionsService.Instance.GetVanillaVersions());
+            if (VersionsService.Instance.SyncTask != null)
+            {
+                await VersionsService.Instance.SyncTask;
+            }
+            var loadedVersions = await VersionsService.Instance.GetVanillaVersions();
+
+            Versions = new ObservableCollection<VanillaVersion>(loadedVersions);
             ForgeVersions = new();
         }
 
-        public void UpdateForgeVersions(string mcVersion, string? pName = "")
+        public async Task UpdateForgeVersions(string mcVersion, string? pName = "")
         {
             try
             {
-                var versions = VersionsService.Instance.GetForgeVersions(mcVersion);
+                var versions = await VersionsService.Instance.GetForgeVersions(mcVersion);
                 ForgeLoaderJSONData recommended = null;
                 /*if (versions.Count > 0 ) recommended = versions.FirstOrDefault(v => v.IsRecommended);
                 if (recommended != null) recommended.VersionName = string.Concat(recommended.VersionName, " Recommended");*/
