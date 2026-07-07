@@ -1,0 +1,76 @@
+﻿<Window x:Class="TCM_Launcher.View.NewProfileView"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:TCM_Launcher.View"
+        xmlns:userControls="clr-namespace:TCM_Launcher.View.UserControls"
+        mc:Ignorable="d"
+        Title="NewProfileView" Height="350" Width="300" ResizeMode="NoResize" WindowStyle="None" ShowInTaskbar="False" WindowStartupLocation="CenterOwner" HorizontalAlignment="Center" VerticalAlignment="Center" 
+    xmlns:theme="clr-namespace:Microsoft.Windows.Themes;assembly=PresentationFramework.Aero2">
+    <WindowChrome.WindowChrome>
+        <WindowChrome GlassFrameThickness="0" CornerRadius="15" CaptionHeight="0"/>
+    </WindowChrome.WindowChrome>
+    <Window.Resources>
+        <Style TargetType="Label">
+            <Setter Property="Foreground" Value="#f2c480"/>
+            <Setter Property="FontFamily" Value="Calibri"/>
+            <Setter Property="FontSize" Value="18"/>
+        </Style>
+    </Window.Resources>
+    <Grid Background="#171717">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="50"/>
+            <RowDefinition Height="3*"/>
+            <RowDefinition/>
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition/>
+            <ColumnDefinition/>
+            <ColumnDefinition/>
+            <ColumnDefinition/>
+        </Grid.ColumnDefinitions>
+        <Label Grid.Row="0" Grid.ColumnSpan="3" VerticalAlignment="Center" FontSize="24" Content="Create profile" Margin="5 0 0 0"/>
+        <Button Name="CloseButton"    
+                        Width="30"
+                        Height="30"
+                        Grid.Column="3"
+                        HorizontalAlignment="Right"
+                        Margin="0 0 5 0"
+                        Style="{StaticResource RoundButton}" Click="CloseButton_Click">
+            <Path   Data="{StaticResource CloseIcon}"
+                        Fill="#f2c480"
+                        Width="15"
+                        Height="15"
+                        Stretch="Uniform"/>
+        </Button>
+        <StackPanel Grid.Row="1" Grid.ColumnSpan="4" Width="200" VerticalAlignment="Center" HorizontalAlignment="Center">
+            <Label Name="ProfileNameLabel">Profile name:</Label>
+            <TextBox Name="ProfileNameInput" Text="{Binding PlaceholderProfileName, UpdateSourceTrigger=PropertyChanged}"/>
+            <Label Name="VersionLabel">Game version</Label>
+            <ComboBox Name="VersionCombo" ItemsSource="{Binding Versions, UpdateSourceTrigger=PropertyChanged}" DisplayMemberPath="VersionName" SelectionChanged="VersionCombo_SelectionChanged" SelectedIndex="0">
+
+            </ComboBox>
+            <Label Name="ForgeVersionLabel">Forge version</Label>
+            <ComboBox Name="ForgeVersionCombo" ItemsSource="{Binding ForgeVersions, UpdateSourceTrigger=PropertyChanged}" DisplayMemberPath="VersionName" IsEnabled="{Binding HasForgeVersions, UpdateSourceTrigger=PropertyChanged}" SelectedIndex="0"/>
+        </StackPanel>
+        <Button Name="CreateProfileButton" 
+                Grid.Row="2" 
+                Grid.Column="1" 
+                Grid.ColumnSpan="2"
+                Padding="5 1"
+                Click="CreateProfileButton_Click" 
+                IsEnabled="{Binding CanCreate}" 
+                Style="{StaticResource ButtonWithIcon}">
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
+                <Path   Data="{StaticResource AddIcon}"
+                        Fill="#333"
+                        Width="15"
+                        Height="15"
+                        Margin="5 0 2.5 0"
+                        Stretch="Uniform"/>
+                <TextBlock Text="Create profile" Grid.Column="1" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="2.5 0 5 0"/>
+            </StackPanel>
+        </Button>
+    </Grid>
+</Window>
