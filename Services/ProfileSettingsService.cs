@@ -1,5 +1,7 @@
 ﻿using System.Windows;
+using System.Windows.Interop;
 using TCM_Launcher.Core.DBContext;
+using TCM_Launcher.Core.Utils;
 using TCM_Launcher.Model.DB;
 
 namespace TCM_Launcher.Services
@@ -10,10 +12,11 @@ namespace TCM_Launcher.Services
 
         public ProfileSettings SetProfileSettings(ProfileSettings data)
         {
+            ProfileSettings settings = null;
             try
             {
                 using var db = new LauncherDBContext();
-                var settings = db.ProfileSettings.FirstOrDefault(s => s.GameProfileId == data.GameProfileId);
+                settings = db.ProfileSettings.FirstOrDefault(s => s.GameProfileId == data.GameProfileId);
 
                 if (settings != null)
                 {
@@ -35,7 +38,8 @@ namespace TCM_Launcher.Services
             }
             catch(Exception ex)
             {
-                Console.WriteLine(ex);
+                string msg = settings == null ? "NULL" : settings.GameProfileId;
+                Logger.Error($"There was an exception during setting profile settings with ProfileId={msg}", ex);
                 MessageBox.Show("An error occured during setting profile settings.");
                 return null;
             }
@@ -56,7 +60,8 @@ namespace TCM_Launcher.Services
             }
             catch (Exception ex)
             {
-                Console.WriteLine(ex);
+                string msg = profileId == null ? "NULL" : profileId;
+                Logger.Error($"There was an exception during reading profile settings with ProfileId={msg}", ex);
                 MessageBox.Show("An error occured during loading profile settings.");
                 return null;
             }

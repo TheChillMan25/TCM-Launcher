@@ -1,11 +1,12 @@
 ﻿using CmlLib.Core;
 using CmlLib.Core.Installer.Forge;
+using CmlLib.Core.Version;
 using Microsoft.EntityFrameworkCore;
 using System.Collections.Concurrent;
 using System.IO;
 using System.Windows;
-using TCM_Launcher.Core;
 using TCM_Launcher.Core.DBContext;
+using TCM_Launcher.Core.Utils;
 using TCM_Launcher.Model.DB.Versions;
 
 namespace TCM_Launcher.Services
@@ -30,8 +31,9 @@ namespace TCM_Launcher.Services
                 using var db = new LauncherDBContext();
                 return await db.VanillaVersions.OrderByDescending(v => v.VersionName).ToListAsync();
             }
-            catch
+            catch(Exception ex)
             {
+                Logger.Error("There was an exception during reading vanilla versions", ex);
                 return new List<VanillaVersion>();
             }
         }
@@ -52,15 +54,16 @@ namespace TCM_Launcher.Services
                 }).ToList();
                 return sorted;
             }
-            catch
+            catch (Exception ex)
             {
+                Logger.Error($"There was an exception during reading forge versions for vanilla version {mcVersion}", ex);
                 return new List<ForgeVersion>();
             }
         }
 
         private async Task CheckVersionsAsync()
         {
-            string sharedPath = Path.Combine(Constants.LauncherFolder, "Shared");
+            string sharedPath = Constants.SharedPath;
             MinecraftPath dummyPath = new MinecraftPath(sharedPath);
             var dummyLauncher = new MinecraftLauncher(dummyPath);
             var dummyForgeInstaller = new ForgeInstaller(dummyLauncher);
@@ -108,9 +111,9 @@ namespace TCM_Launcher.Services
                             }
                         }
                     }
-                    catch (System.Net.Http.HttpRequestException)
+                    catch (System.Net.Http.HttpRequestException ex)
                     {
-
+                        Logger.Error($"There was an exception during paralell reading minecraft version {v.Name}", ex);
                     }
                 });
 
@@ -119,7 +122,8 @@ namespace TCM_Launcher.Services
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"An error occured during fetching versions: {ex.Message}");
+                Logger.Error($"There was an exception during checking versions", ex);
+                MessageBox.Show($"An error occured during fetching versions.");
             }
         }
 
@@ -141,8 +145,8 @@ namespace TCM_Launcher.Services
             }
             catch (Exception ex)
             {
-                Console.WriteLine(ex);
-                MessageBox.Show($"Error during saving vanilla versions to database: {ex.Message}");
+                Logger.Error($"There was an exception during saving vanilla versions to database", ex);
+                MessageBox.Show($"Error during saving vanilla versions to database.");
             }
         }
 
@@ -164,8 +168,8 @@ namespace TCM_Launcher.Services
             }
             catch (Exception ex)
             {
-                Console.WriteLine(ex);
-                MessageBox.Show($"Error during saving forge versions to database: {ex.Message}");
+                Logger.Error($"There was an exception during saving forge versions to database", ex);
+                MessageBox.Show($"Error during saving forge versions to database");
             }
         }
     }

@@ -4,9 +4,17 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:TCM_Launcher"
-        xmlns:svgc="http://sharpvectors.codeplex.com/svgc/"
+        xmlns:userControls="clr-namespace:TCM_Launcher.View.UserControls"
         mc:Ignorable="d"
-        Title="TCM Launcher" MinHeight="450" MinWidth="800" Height="450" Width="800" WindowStartupLocation="CenterOwner" WindowState="Maximized" WindowStyle="None">
+        Title="TCM Launcher" 
+        MinHeight="450"
+        MinWidth="800"
+        Height="450"
+        Width="800"
+        WindowStartupLocation="CenterOwner"
+        WindowState="Maximized"
+        WindowStyle="None"
+        Loaded="Window_Loaded">
     <Window.Resources>
         <BooleanToVisibilityConverter x:Key="BoolToVis"/>
     </Window.Resources>
@@ -62,8 +70,8 @@
                 </Button>
             </StackPanel>
         </Grid>
-        <StackPanel Name="ASD" Grid.Row="2">
-        <Button Name="AddProfileButton"
+        <StackPanel Name="SideBar" Grid.Row="2">
+            <Button Name="AddProfileButton"
                 Style="{StaticResource RoundButton}"
                 Click="AddProfileButton_Click"
                 Background="Transparent"
@@ -80,7 +88,7 @@
                        FontSize="10"
                        Visibility="{Binding IsVersionsLoading, Converter={StaticResource BoolToVis}}"/>
             <ListBox    ItemsSource="{Binding GameProfiles}"
-                        SelectedItem="{Binding SelectedGameProfile}" 
+                        SelectedItem="{Binding SelectedGameProfile, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}" 
                         Background="Transparent" 
                         BorderThickness="0"
                         ItemContainerStyle="{StaticResource SideBarListBoxItemStyle}">
@@ -94,86 +102,36 @@
                     </DataTemplate>
                 </ListBox.ItemTemplate>
             </ListBox>
-        </StackPanel>
-        <Border Grid.Column="1" Grid.Row="2" Background="#222" BorderBrush="#666" BorderThickness="2,2,0,0" CornerRadius="25,0,0,0"/>
-        <Grid Grid.Column="1" Grid.Row="2">
-            <Grid.RowDefinitions>
-                <RowDefinition Height="80"/>
-                <RowDefinition Height="80"/>
-                <RowDefinition/>
-            </Grid.RowDefinitions>
-            <Grid Margin="5">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="70" />
-                    <ColumnDefinition />
-                    <ColumnDefinition Width="200"/>
-                </Grid.ColumnDefinitions>
-                <Path   Data="{StaticResource ProfileIcon}"
+            <Button x:Name="UpdateButton" 
+                Visibility="{Binding AvailableUpdate.CanUpdate,
+                            Converter={StaticResource BoolToVis}}"
+                Background="Transparent"
+                Style="{StaticResource RoundButton}"
+                Click="UpdateButton_Click">
+                <Path   Data="{StaticResource DownloadIcon}"
                                 Fill="#f2c480"
-                                Width="60"
-                                Height="60"
-                                Visibility="{Binding HasSelectedProfile, Converter={StaticResource BoolToVis}}"
-                                Stretch="Uniform"/>
-                <Grid Grid.Column="1" Height="80" Visibility="{Binding HasSelectedProfile, Converter={StaticResource BoolToVis}}">
-                    <Grid.RowDefinitions>
-                        <RowDefinition/>
-                        <RowDefinition/>
-                    </Grid.RowDefinitions>
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition/>
-                        <ColumnDefinition/>
-                    </Grid.ColumnDefinitions>
-                    <Label Grid.Row="0" Content="{Binding SelectedGameProfile.ProfileName, UpdateSourceTrigger=PropertyChanged}" Foreground="#f2c480"  FontSize="24" FontFamily="Arial" FontWeight="Bold"/>
-                    <Label Grid.Row="1" Content="{Binding HeaderText, UpdateSourceTrigger=PropertyChanged}" Foreground="#f2c480" FontSize="20" FontFamily="Arial"/>
-                    <ProgressBar Grid.Column="1" Grid.RowSpan="2" Value="{Binding DownloadProgress}" 
-                                 Visibility="{Binding IsDownloading, Converter={StaticResource BoolToVis}}" 
-                                 Height="10"
-                                 Margin="5,0,20,0" 
-                                 Foreground="#f2c480" 
-                                 Background="#FF333333" 
-                                 BorderThickness="0"/>
-                </Grid>
-                <StackPanel Grid.Column="2" Orientation="Horizontal" HorizontalAlignment="Center">
-                    <Button Name="StartButton"
-                            Click="StartButton_Click"
-                            IsEnabled="{Binding SelectedGameProfile.Installed}"
-                            Visibility="{Binding HasSelectedProfile,
-                                        Converter={StaticResource BoolToVis}}"
-                            Style="{StaticResource ButtonWithIcon}">
-                        <Grid>
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition/>
-                                <ColumnDefinition/>
-                            </Grid.ColumnDefinitions>
-                            <Path Data="{StaticResource PlayIcon}"
-                                  Fill="#333"
-                                  Width="15"
-                                  Height="15"
-                                  Margin="0 0 5 0"
-                                  Stretch="Uniform"/>
-                            <TextBlock Text="Play" Grid.Column="1" VerticalAlignment="Center" HorizontalAlignment="Center"/>
-                        </Grid>
-                    </Button>
-                    <Button Name="OptionsButton" Style="{StaticResource RoundButton}" Click="OptionsButton_Click" IsEnabled="{Binding SelectedGameProfile.Installed}" Visibility="{Binding HasSelectedProfile, Converter={StaticResource BoolToVis}}">
-                        <Path   Data="{StaticResource SettingsIcon}"
-                                Stroke="#f2c480"
-                                StrokeThickness="2"
                                 Width="25"
                                 Height="25"
                                 Stretch="Uniform"/>
-                    </Button>
-                    <Button Name="DeleteButton" Style="{StaticResource RoundButton}" Click="DeleteButton_Click" IsEnabled="{Binding SelectedGameProfile.Installed}" Visibility="{Binding HasSelectedProfile, Converter={StaticResource BoolToVis}}">
-                        <Path   Data="{StaticResource DeleteIcon}"
-                                Stroke="#f2c480"
-                                StrokeThickness="2"
-                                Width="25"
-                                Height="25"
-                                Stretch="Uniform"/>
-                    </Button>
-                </StackPanel>
-            </Grid>
-        </Grid>
-        <Border Grid.Row="0" Grid.RowSpan="3" 
+
+            </Button>
+
+        </StackPanel>
+        <Border Name="MainViewBorder"
+                Grid.Column="1" 
+                Grid.Row="2" 
+                Background="#222" 
+                BorderBrush="#666" 
+                BorderThickness="1,1,0,0"
+                CornerRadius="25,0,0,0">
+            <userControls:ProfileDetailsView SelectedGameProfile="{Binding SelectedGameProfile}"
+                                             DownloadProgress="{Binding DownloadProgress}"
+                                             DeleteRequested="DeleteProfileEventHandler" 
+                                             Visibility="{Binding HasSelectedProfile, 
+                                                        Converter={StaticResource BoolToVis}}"/>
+        </Border>
+        <Border Name="WindowBorder"
+                Grid.Row="0" Grid.RowSpan="3" 
                 Grid.Column="0" Grid.ColumnSpan="2" 
                 BorderBrush="#444" 
                 BorderThickness="1" 

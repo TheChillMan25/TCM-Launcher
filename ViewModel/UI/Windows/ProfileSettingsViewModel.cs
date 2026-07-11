@@ -2,7 +2,7 @@
 using TCM_Launcher.MVVM;
 using TCM_Launcher.Services;
 
-namespace TCM_Launcher.ViewModel.UI
+namespace TCM_Launcher.ViewModel.UI.Windows
 {
 	internal class ProfileSettingsViewModel : ViewModelBase
     {
