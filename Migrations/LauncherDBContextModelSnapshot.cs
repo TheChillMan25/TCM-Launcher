@@ -27,7 +27,7 @@ namespace TCM_Launcher.Migrations
                     b.Property<string>("ForgeVersion")
                         .HasColumnType("TEXT");
 
-                    b.Property<bool>("Installed")
+                    b.Property<bool?>("Installed")
                         .HasColumnType("INTEGER");
 
                     b.Property<bool?>("LastPlayed")

@@ -6,10 +6,6 @@ using System.IO;
 using System.Net.Http;
 using System.Windows;
 using TCM_Launcher.Core;
-using TCM_Launcher.Core.Utils;
-using TCM_Launcher.Model.DB;
-using TCM_Launcher.View.PopUp;
-using TCM_Launcher.ViewModel.UI.Popup;
 
 namespace TCM_Launcher.Services
 {
@@ -30,12 +26,13 @@ namespace TCM_Launcher.Services
                         double percentage = (double)args.ProgressedBytes / args.TotalBytes * 100;
                         progress?.Report(percentage);
                     }
+                    Console.WriteLine($"{args.ProgressedBytes} bytes / {args.TotalBytes} bytes");
                 };
                 return await InstallForgeAsync(launcher, mcVersion, fVersion, progress);
             }
             catch (Exception ex)
             {
-                Logger.Error($"There was an exception during creating profile with data: ProfileName={pName}, MCVersion={mcVersion}, ForgeVersion={fVersion}", ex);
+                Console.WriteLine(ex);
                 throw;
             }
         }
@@ -69,47 +66,24 @@ namespace TCM_Launcher.Services
                 var processWrapper = new ProcessWrapper(process);
                 processWrapper.OutputReceived += (sender, log) =>
                 {
-                    if (!string.IsNullOrWhiteSpace(log))
-                    {
-                        Logger.Log(log, "MINECRAFT");
-                    }
+                    Console.WriteLine(log);
                 };
                 
                 GameProfileService.Instance.UpdateLastPlayedProfile(profileId);
-                Logger.Log($"Started game profile with id: {profileId} ({fileName})");
                 processWrapper.StartWithEvents();
 
                 int exitCode = await processWrapper.WaitForExitTaskAsync();
                 if (exitCode == 0)
                 {
-                    Logger.Log($"Game with id {profileId} terminated successfully");
+                    Console.WriteLine("Game terminated successfully.");
                 }
                 else
                 {
-                    string crashReportFolder = Path.Combine(Constants.ProfilesPath, profileId,"crash-reports");
-                    string crashReportInfo = "";
-
-                    if (Directory.Exists(crashReportFolder))
-                    {
-                        var latestCrash = new DirectoryInfo(crashReportFolder)
-                            .GetFiles("crash-*.txt")
-                            .OrderByDescending(f => f.CreationTime)
-                            .FirstOrDefault();
-
-                        if (latestCrash != null)
-                        {
-                            crashReportInfo = $"An overview of the crash report saved here: {latestCrash}";
-                        }
-                    }
-                    Logger.Log($"Game with id {profileId} crashed. {crashReportInfo}");
-                    var p = new PopupView($"The game crashed (Code: {exitCode})", crashReportInfo, PopupAction.CRASH, 5000d, profileId);
-                    p.Owner = Application.Current.MainWindow;
-                    p.Show();
+                    Console.WriteLine($"Game error occurred! Exit code: {exitCode}");
                 }
             }
             catch (Exception ex)
             {
-                Logger.Error($"There was an exception during launching profile with id: {profileId}", ex);
                 MessageBox.Show("An error occured during launching game.");
             }
             
@@ -119,30 +93,22 @@ namespace TCM_Launcher.Services
         {
             try
             {
-                Logger.Log($"Installing forge ({fVersion} for minecraft with version {mcVersion}) started", "FORGE");
                 var fInstaller = new ForgeInstaller(launcher);
                 var installOptions = new ForgeInstallOptions
                 {
-                    ByteProgress = new Progress<ByteProgress>(e => progress?.Report(e.ToRatio() * 100)),
+                    ByteProgress = new Progress<ByteProgress>(e => { Console.WriteLine(e); progress?.Report(e.ToRatio() * 100); }),
                     InstallerOutput = new Progress<string>(e =>
-                    {
-                        if (!string.IsNullOrWhiteSpace(e))
-                        {
-                            Logger.Log(e, "FORGE");
-                        }
-                    }),
+                        Console.WriteLine(e)),
                     CancellationToken = CancellationToken.None,
                     SkipIfAlreadyInstalled = true,
                 };
 
                 var latestForgeInstallName = await fInstaller.Install(mcVersion, fVersion, installOptions);
                 await launcher.InstallAsync(latestForgeInstallName);
-                Logger.Log($"Installing forge ({fVersion} for minecraft with version {mcVersion}) completed", "FORGE");
                 return latestForgeInstallName;
             }
-            catch (Exception ex)
+            catch (HttpRequestException ex)
             {
-                Logger.Error($"There was an exception during installing forge\nData: MCVersion={mcVersion}, ForgeVersion={fVersion}", ex);
                 MessageBox.Show("An error occured during forge installation.");
                 return null;
             }

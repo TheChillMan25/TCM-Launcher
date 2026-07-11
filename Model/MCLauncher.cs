@@ -1,8 +1,11 @@
 ﻿using CmlLib.Core;
 using CmlLib.Core.Auth;
 using CmlLib.Core.Installer.Forge;
+using CmlLib.Core.Installers;
 using CmlLib.Core.ProcessBuilder;
-using TCM_Launcher.Core.Utils;
+using System.IO;
+using TCM_Launcher.Core;
+using TCM_Launcher.Model.UI;
 
 namespace TCM_Launcher.Model
 {
@@ -28,22 +31,21 @@ namespace TCM_Launcher.Model
                     MinimumRamMb = 4096,
                     Session = MSession.CreateOfflineSession("Gamer123"),
                 });
-                /*
                 gameProcess.StartInfo.UseShellExecute = false;
                 gameProcess.StartInfo.RedirectStandardError = true;
                 gameProcess.StartInfo.RedirectStandardOutput = true;
 
                 gameProcess.ErrorDataReceived += (s, e) => { if (e.Data != null) Console.WriteLine($"[MC ERROR] {e.Data}"); };
                 gameProcess.OutputDataReceived += (s, e) => { if (e.Data != null) Console.WriteLine($"[MC LOG] {e.Data}"); };
-                */
+
                 gameProcess.Start();
-                /*
+
                 gameProcess.BeginErrorReadLine();
-                gameProcess.BeginOutputReadLine();*/
+                gameProcess.BeginOutputReadLine();
             }
             catch (Exception ex)
             {
-                Logger.Error("There was an exception thrown during game launch", ex);
+                Console.WriteLine(ex);
             }
         }
     }

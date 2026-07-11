@@ -1,6 +1,6 @@
 ﻿using System.Windows;
 using TCM_Launcher.Model.DB;
-using TCM_Launcher.ViewModel.UI.Windows;
+using TCM_Launcher.ViewModel.UI;
 
 namespace TCM_Launcher.View.Windows
 {

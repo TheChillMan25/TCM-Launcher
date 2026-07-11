@@ -1,14 +1,12 @@
-﻿using Onova;
-using Onova.Services;
-using System.Collections.ObjectModel;
+﻿using System.Collections.ObjectModel;
+using System.IO;
 using System.Windows;
-using TCM_Launcher.Core.Utils;
-using TCM_Launcher.Model;
+using TCM_Launcher.Core;
 using TCM_Launcher.Model.DB;
 using TCM_Launcher.MVVM;
 using TCM_Launcher.Services;
 using TCM_Launcher.View;
-using TCM_Launcher.View.PopUp;
+using TCM_Launcher.View.Windows;
 
 namespace TCM_Launcher.ViewModel
 {
@@ -16,7 +14,10 @@ namespace TCM_Launcher.ViewModel
     {
         public MainWindowViewModel()
         {
-            InitializeAsync();
+            _ = LoadProfilesAsync();
+            OpenLastPlayedProfile();
+            VersionsService.Instance.StartVersionCheck();
+            _ = WaitForVersionsAsync();
         }
 
         private ObservableCollection<GameProfile> gameProfiles;
@@ -33,7 +34,7 @@ namespace TCM_Launcher.ViewModel
 
         private GameProfile selectedGameProfile;
 
-        public GameProfile? SelectedGameProfile
+        public GameProfile SelectedGameProfile
         {
             get { return selectedGameProfile; }
             set
@@ -41,9 +42,20 @@ namespace TCM_Launcher.ViewModel
                 selectedGameProfile = value;
                 OnPropertyChange();
                 OnPropertyChange(nameof(HasSelectedProfile));
+                HeaderText = $"Forge {selectedGameProfile?.MCVersion}";
             }
         }
         public bool HasSelectedProfile => SelectedGameProfile != null;
+        private string headerText;
+
+        public string HeaderText
+        {
+            get { return headerText; }
+            set {
+                headerText = value;
+                OnPropertyChange();
+            }
+        }
 
         private bool isVersionsLoaded;
 
@@ -81,42 +93,32 @@ namespace TCM_Launcher.ViewModel
             }
         }
 
-        private UpdateData availableUpdtea = new UpdateData();
-
-        public UpdateData AvailableUpdate
-        {
-            get { return availableUpdtea; }
-            set 
-            {
-                availableUpdtea = value;
-                OnPropertyChange();
-            }
-        }
-
-
-        private async void InitializeAsync()
-        {
-            await LoadProfilesAsync();
-
-            OpenLastPlayedProfile();
-
-            VersionsService.Instance.StartVersionCheck();
-            await WaitForVersionsAsync();
-        }
-
         public async Task ShowNewProfileWindow()
         {
             NewProfileView npw = new NewProfileView();
             npw.Owner = Application.Current.MainWindow;
             Application.Current.MainWindow.Opacity = 0.4;
             bool created = npw.ShowDialog() ?? false;
-            Application.Current.MainWindow.Opacity = 1;
             if (created) 
             {
                 bool success = await CreateProfile(npw.NewProfileData);
 
                 if (success) MessageBox.Show("Installation complete");
             }
+            Application.Current.MainWindow.Opacity = 1;
+        }
+
+        public void OpenProfileSettings()
+        {
+            if(SelectedGameProfile == null)
+            {
+                MessageBox.Show("Select a profile.");
+            }
+            ProfileSettingsView ps = new ProfileSettingsView(SelectedGameProfile);
+            ps.Owner = Application.Current.MainWindow;
+            Application.Current.MainWindow.Opacity = 0.4;
+            ps.ShowDialog();
+            Application.Current.MainWindow.Opacity = 1;
         }
 
         public async Task LoadProfilesAsync()
@@ -147,8 +149,8 @@ namespace TCM_Launcher.ViewModel
                     GameProfileId = p.Id,
                     Ram = Constants.DefaultRam,
                 });
+                Application.Current.MainWindow.Opacity = 1;
                 await LoadProfilesAsync();
-                SelectedGameProfile = GameProfiles.FirstOrDefault(prof => prof.Id == p.Id);
                 IsDownloading = true;
                 DownloadProgress = 0;
                 var progressHandler = new Progress<double>(percent =>
@@ -175,7 +177,6 @@ namespace TCM_Launcher.ViewModel
             }
             catch (Exception ex)
             {
-                Logger.Error("There was an exception during profile creation", ex);
                 MessageBox.Show($"An error occured during profile creation; {ex.Message}");
                 return false;
             }
@@ -183,77 +184,44 @@ namespace TCM_Launcher.ViewModel
 
         private void OpenLastPlayedProfile()
         {
-            if (GameProfiles == null || GameProfiles.Count == 0) return;
-            var lastPlayed = GameProfiles.FirstOrDefault(p => p.LastPlayed == true);
-
-            if (lastPlayed != null)
+            if (GameProfiles.Count == 0) return;
+            try
             {
-                SelectedGameProfile = lastPlayed;
+                var p = GameProfileService.Instance.GetLastPlayedProfile();
+                if (p == null)
+                {
+                    return;
+                }
+                SelectedGameProfile = p;
             }
-            else
+            catch
             {
-                SelectedGameProfile = GameProfiles[0];
+                return;
             }
         }
 
         public void DeleteProfile()
         {
-            if(SelectedGameProfile != null) {
-                GameProfiles.Remove(SelectedGameProfile);
-            
-                if (GameProfiles.Count > 0)
-                {
-                    SelectedGameProfile = GameProfiles[0];
-                }
-                else SelectedGameProfile = null;
-            }
-        }
-
-        public async Task CheckForUpdatesAsync()
-        {
-            #if DEBUG
-                Console.WriteLine("Developer mode: Update check cancelled.");
-                return;
-            #endif
-
             try
             {
-                using var manager = new UpdateManager(
-                    new GithubPackageResolver("TheChillMan25", "TCM-Launcher", "TCM_Launcher.zip"),
-                    new ZipPackageExtractor()
-                );
-                AvailableUpdate.Manager = manager;
-
-                var check = await manager.CheckForUpdatesAsync();
-                if (check != null) 
+                bool success = GameProfileService.Instance.DeleteProfile(SelectedGameProfile.Id);
+                string profileDir = Path.Combine(Constants.ProfilesPath, SelectedGameProfile.Id);
+                if (success)
                 {
-                    AvailableUpdate.CanUpdate = check.CanUpdate;
-                    OnPropertyChange(nameof(AvailableUpdate));
-                    if (AvailableUpdate.CanUpdate)
-                    {
-                        AvailableUpdate.Version = check.LastVersion ?? check.Versions.FirstOrDefault();
-                        Update();
-                    }
+                    if (Directory.Exists(profileDir)) Directory.Delete(profileDir, true);
+                    GameProfiles.Remove(SelectedGameProfile);
 
+                    if (GameProfiles.Count > 0)
+                    {
+                        SelectedGameProfile = GameProfiles[0];
+                    }
                 }
             }
             catch (Exception ex)
             {
-                Logger.Error("There was an exceprtion during checking for updates", ex);
+                MessageBox.Show("An error occured during deleting profile.");
             }
-        }
-        public async Task Update()
-        {
-            PopupView p = new PopupView("Update available", "There is an update available. Click the button to download it.", UI.Popup.PopupAction.UPDATE);
-            p.Owner = Application.Current.MainWindow;
-            var update = p.ShowDialog();
-            if (update == true)
-            {
-                await AvailableUpdate.Manager.PrepareUpdateAsync(AvailableUpdate.Version);
 
-                AvailableUpdate.Manager.LaunchUpdater(AvailableUpdate.Version);
-                Application.Current.Shutdown();
-            }
         }
     }
 }

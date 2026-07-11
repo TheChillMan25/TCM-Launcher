@@ -1,5 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
-using System.Windows;
+﻿using System.Windows;
 using TCM_Launcher.Core.DBContext;
 
 namespace TCM_Launcher
@@ -12,7 +11,7 @@ namespace TCM_Launcher
 
             using var db = new LauncherDBContext();
 
-            db.Database.Migrate();
+            db.Database.EnsureCreated();
         }
     }
 

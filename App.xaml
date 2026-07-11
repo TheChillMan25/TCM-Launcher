@@ -9,7 +9,6 @@
                 <ResourceDictionary Source="Styles/SideBarStyles.xaml"/>
                 <ResourceDictionary Source="Styles/ButtonStyles.xaml"/>
                 <ResourceDictionary Source="Styles/InputStyles.xaml"/>
-                <ResourceDictionary Source="Styles/ContextMenuStyles.xaml"/>
                 <ResourceDictionary Source="Styles/Icons.xaml"/>
             </ResourceDictionary.MergedDictionaries>
         </ResourceDictionary>
