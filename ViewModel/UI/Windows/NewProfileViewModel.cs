@@ -1,11 +1,12 @@
 ﻿using System.Collections.ObjectModel;
 using System.Windows;
+using TCM_Launcher.Core.Utils;
 using TCM_Launcher.Model.DB.Versions;
 using TCM_Launcher.Model.UI.Forge;
 using TCM_Launcher.MVVM;
 using TCM_Launcher.Services;
 
-namespace TCM_Launcher.ViewModel.UI
+namespace TCM_Launcher.ViewModel.UI.Windows
 {
     internal class NewProfileViewModel : ViewModelBase
     {
@@ -86,21 +87,22 @@ namespace TCM_Launcher.ViewModel.UI
             ForgeVersions = new();
         }
 
-        public async Task UpdateForgeVersions(string mcVersion, string? pName = "")
+        public async Task UpdateForgeVersions(string mcVersion, string pName = "")
         {
             try
             {
                 var versions = await VersionsService.Instance.GetForgeVersions(mcVersion);
-                ForgeLoaderJSONData recommended = null;
-                /*if (versions.Count > 0 ) recommended = versions.FirstOrDefault(v => v.IsRecommended);
+                /*ForgeLoaderJSONData recommended = null;
+                if (versions.Count > 0 ) recommended = versions.FirstOrDefault(v => v.IsRecommended);
                 if (recommended != null) recommended.VersionName = string.Concat(recommended.VersionName, " Recommended");*/
                 ForgeVersions = new ObservableCollection<ForgeVersion>(versions);
                 HasForgeVersions = ForgeVersions.Count > 0;
-                if(string.IsNullOrEmpty(pName)) PlaceholderProfileName = string.Concat("Forge ", mcVersion);
+                if (string.IsNullOrEmpty(pName) || pName.Contains("Forge")) PlaceholderProfileName = string.Concat("Forge ", mcVersion);
             }
             catch (Exception ex)
             {
                 HasForgeVersions = false;
+                Logger.Error($"There was an exception during updating forge versions for minecraft {mcVersion}", ex);
                 MessageBox.Show($"An error occured during fetching forge versions: {ex}");
             }
         }

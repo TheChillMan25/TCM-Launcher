@@ -1,7 +1,7 @@
 ﻿using System.Windows;
 using TCM_Launcher.Model.DB;
 using TCM_Launcher.Model.DB.Versions;
-using TCM_Launcher.ViewModel.UI;
+using TCM_Launcher.ViewModel.UI.Windows;
 
 namespace TCM_Launcher.View
 {
