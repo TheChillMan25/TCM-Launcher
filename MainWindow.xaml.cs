@@ -33,10 +33,12 @@ namespace TCM_Launcher
             if(WindowState == WindowState.Maximized)
             {
                 WindowState = WindowState.Normal;
+                BugReportButton.Margin = new Thickness(0, 0, 0, 5);
             }
             else
             {
                 WindowState = WindowState.Maximized;
+                BugReportButton.Margin = new Thickness(0, 0 , 0, 60);
             }
         }
 
@@ -58,6 +60,11 @@ namespace TCM_Launcher
         private void UpdateButton_Click(object sender, RoutedEventArgs e)
         {
             viewModel.Update();
+        }
+
+        private void BugReportButton_Click(object sender, RoutedEventArgs e)
+        {
+            viewModel.Bugreport();
         }
     }
 }

@@ -103,7 +103,7 @@ namespace TCM_Launcher.ViewModel.UI.Windows
             {
                 HasForgeVersions = false;
                 Logger.Error($"There was an exception during updating forge versions for minecraft {mcVersion}", ex);
-                MessageBox.Show($"An error occured during fetching forge versions: {ex}");
+                MessageBox.Show($"An error occured during fetching forge versions.", "ERROR", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
     }

@@ -75,7 +75,7 @@ namespace TCM_Launcher.ViewModel.UI.UserControls
         {
             if (SelectedGameProfile == null)
             {
-                MessageBox.Show("Select a profile.");
+                MessageBox.Show("Select a profile.", "WARNING", MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
             }
             ProfileSettingsView ps = new ProfileSettingsView(SelectedGameProfile);
@@ -100,13 +100,13 @@ namespace TCM_Launcher.ViewModel.UI.UserControls
             catch (IOException ex)
             {
                 Logger.Error("There was an exception during deleting profile", ex);
-                MessageBox.Show("Couldn't delete the profile because it is still running or the files are still in use. Close the game before deleting.", "Deletion error", MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show("Couldn't delete the profile because it is still running or the files are still in use. Close the game before deleting.", "ERROR", MessageBoxButton.OK, MessageBoxImage.Error);
                 return false;
             }
             catch (Exception ex)
             {
                 Logger.Error("There was an exception during deleting profile", ex);
-                MessageBox.Show("An error occured during deleting profile.");
+                MessageBox.Show("An error occured during deleting profile.", "ERROR", MessageBoxButton.OK, MessageBoxImage.Error);
                 return false;
             }
 

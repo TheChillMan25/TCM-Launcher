@@ -40,7 +40,7 @@ namespace TCM_Launcher.Services
             {
                 string msg = settings == null ? "NULL" : settings.GameProfileId;
                 Logger.Error($"There was an exception during setting profile settings with ProfileId={msg}", ex);
-                MessageBox.Show("An error occured during setting profile settings.");
+                MessageBox.Show("An error occured during setting profile settings.", "ERROR", MessageBoxButton.OK, MessageBoxImage.Error);
                 return null;
             }
         }
@@ -55,14 +55,14 @@ namespace TCM_Launcher.Services
                 {
                     return s;
                 }
-                MessageBox.Show("There are no settings for this profile.");
+                MessageBox.Show("There are no settings for this profile.", "ERROR", MessageBoxButton.OK, MessageBoxImage.Error);
                 return null;
             }
             catch (Exception ex)
             {
                 string msg = profileId == null ? "NULL" : profileId;
                 Logger.Error($"There was an exception during reading profile settings with ProfileId={msg}", ex);
-                MessageBox.Show("An error occured during loading profile settings.");
+                MessageBox.Show("An error occured during loading profile settings.", "ERROR", MessageBoxButton.OK, MessageBoxImage.Error);
                 return null;
             }
         }

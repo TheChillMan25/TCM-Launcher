@@ -86,12 +86,12 @@ namespace TCM_Launcher.View.UserControls
             //p.Show();
             if (viewModel.SelectedGameProfile == null)
             {
-                MessageBox.Show("Select a profile to START.");
+                MessageBox.Show("Select a profile to START.", "WARNING", MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
             }
             if (viewModel.SelectedGameProfile.Installed != true)
             {
-                MessageBox.Show("Profile is installing files. Please wait");
+                MessageBox.Show("Profile is installing files. Please wait", "WARNING", MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
             }
             await viewModel.StartGame();

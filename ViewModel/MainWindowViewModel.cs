@@ -1,6 +1,8 @@
 ﻿using Onova;
 using Onova.Services;
 using System.Collections.ObjectModel;
+using System.Diagnostics;
+using System.IO;
 using System.Windows;
 using TCM_Launcher.Core.Utils;
 using TCM_Launcher.Model;
@@ -176,7 +178,7 @@ namespace TCM_Launcher.ViewModel
             catch (Exception ex)
             {
                 Logger.Error("There was an exception during profile creation", ex);
-                MessageBox.Show($"An error occured during profile creation; {ex.Message}");
+                MessageBox.Show($"An error occured during profile creation.", "ERROR", MessageBoxButton.OK, MessageBoxImage.Error);
                 return false;
             }
         }
@@ -253,6 +255,32 @@ namespace TCM_Launcher.ViewModel
 
                 AvailableUpdate.Manager.LaunchUpdater(AvailableUpdate.Version);
                 Application.Current.Shutdown();
+            }
+        }
+
+        public void Bugreport()
+        {
+            try
+            {
+                Process.Start(new ProcessStartInfo
+                {
+                    FileName = Constants.BugReportFormURL,
+                    UseShellExecute = true
+                });
+                if (Directory.Exists(Path.Combine(Constants.LauncherFolder, "logs")))
+                {
+                    Process.Start(new ProcessStartInfo
+                    {
+                        FileName = "explorer.exe",
+                        UseShellExecute = true,
+                        Arguments = Path.Combine(Constants.LauncherFolder, "logs")
+                    });
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.Error("There was an exception during bugreport", ex);
+                MessageBox.Show("An error occured during bugreport.", "ERROR", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
     }

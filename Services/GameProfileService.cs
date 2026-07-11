@@ -32,7 +32,7 @@ namespace TCM_Launcher.Services
             catch(Exception ex)
             {
                 Logger.Error($"There was an exception thrown during adding profile to DB: ProfileName={name}, MCVersion={mcVersion}, ForgeVersion={fVersion}, FileName={fileName}", ex);
-                MessageBox.Show("An error occured during profile creation.");
+                MessageBox.Show("An error occured during profile creation.", "ERROR", MessageBoxButton.OK, MessageBoxImage.Error);
                 return null;
             }
             
@@ -48,7 +48,7 @@ namespace TCM_Launcher.Services
             catch(Exception ex)
             {
                 Logger.Error("There was an exception thrown during reading all profiles", ex);
-                MessageBox.Show("An error occured retrieving profile informations.");
+                MessageBox.Show("An error occured retrieving profile informations.", "ERROR", MessageBoxButton.OK, MessageBoxImage.Error);
                 return [];
             }
             
@@ -64,7 +64,7 @@ namespace TCM_Launcher.Services
             catch (Exception ex)
             {
                 Logger.Error($"There was an exception thrown during reading profile with id: {profileId}", ex);
-                MessageBox.Show("An error occured retrieving profile information.");
+                MessageBox.Show("An error occured retrieving profile information.", "ERROR", MessageBoxButton.OK, MessageBoxImage.Error);
                 return null;
             }
         }
@@ -91,7 +91,7 @@ namespace TCM_Launcher.Services
             catch (Exception ex)
             {
                 Logger.Error($"There was an exception thrown during updating profile: {profileId}, Data: ProfileName={updateData.ProfileName}, MCVersion={updateData.MCVersion}, ForgeVersion={updateData.ForgeVersion}, FileName={updateData.FileName}, Installed={updateData.Installed}", ex);
-                MessageBox.Show("An error occured during updation the profle.");
+                MessageBox.Show("An error occured during updation the profle.", "ERROR", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
 
@@ -118,7 +118,7 @@ namespace TCM_Launcher.Services
                 string oldId = oldProfile != null ? oldProfile.Id : "NULL (Old not found)";
                 string foundId = profile != null ? profile.Id : "NULL (New not found)";
                 Logger.Error($"There was an exception thrown during updating last played profile with id: {profileId}\nData: New id={foundId}, Old id={oldId}", ex);
-                MessageBox.Show("An error occured updating lastly played profile information.");
+                MessageBox.Show("An error occured updating lastly played profile information.", "ERROR", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
 
@@ -141,7 +141,7 @@ namespace TCM_Launcher.Services
             catch (Exception ex)
             {
                 Logger.Error($"There was an exception thrown during deleting profile with id: {profileId}", ex);
-                MessageBox.Show("An error occured during profile deletion.");
+                MessageBox.Show("An error occured during profile deletion.", "ERROR", MessageBoxButton.OK, MessageBoxImage.Error);
                 return false;
             }
         }
@@ -165,6 +165,7 @@ namespace TCM_Launcher.Services
             {
                 string msg = string.IsNullOrEmpty(subFolder) ? profileId : profileId + $" (Subfolder={subFolder}";
                 Logger.Error($"There was an exception while opening profile folder with id: {msg}", ex);
+                MessageBox.Show("An error occured during opening profile folder", "ERROR", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
     }

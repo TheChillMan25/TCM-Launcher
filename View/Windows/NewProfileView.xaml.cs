@@ -43,7 +43,7 @@ namespace TCM_Launcher.View
                 string pName = ProfileNameInput.Text;
                 if (selectedForge == null)
                 {
-                    MessageBox.Show("There is no compatible forge for this version. Select another version.");
+                    MessageBox.Show("There is no compatible forge for this version. Select another version.", "WARNING", MessageBoxButton.OK, MessageBoxImage.Warning);
                     return;
                 }
                 NewProfileData = new GameProfile

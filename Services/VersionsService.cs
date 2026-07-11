@@ -123,7 +123,7 @@ namespace TCM_Launcher.Services
             catch (Exception ex)
             {
                 Logger.Error($"There was an exception during checking versions", ex);
-                MessageBox.Show($"An error occured during fetching versions.");
+                MessageBox.Show($"An error occured during fetching versions.", "ERROR", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
 
@@ -146,7 +146,7 @@ namespace TCM_Launcher.Services
             catch (Exception ex)
             {
                 Logger.Error($"There was an exception during saving vanilla versions to database", ex);
-                MessageBox.Show($"Error during saving vanilla versions to database.");
+                MessageBox.Show($"Error during saving vanilla versions to database.", "ERROR", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
 
@@ -169,7 +169,7 @@ namespace TCM_Launcher.Services
             catch (Exception ex)
             {
                 Logger.Error($"There was an exception during saving forge versions to database", ex);
-                MessageBox.Show($"Error during saving forge versions to database");
+                MessageBox.Show($"Error during saving forge versions to database", "ERROR", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
     }

@@ -110,7 +110,7 @@ namespace TCM_Launcher.Services
             catch (Exception ex)
             {
                 Logger.Error($"There was an exception during launching profile with id: {profileId}", ex);
-                MessageBox.Show("An error occured during launching game.");
+                MessageBox.Show("An error occured during launching game.", "ERROR", MessageBoxButton.OK, MessageBoxImage.Error);
             }
             
         }
@@ -143,7 +143,7 @@ namespace TCM_Launcher.Services
             catch (Exception ex)
             {
                 Logger.Error($"There was an exception during installing forge\nData: MCVersion={mcVersion}, ForgeVersion={fVersion}", ex);
-                MessageBox.Show("An error occured during forge installation.");
+                MessageBox.Show("An error occured during forge installation.", "ERROR", MessageBoxButton.OK, MessageBoxImage.Error);
                 return null;
             }
         }
