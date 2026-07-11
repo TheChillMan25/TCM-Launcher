@@ -125,9 +125,9 @@ namespace TCM_Launcher.View.UserControls
             if(success) RaiseEvent(new RoutedEventArgs(DeleteRequestedEvent));
         }
 
-        private void ExportModpack_Click(object sender, RoutedEventArgs e)
-        {
-            MessageBox.Show("Modpack exportalasa...");
-        }
+        //private void ExportModpack_Click(object sender, RoutedEventArgs e)
+        //{
+        //    MessageBox.Show("Modpack exportalasa...");
+        //}
     }
 }
