@@ -1,18 +1,27 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <OutputType>WinExe</OutputType>
+    <OutputType>Exe</OutputType>
     <TargetFramework>net10.0-windows</TargetFramework>
     <RootNamespace>TCM_Launcher</RootNamespace>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <UseWPF>true</UseWPF>
 	<NoWarn>$(NoWarn);NU1903</NoWarn>
-	<Version>0.0.1</Version>
+	<Version>0.0.2</Version>
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="Assets\mc_img.png" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Resource Include="Assets\mc_img.png" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="CmlLib.Core" Version="4.0.6" />
+    <PackageReference Include="CmlLib.Core.Auth.Microsoft" Version="3.3.1" />
     <PackageReference Include="CmlLib.Core.Commons" Version="4.0.0" />
     <PackageReference Include="CmlLib.Core.Installer.Forge" Version="1.1.1" />
     <PackageReference Include="Microsoft.EntityFrameworkCore" Version="10.0.9" />
@@ -21,6 +30,7 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
+    <PackageReference Include="MineStat" Version="3.1.2" />
     <PackageReference Include="Onova" Version="2.6.13" />
     <PackageReference Include="SharpVectors" Version="1.8.5" />
   </ItemGroup>

@@ -93,7 +93,7 @@ namespace TCM_Launcher.ViewModel.UI.Windows
             {
                 var versions = await VersionsService.Instance.GetForgeVersions(mcVersion);
                 /*ForgeLoaderJSONData recommended = null;
-                if (versions.Count > 0 ) recommended = versions.FirstOrDefault(v => v.IsRecommended);
+                if (versions.Count > 0 ) recommended = versions.FirstOrDefaultAsync(v => v.IsRecommended);
                 if (recommended != null) recommended.VersionName = string.Concat(recommended.VersionName, " Recommended");*/
                 ForgeVersions = new ObservableCollection<ForgeVersion>(versions);
                 HasForgeVersions = ForgeVersions.Count > 0;

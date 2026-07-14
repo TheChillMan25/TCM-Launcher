@@ -11,7 +11,7 @@ namespace TCM_Launcher.Services
     public class GameProfileService
     {
         public static GameProfileService Instance { get; } = new GameProfileService();
-        public GameProfile AddProfile(string name, string mcVersion, string fVersion, string? fileName = null)
+        public async Task<GameProfile> AddProfileAsync(string name, string mcVersion, string fVersion, string? fileName = null)
         {
             try
             {
@@ -26,7 +26,7 @@ namespace TCM_Launcher.Services
                 };
 
                 db.GameProfiles.Add(newProfile);
-                db.SaveChanges();
+                await db.SaveChangesAsync();
                 return newProfile;
             }
             catch(Exception ex)
@@ -54,12 +54,28 @@ namespace TCM_Launcher.Services
             
         }
 
-        public GameProfile GetProfile(string profileId)
+        public async Task<List<GameProfile>> GetProfilesWithVersionAsync(string version)
         {
             try
             {
                 using var db = new LauncherDBContext();
-                return db.GameProfiles.FirstOrDefault(p => p.Id == profileId);
+                return await db.GameProfiles.Where(p => p.MCVersion == version).ToListAsync();
+            }
+            catch (Exception ex)
+            {
+                Logger.Error("There was an exception thrown during reading all profiles", ex);
+                MessageBox.Show("An error occured retrieving profile informations.", "ERROR", MessageBoxButton.OK, MessageBoxImage.Error);
+                return [];
+            }
+
+        }
+
+        public async Task<GameProfile?> GetProfile(string profileId)
+        {
+            try
+            {
+                using var db = new LauncherDBContext();
+                return await db.GameProfiles.FirstOrDefaultAsync(p => p.Id == profileId);
             }
             catch (Exception ex)
             {
@@ -69,13 +85,13 @@ namespace TCM_Launcher.Services
             }
         }
 
-        public void UpdateProfile(string profileId, GameProfile updateData)
+        public async Task UpdateProfileAsync(string profileId, GameProfile updateData)
         {
             try
             {
                 using var db = new LauncherDBContext();
 
-                var profile = db.GameProfiles.FirstOrDefault(p => p.Id == profileId);
+                var profile = await db.GameProfiles.FirstOrDefaultAsync(p => p.Id == profileId);
 
                 if (profile != null)
                 {
@@ -85,7 +101,7 @@ namespace TCM_Launcher.Services
                     profile.FileName = updateData.FileName == null ? profile.FileName : updateData.FileName;
                     profile.Installed = updateData.Installed == null ? profile.Installed : updateData.Installed;
 
-                    db.SaveChanges();
+                    await db.SaveChangesAsync();
                 }
             }
             catch (Exception ex)
@@ -95,7 +111,7 @@ namespace TCM_Launcher.Services
             }
         }
 
-        public void UpdateLastPlayedProfile(string profileId)
+        public async Task UpdateLastPlayedProfileAsync(string profileId)
         {
             GameProfile? profile = null;
             GameProfile? oldProfile = null;
@@ -103,13 +119,13 @@ namespace TCM_Launcher.Services
             {
                 using var db = new LauncherDBContext();
 
-                profile = db.GameProfiles.FirstOrDefault(p => p.Id == profileId);
-                oldProfile = db.GameProfiles.FirstOrDefault(p => p.LastPlayed == true);
+                profile = await db.GameProfiles.FirstOrDefaultAsync(p => p.Id == profileId);
+                oldProfile = await db.GameProfiles.FirstOrDefaultAsync(p => p.LastPlayed == true);
 
                 if (oldProfile != null) oldProfile.LastPlayed = false;
                 if (profile != null) profile.LastPlayed = true;
 
-                db.SaveChanges();
+                await db.SaveChangesAsync();
 
 
             }
@@ -122,18 +138,30 @@ namespace TCM_Launcher.Services
             }
         }
 
-        public bool DeleteProfile(string profileId)
+        public async Task<bool> DeleteProfileAsync(string profileId)
         {
             try
             {
                 using var db = new LauncherDBContext();
 
-                var profile = db.GameProfiles.FirstOrDefault(p => p.Id == profileId);
+                var serversToUnbind = await db.SavedServers.Where(s => s.BindedProfileId == profileId).ToListAsync();
+                foreach (var server in serversToUnbind)
+                {
+                    server.BindedProfileId = null;
+                }
+
+                var settings = await db.ProfileSettings.FirstOrDefaultAsync(ps => ps.GameProfileId == profileId);
+                if (settings != null)
+                {
+                    db.ProfileSettings.Remove(settings);
+                }
+
+                var profile = await db.GameProfiles.FirstOrDefaultAsync(p => p.Id == profileId);
 
                 if (profile != null)
                 {
                     db.GameProfiles.Remove(profile);
-                    db.SaveChanges();
+                    await db.SaveChangesAsync();
                     return true;
                 }
                 return false;

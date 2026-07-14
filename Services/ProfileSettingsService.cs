@@ -1,4 +1,5 @@
-﻿using System.Windows;
+﻿using Microsoft.EntityFrameworkCore;
+using System.Windows;
 using System.Windows.Interop;
 using TCM_Launcher.Core.DBContext;
 using TCM_Launcher.Core.Utils;
@@ -10,13 +11,13 @@ namespace TCM_Launcher.Services
     {
         public static ProfileSettingsService Instance { get; set; } = new ProfileSettingsService();
 
-        public ProfileSettings SetProfileSettings(ProfileSettings data)
+        public async Task<ProfileSettings> SetProfileSettingsAsync(ProfileSettings data)
         {
             ProfileSettings settings = null;
             try
             {
                 using var db = new LauncherDBContext();
-                settings = db.ProfileSettings.FirstOrDefault(s => s.GameProfileId == data.GameProfileId);
+                settings = await db.ProfileSettings.FirstOrDefaultAsync(s => s.GameProfileId == data.GameProfileId);
 
                 if (settings != null)
                 {
@@ -33,7 +34,7 @@ namespace TCM_Launcher.Services
                     };
                     db.ProfileSettings.Add(settings);
                 }
-                db.SaveChanges();
+                await db.SaveChangesAsync();
                 return settings;
             }
             catch(Exception ex)
@@ -45,12 +46,12 @@ namespace TCM_Launcher.Services
             }
         }
 
-        public ProfileSettings GetProfileSettings(string profileId)
+        public async Task<ProfileSettings> GetProfileSettings(string profileId)
         {
             try
             {
                 using var db = new LauncherDBContext();
-                var s = db.ProfileSettings.FirstOrDefault(s => s.GameProfileId == profileId);
+                var s = await db.ProfileSettings.FirstOrDefaultAsync(s => s.GameProfileId == profileId);
                 if (s != null)
                 {
                     return s;

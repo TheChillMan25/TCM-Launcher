@@ -85,11 +85,11 @@ namespace TCM_Launcher.ViewModel.UI.UserControls
             Application.Current.MainWindow.Opacity = 1;
         }
 
-        public bool DeleteProfile()
+        public async Task<bool> DeleteProfileAsync()
         {
             try
             {
-                bool success = GameProfileService.Instance.DeleteProfile(SelectedGameProfile.Id);
+                bool success = await GameProfileService.Instance.DeleteProfileAsync(SelectedGameProfile.Id);
                 if (success)
                 {
                     string profileDir = Path.Combine(Constants.ProfilesPath, SelectedGameProfile.Id);
@@ -124,7 +124,7 @@ namespace TCM_Launcher.ViewModel.UI.UserControls
                 SelectedGameProfile.IsPlaying = true;
                 IsEnable = SelectedGameProfile.Installed && !SelectedGameProfile.IsPlaying;
                 PlayButtonText = "Running";
-                await LauncherService.Instance.LaunchProfileAsync(SelectedGameProfile.Id, SelectedGameProfile.FileName!);
+                await LauncherService.Instance.LaunchProfileAsync(SelectedGameProfile);
             }
             finally
             {

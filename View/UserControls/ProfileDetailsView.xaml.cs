@@ -51,6 +51,7 @@ namespace TCM_Launcher.View.UserControls
                 {
                     view.viewModel.SelectedGameProfile = newProfile;
                     view.viewModel.IsEnable = (newProfile.Installed == true && !newProfile.IsPlaying);
+                    view.viewModel.PlayButtonText = newProfile.IsPlaying ? "Running" : "Play";
                 }
             }
         }
@@ -119,9 +120,9 @@ namespace TCM_Launcher.View.UserControls
             viewModel.OpenProfileFolder();
         }
 
-        private void DeleteProfile_Click(object sender, RoutedEventArgs e)
+        private async void DeleteProfile_Click(object sender, RoutedEventArgs e)
         {
-            bool success = viewModel.DeleteProfile();
+            bool success = await viewModel.DeleteProfileAsync();
             if(success) RaiseEvent(new RoutedEventArgs(DeleteRequestedEvent));
         }
 

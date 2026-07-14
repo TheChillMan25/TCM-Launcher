@@ -63,6 +63,12 @@ namespace TCM_Launcher.Services
 
         private async Task CheckVersionsAsync()
         {
+            bool isInternet = await NetworkUtil.IsInternetAvailableAsync();
+            if (!isInternet)
+            {
+                Logger.Error("No internet. Couldn't check versions.");
+                return;
+            }
             string sharedPath = Constants.SharedPath;
             MinecraftPath dummyPath = new MinecraftPath(sharedPath);
             var dummyLauncher = new MinecraftLauncher(dummyPath);

@@ -5,40 +5,55 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:TCM_Launcher"
         xmlns:userControls="clr-namespace:TCM_Launcher.View.UserControls"
+        xmlns:converters="clr-namespace:TCM_Launcher.Core.Utils.Converters"
         mc:Ignorable="d"
         Title="TCM Launcher" 
-        MinHeight="450"
-        MinWidth="800"
-        Height="450"
-        Width="800"
+        MinHeight="700"
+        MinWidth="1000"
+        Height="700"
+        Width="1000"
         WindowStartupLocation="CenterOwner"
         WindowState="Maximized"
         WindowStyle="None"
         Loaded="Window_Loaded">
     <Window.Resources>
         <BooleanToVisibilityConverter x:Key="BoolToVis"/>
+        <converters:InverseBooleanToVisibilityConverter x:Key="InverseBoolToVis"/>
     </Window.Resources>
     <WindowChrome.WindowChrome>
-        <WindowChrome GlassFrameThickness="0" CornerRadius="15" CaptionHeight="0"/>
+        <WindowChrome GlassFrameThickness="0" 
+                      CornerRadius="15"
+                      CaptionHeight="0"/>
     </WindowChrome.WindowChrome>
     <Grid Background="#171717">
         <Grid.RowDefinitions>
-            <RowDefinition Height="50"/>
-            <RowDefinition Height="40"/>
+            <RowDefinition Height="Auto"/>
             <RowDefinition/>
         </Grid.RowDefinitions>
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="100"/>
+            <ColumnDefinition Width="70"/>
             <ColumnDefinition/>
+            <ColumnDefinition Width="250"/>
         </Grid.ColumnDefinitions>
-        <Grid Name="HeaderBar" Grid.ColumnSpan="2" MouseLeftButtonDown="HeaderBar_MouseLeftButtonDown" Background="Transparent" Margin="10 5 10 0">
+        <Grid Name="HeaderBar" 
+              Grid.ColumnSpan="3" 
+              MouseLeftButtonDown="HeaderBar_MouseLeftButtonDown"
+              Background="Transparent" 
+              Margin="10 5 10 0">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition/>
                 <ColumnDefinition/>
             </Grid.ColumnDefinitions>
-            <Label Content="TCM Launcher" VerticalAlignment="Center" Foreground="#f2c480" FontFamily="Calibri" FontSize="24"/>
-            <StackPanel Grid.Column="2" Orientation="Horizontal" HorizontalAlignment="Right">
-                <Button Name="MinimizeButton"
+            <Label Content="TCM Launcher" 
+                   VerticalAlignment="Center"
+                   Foreground="#f2c480" 
+                   FontFamily="Calibri"
+                   FontSize="32"/>
+            <StackPanel Name="WindowControlButtons"
+                        Grid.Column="2"
+                        Orientation="Horizontal" 
+                        HorizontalAlignment="Right">
+                <Button x:Name="MinimizeButton"
                     Width="30"
                     Height="30"
                     Style="{StaticResource RoundButton}" Click="MinimizeButton_Click">
@@ -48,7 +63,7 @@
                             Height="15"
                             Stretch="Uniform"/>
                 </Button>
-                <Button Name="MaximizeButton"
+                <Button x:Name="MaximizeButton"
                         Width="30"
                         Height="30"
                         Style="{StaticResource RoundButton}" Click="MaximizeButton_Click">
@@ -70,30 +85,22 @@
                 </Button>
             </StackPanel>
         </Grid>
-        <Grid Name="SideBar" Grid.Row="2">
+        <Grid Name="LeftSideBar" Grid.Row="2">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/>
                 <RowDefinition/>
                 <RowDefinition Height="Auto"/>
             </Grid.RowDefinitions>
-            <StackPanel>
-                <Button Name="AddProfileButton"
+            <Button x:Name="AddProfileButton"
                     Style="{StaticResource RoundButton}"
                     Click="AddProfileButton_Click"
-                    Background="Transparent"
                     IsEnabled="{Binding IsVersionsLoaded}">
-                    <Path   Data="{StaticResource AddIcon}"
-                    Fill="#f2c480"
-                    Width="20"
-                    Height="20"
-                    Stretch="Uniform"/>
-                </Button>
-                <TextBlock  Text="Checking versions..."
-                            HorizontalAlignment="Center"
-                            Foreground="#f5f5f5"
-                            FontSize="10"
-                            Visibility="{Binding IsVersionsLoading, Converter={StaticResource BoolToVis}}"/>
-            </StackPanel>
+                <Path   Data="{StaticResource AddIcon}"
+                        Fill="#f2c480"
+                        Width="20"
+                        Height="20"
+                        Stretch="Uniform"/>
+            </Button>
             <ListBox    ItemsSource="{Binding GameProfiles}"
                         SelectedItem="{Binding SelectedGameProfile, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}" 
                         Background="Transparent" 
@@ -102,11 +109,12 @@
                         ItemContainerStyle="{StaticResource SideBarListBoxItemStyle}">
                 <ListBox.ItemTemplate>
                     <DataTemplate>
-                        <Path   Data="{StaticResource ProfileIcon}"
+                        <Image Source="Assets/mc_img.png"/>
+                        <!--<Path   Data="{StaticResource ProfileIcon}"
                                 Fill="#f2c480"
                                 Width="25"
                                 Height="25"
-                                Stretch="Uniform"/>
+                                Stretch="Uniform"/>-->
                     </DataTemplate>
                 </ListBox.ItemTemplate>
             </ListBox>
@@ -114,7 +122,6 @@
                 <Button x:Name="UpdateButton" 
                         Visibility="{Binding AvailableUpdate.CanUpdate,
                                 Converter={StaticResource BoolToVis}}"
-                        Background="Transparent"
                         Style="{StaticResource RoundButton}"
                         Click="UpdateButton_Click">
                     <Path   Data="{StaticResource DownloadIcon}"
@@ -125,10 +132,17 @@
                 </Button>
                 <Button x:Name="BugReportButton" Grid.Row="2" 
                         VerticalAlignment="Bottom"
-                        Background="Transparent"
                         Margin="0,0,0,60"
                         Style="{StaticResource RoundButton}"
                         Click="BugReportButton_Click">
+                    <Button.ToolTip>
+                        <ToolTip Background="#171717" BorderBrush="#f2c480" BorderThickness="1">
+                            <StackPanel Margin="5">
+                                <TextBlock Text="Report a bug" FontWeight="Bold" Foreground="#f2c480"/>
+                                <TextBlock Text="Opens the Google Form in your browser." Foreground="#ccc" FontSize="11"/>
+                            </StackPanel>
+                        </ToolTip>
+                    </Button.ToolTip>
                     <Path   Data="{StaticResource WriteIcon}"
                         Fill="#f2c480"
                         Width="25"
@@ -137,25 +151,177 @@
                 </Button>
             </StackPanel>
         </Grid>
-        <Border Name="MainViewBorder"
+        <Border Name="ProfileDetails"
                 Grid.Column="1" 
                 Grid.Row="2" 
                 Background="#222" 
                 BorderBrush="#666" 
                 BorderThickness="1,1,0,0"
                 CornerRadius="25,0,0,0">
-            <userControls:ProfileDetailsView SelectedGameProfile="{Binding SelectedGameProfile}"
-                                             DownloadProgress="{Binding DownloadProgress}"
-                                             DeleteRequested="DeleteProfileEventHandler" 
-                                             Visibility="{Binding HasSelectedProfile, 
-                                                        Converter={StaticResource BoolToVis}}"/>
+            <userControls:ProfileDetailsView 
+                    SelectedGameProfile="{Binding SelectedGameProfile}"
+                    DownloadProgress="{Binding DownloadProgress}"
+                    DeleteRequested="DeleteProfileEventHandler" 
+                    Visibility="{Binding HasSelectedProfile, 
+                                Converter={StaticResource BoolToVis}}"/>
+        </Border>
+        <Border Name="RightSideBar"
+                Grid.Column="3"
+                Grid.Row="2"
+                BorderBrush="#666"
+                BorderThickness="1 1 0 0">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition/>
+                </Grid.RowDefinitions>
+                <Button x:Name="MicrosoftLoginButton"
+                        Style="{StaticResource ButtonWithIcon}"
+                        IsEnabled="{Binding InternetAvailable, UpdateSourceTrigger=PropertyChanged}"
+                        Visibility="{Binding LoggedIntoMSAccount,
+                                    UpdateSourceTrigger=PropertyChanged,
+                                    Converter={StaticResource InverseBoolToVis}}"
+                        Margin="10"
+                        HorizontalAlignment="Center"
+                        Click="MicrosoftLoginButton_Click">
+                    <Grid Width="Auto">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <Path   Data="{StaticResource MicrosoftIcon}"
+                                Fill="#333"
+                                Width="20"
+                                Height="20"
+                                Margin="0 0 5 0"
+                                Stretch="Uniform"/>
+                        <TextBlock  Text="Microsoft login" 
+                                    Grid.Column="1"
+                                    VerticalAlignment="Center" 
+                                    HorizontalAlignment="Center"/>
+                    </Grid>
+                </Button>
+                <Button x:Name="CheckNetworkButton"
+                        Style="{StaticResource ButtonWithIcon}"
+                        Visibility="{Binding LoggedIntoMSAccount,
+                                    UpdateSourceTrigger=PropertyChanged,
+                                    Converter={StaticResource InverseBoolToVis}}"
+                        Margin="10"
+                        Grid.Row="1"
+                        HorizontalAlignment="Center"
+                        Click="CheckNetworkButton_Click">
+                    <Grid Width="Auto">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <Path   Data="{StaticResource RetryIcon}"
+                                Fill="#333"
+                                Width="20"
+                                Height="20"
+                                Margin="0 0 5 0"
+                                Stretch="Uniform"/>
+                        <TextBlock  Text="Network" 
+                                    Grid.Column="1"
+                                    VerticalAlignment="Center" 
+                                    HorizontalAlignment="Center"/>
+                    </Grid>
+                </Button>
+                <Button x:Name="MicrosoftAccountButton"
+                        Style="{StaticResource ButtonWithIcon}"
+                        Visibility="{Binding LoggedIntoMSAccount, 
+                                    Converter={StaticResource BoolToVis}}"
+                        Margin="10"
+                        HorizontalAlignment="Center"
+                        Click="MicrosoftAccountButton_Click">
+                    <Grid Width="Auto">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <Path   Data="{StaticResource UserIcon}"
+                                Fill="#333"
+                                Width="20"
+                                Height="20"
+                                Margin="0 0 5 0"
+                                Stretch="Uniform"/>
+                        <TextBlock  Text="{Binding MSession.Username}"
+                                    Grid.Column="1"
+                                    VerticalAlignment="Center" 
+                                    HorizontalAlignment="Center"/>
+                    </Grid>
+                </Button>
+                <Button x:Name="MicrosoftLogoutButton"
+                        Style="{StaticResource ButtonWithIcon}"                        
+                        Visibility="{Binding LoggedIntoMSAccount, 
+                                    Converter={StaticResource BoolToVis}}"
+                        Margin="10"
+                        HorizontalAlignment="Center"
+                        Grid.Row="1"
+                        Click="MicrosoftLogoutButton_Click">
+                    <Grid Width="Auto">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <Path   Data="{StaticResource LogoutIcon}"
+                                Fill="#333"
+                                Width="20"
+                                Height="20"
+                                Margin="0 0 5 0"
+                                Stretch="Uniform"/>
+                        <TextBlock  Text="Logout"
+                                    Grid.Column="1"
+                                    VerticalAlignment="Center" 
+                                    HorizontalAlignment="Center"/>
+                    </Grid>
+                </Button>
+                <Grid Grid.Row="2">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+                    <Border BorderBrush="#666"
+                            BorderThickness="0 1 0 0"/>
+                    <Button x:Name="AddServerButton"
+                            Style="{StaticResource RoundButton}"
+                            Click="AddServerButton_Click"
+                            Background="Transparent">
+                                <Path Data="{StaticResource AddIcon}"
+                                      Fill="#f2c480"
+                                      Width="20"
+                                      Height="20"
+                                      Stretch="Uniform"/>
+                    </Button>
+
+                    <ItemsControl ItemsSource="{Binding SavedServers,
+                                    UpdateSourceTrigger=PropertyChanged}"
+                                  Background="Transparent" 
+                                  Grid.Row="1"
+                                  Padding="5">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <userControls:ServerCardView 
+                                    Server="{Binding}"
+                                    DeleteRequested="DeleteServerEventHandler"
+                                    UpdatedServer="UpdatedServerEventHandler"
+                                    QuickLaunch="QuickLaunchEventHandler"/>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+
+                </Grid>
+            </Grid>
         </Border>
         <Border Name="WindowBorder"
-                Grid.Row="0" Grid.RowSpan="3" 
-                Grid.Column="0" Grid.ColumnSpan="2" 
+                Grid.Row="0" 
+                Grid.RowSpan="3" 
+                Grid.Column="0"
+                Grid.ColumnSpan="3" 
                 BorderBrush="#444" 
                 BorderThickness="1" 
-                CornerRadius="9" 
+                CornerRadius="8" 
                 IsHitTestVisible="False"/>
     </Grid>
 </Window>

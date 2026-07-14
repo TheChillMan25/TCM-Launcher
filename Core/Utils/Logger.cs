@@ -8,6 +8,7 @@ namespace TCM_Launcher.Core.Utils
     public static class Logger
     {
         private static readonly string logFilePath;
+        private static readonly object logLock = new object();
 
         static Logger()
         {
@@ -24,8 +25,11 @@ namespace TCM_Launcher.Core.Utils
             try
             {
                 string formattedMessage = $"[{DateTime.Now:yyyy-MM-dd HH:mm:ss}] [{level}] {message}";
-                //Console.WriteLine(formattedMessage);
-                File.AppendAllText(logFilePath, formattedMessage + Environment.NewLine);
+                Console.WriteLine(formattedMessage);
+                lock (logLock)
+                {
+                    File.AppendAllText(logFilePath, formattedMessage + Environment.NewLine);
+                }
             }
             catch (Exception ex) {
                 {

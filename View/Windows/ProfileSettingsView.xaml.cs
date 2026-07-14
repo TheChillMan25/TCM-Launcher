@@ -15,12 +15,12 @@ namespace TCM_Launcher.View.Windows
             if (viewModel.Settings == null) Close();
         }
 
-        private void SaveButton_Click(object sender, RoutedEventArgs e)
+        private async void SaveButton_Click(object sender, RoutedEventArgs e)
         {
             string pName = ProfileNameInput.Text;
             int ram = (int)RamSlider.Value;
             string jvmArgs = JVMArgInput.Text;
-            viewModel.SaveSettings(pName, ram, jvmArgs);
+            await viewModel.SaveSettingsAsync(pName, ram, jvmArgs);
             Close();
         }
 

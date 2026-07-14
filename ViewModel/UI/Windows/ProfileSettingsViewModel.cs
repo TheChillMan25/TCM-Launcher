@@ -10,7 +10,7 @@ namespace TCM_Launcher.ViewModel.UI.Windows
         {
             GameProfile = p;
 			Title = $"{GameProfile.ProfileName} : Settings";
-			LoadSettings();
+			_ = LoadSettingsAsync();
         }
 
         private GameProfile gameProfile;
@@ -73,11 +73,11 @@ namespace TCM_Launcher.ViewModel.UI.Windows
 			}
 		}
 
-		public void SaveSettings(string pName, int ram, string jvmArgs)
+		public async Task SaveSettingsAsync(string pName, int ram, string jvmArgs)
 		{
 			GameProfile.ProfileName = pName;
-			GameProfileService.Instance.UpdateProfile(GameProfile.Id, GameProfile);
-			ProfileSettingsService.Instance.SetProfileSettings(new ProfileSettings
+			await GameProfileService.Instance.UpdateProfileAsync(GameProfile.Id, GameProfile);
+			await ProfileSettingsService.Instance.SetProfileSettingsAsync(new ProfileSettings
 			{
 				GameProfileId = GameProfile.Id,
 				Ram = ram,
@@ -85,9 +85,9 @@ namespace TCM_Launcher.ViewModel.UI.Windows
 			});
 		}
 
-		public void LoadSettings()
+		public async Task LoadSettingsAsync()
         {
-            Settings = ProfileSettingsService.Instance.GetProfileSettings(GameProfile.Id);
+            Settings = await ProfileSettingsService.Instance.GetProfileSettings(GameProfile.Id);
 			MaxRam = Settings.Ram ?? 4096;
 			JVMArgs = Settings.JVMArgs ?? "";
         }

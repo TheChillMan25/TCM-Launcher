@@ -30,30 +30,55 @@
             <ColumnDefinition/>
             <ColumnDefinition/>
         </Grid.ColumnDefinitions>
-        <Border Grid.ColumnSpan="4" Grid.RowSpan="3" BorderBrush="#666" BorderThickness="1" CornerRadius="8"/>
-        <Label Grid.Row="0" Grid.ColumnSpan="3" VerticalAlignment="Center" FontSize="24" Content="Create profile" Margin="5 0 0 0"/>
+        <Border Grid.ColumnSpan="4" 
+                Grid.RowSpan="3"
+                BorderBrush="#666"
+                BorderThickness="1"
+                CornerRadius="8"/>
+        <Label Grid.Row="0"
+               Grid.ColumnSpan="3" 
+               VerticalAlignment="Center"
+               FontSize="24" 
+               Content="Create profile" 
+               Margin="5 0 0 0"/>
         <Button Name="CloseButton"    
-                        Width="30"
-                        Height="30"
-                        Grid.Column="3"
-                        HorizontalAlignment="Right"
-                        Margin="0 0 5 0"
-                        Style="{StaticResource RoundButton}" Click="CloseButton_Click">
+                Width="30"
+                Height="30"
+                Grid.Column="3"
+                HorizontalAlignment="Right"
+                Margin="0 0 5 0"
+                Style="{StaticResource RoundButton}" Click="CloseButton_Click">
             <Path   Data="{StaticResource CloseIcon}"
-                        Fill="#f2c480"
-                        Width="15"
-                        Height="15"
-                        Stretch="Uniform"/>
+                    Fill="#f2c480"
+                    Width="15"
+                    Height="15"
+                    Stretch="Uniform"/>
         </Button>
-        <StackPanel Grid.Row="1" Grid.ColumnSpan="4" Width="200" VerticalAlignment="Center" HorizontalAlignment="Center">
+        <StackPanel Grid.Row="1"
+                    Grid.ColumnSpan="4" 
+                    Width="200" 
+                    VerticalAlignment="Center" 
+                    HorizontalAlignment="Center">
             <Label Name="ProfileNameLabel">Profile name:</Label>
-            <TextBox Name="ProfileNameInput" Text="{Binding PlaceholderProfileName, UpdateSourceTrigger=PropertyChanged}"/>
+            <TextBox Name="ProfileNameInput"
+                     Text="{Binding PlaceholderProfileName,
+                UpdateSourceTrigger=PropertyChanged}"
+                     MaxLength="30"/>
             <Label Name="VersionLabel">Game version</Label>
-            <ComboBox Name="VersionCombo" ItemsSource="{Binding Versions, UpdateSourceTrigger=PropertyChanged}" DisplayMemberPath="VersionName" SelectionChanged="VersionCombo_SelectionChanged" SelectedIndex="0">
-
-            </ComboBox>
+            <ComboBox Name="VersionCombo"
+                      ItemsSource="{Binding Versions, 
+                UpdateSourceTrigger=PropertyChanged}"
+                      DisplayMemberPath="VersionName"
+                      SelectionChanged="VersionCombo_SelectionChanged" 
+                      SelectedIndex="0"/>
             <Label Name="ForgeVersionLabel">Forge version</Label>
-            <ComboBox Name="ForgeVersionCombo" ItemsSource="{Binding ForgeVersions, UpdateSourceTrigger=PropertyChanged}" DisplayMemberPath="VersionName" IsEnabled="{Binding HasForgeVersions, UpdateSourceTrigger=PropertyChanged}" SelectedIndex="0"/>
+            <ComboBox Name="ForgeVersionCombo" 
+                      ItemsSource="{Binding ForgeVersions, 
+                UpdateSourceTrigger=PropertyChanged}"
+                      DisplayMemberPath="VersionName" 
+                      IsEnabled="{Binding HasForgeVersions,
+                UpdateSourceTrigger=PropertyChanged}"
+                      SelectedIndex="0"/>
         </StackPanel>
         <Button Name="CreateProfileButton" 
                 Grid.Row="2" 

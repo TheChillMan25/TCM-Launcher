@@ -3,9 +3,8 @@ using CmlLib.Core.Auth;
 using CmlLib.Core.Installer.Forge;
 using CmlLib.Core.ProcessBuilder;
 using System.IO;
-using System.Net.Http;
+using System.Net;
 using System.Windows;
-using TCM_Launcher.Core;
 using TCM_Launcher.Core.Utils;
 using TCM_Launcher.Model.DB;
 using TCM_Launcher.View.PopUp;
@@ -40,13 +39,21 @@ namespace TCM_Launcher.Services
             }
         }
 
-        public async Task LaunchProfileAsync(string profileId, string fileName)
+        public async Task LaunchProfileAsync(GameProfile profile, string? serverAddress = null)
         {
             try
             {
-                MinecraftPath path = CreateProfilePath(profileId);
+                bool isInternet = await NetworkUtil.IsInternetAvailableAsync();
+                if (!isInternet)
+                {
+                    Logger.Error("No internet. Connect to the internet before launching game.");
+                    MessageBox.Show(" " +
+                        "No internet. Connect to the internet before launching game.", "Warning", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    return;
+                }
+                MinecraftPath path = CreateProfilePath(profile.Id);
                 var launcher = new MinecraftLauncher(path);
-                var profileSettings = ProfileSettingsService.Instance.GetProfileSettings(profileId);
+                var profileSettings = await ProfileSettingsService.Instance.GetProfileSettings(profile.Id);
                 var jvmArgs = new List<MArgument>();
                 if (!string.IsNullOrWhiteSpace(profileSettings.JVMArgs))
                 {
@@ -59,13 +66,29 @@ namespace TCM_Launcher.Services
                         }
                     }
                 }
-                await launcher.InstallAsync(fileName);
-                var process = await launcher.BuildProcessAsync(fileName, new MLaunchOption
+                await launcher.InstallAsync(profile.FileName);
+                var launchOptions = new MLaunchOption
                 {
                     MaximumRamMb = profileSettings.Ram ?? Constants.DefaultRam,
-                    Session = MSession.CreateOfflineSession("Gamer123"),
+                    Session = MicrosoftService.Instance.MSession == null ? MSession.CreateOfflineSession("Gamer123") : MicrosoftService.Instance.MSession,
                     ExtraJvmArguments = jvmArgs,
-                });
+                };
+                if(serverAddress != null)
+                {
+                    string ip = serverAddress;
+                    ushort port = 25565;
+
+                    if (ip.Contains(":"))
+                    {
+                        var parts = ip.Split(":");
+                        ip = parts[0];
+                        ushort.TryParse(parts[1], out port);
+                    }
+
+                    launchOptions.ServerIp = ip;
+                    launchOptions.ServerPort = port;
+                }
+                var process = await launcher.BuildProcessAsync(profile.FileName, launchOptions);
                 var processWrapper = new ProcessWrapper(process);
                 processWrapper.OutputReceived += (sender, log) =>
                 {
@@ -75,18 +98,18 @@ namespace TCM_Launcher.Services
                     }
                 };
                 
-                GameProfileService.Instance.UpdateLastPlayedProfile(profileId);
-                Logger.Log($"Started game profile with id: {profileId} ({fileName})");
+                GameProfileService.Instance.UpdateLastPlayedProfileAsync(profile.Id);
+                Logger.Log($"Started game profile with id: {profile.Id} ({profile.FileName})");
                 processWrapper.StartWithEvents();
 
                 int exitCode = await processWrapper.WaitForExitTaskAsync();
                 if (exitCode == 0)
                 {
-                    Logger.Log($"Game with id {profileId} terminated successfully");
+                    Logger.Log($"Game with id {profile.Id} terminated successfully");
                 }
                 else
                 {
-                    string crashReportFolder = Path.Combine(Constants.ProfilesPath, profileId,"crash-reports");
+                    string crashReportFolder = Path.Combine(Constants.ProfilesPath, profile.Id,"crash-reports");
                     string crashReportInfo = "";
 
                     if (Directory.Exists(crashReportFolder))
@@ -101,15 +124,15 @@ namespace TCM_Launcher.Services
                             crashReportInfo = $"An overview of the crash report saved here: {latestCrash}";
                         }
                     }
-                    Logger.Log($"Game with id {profileId} crashed. {crashReportInfo}");
-                    var p = new PopupView($"The game crashed (Code: {exitCode})", crashReportInfo, PopupAction.CRASH, 5000d, profileId);
+                    Logger.Log($"Game with id {profile.Id} crashed. {crashReportInfo}");
+                    var p = new PopupView($"The game crashed (Code: {exitCode})", crashReportInfo, PopupAction.CRASH, 5000d, profile.Id);
                     p.Owner = Application.Current.MainWindow;
                     p.Show();
                 }
             }
             catch (Exception ex)
             {
-                Logger.Error($"There was an exception during launching profile with id: {profileId}", ex);
+                Logger.Error($"There was an exception during launching profile with id: {profile.Id}", ex);
                 MessageBox.Show("An error occured during launching game.", "ERROR", MessageBoxButton.OK, MessageBoxImage.Error);
             }
             

@@ -77,13 +77,10 @@
     <SolidColorBrush x:Key="ButtonWithIcon.Static.Foreground" Color="#333"/>
     <SolidColorBrush x:Key="ButtonWithIcon.Static.Border" Color="Transparent"/>
     <SolidColorBrush x:Key="ButtonWithIcon.MouseOver.Background" Color="#e0b16c"/>
-    <SolidColorBrush x:Key="ButtonWithIcon.MouseOver.Border" Color="Transparent"/>
-    <SolidColorBrush x:Key="ButtonWithIcon.Pressed.Background" Color="#FFC4E5F6"/>
-    <SolidColorBrush x:Key="ButtonWithIcon.Pressed.Border" Color="Transparent"/>
-    <SolidColorBrush x:Key="ButtonWithIcon.Disabled.Background" Color="#FFF4F4F4"/>
-    <SolidColorBrush x:Key="ButtonWithIcon.Disabled.Border" Color="#FFADB2B5"/>
-    <SolidColorBrush x:Key="ButtonWithIcon.Disabled.Foreground" Color="#FF838383"/>
-        
+    <SolidColorBrush x:Key="ButtonWithIcon.Pressed.Background" Color="#ebaa4b"/>
+    <SolidColorBrush x:Key="ButtonWithIcon.Disabled.Background" Color="#c9ab7f"/>
+    <SolidColorBrush x:Key="ButtonWithIcon.Disabled.Border" Color="Transparent"/>
+
     <Style x:Key="ButtonWithIcon" TargetType="{x:Type Button}">
         <Setter Property="FocusVisualStyle" Value="{StaticResource FocusVisual}"/>
         <Setter Property="Background" Value="{StaticResource ButtonWithIcon.Static.Background}"/>
@@ -101,7 +98,7 @@
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="{x:Type Button}">
-                    <Border x:Name="border" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" SnapsToDevicePixels="true" CornerRadius="10">
+                    <Border x:Name="border" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" SnapsToDevicePixels="true" CornerRadius="7">
                         <ContentPresenter x:Name="contentPresenter" Focusable="False" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" Margin="{TemplateBinding Padding}" RecognizesAccessKey="True" SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}"/>
                     </Border>
                     <ControlTemplate.Triggers>
@@ -110,16 +107,16 @@
                         </Trigger>
                         <Trigger Property="IsMouseOver" Value="true">
                             <Setter Property="Background" TargetName="border" Value="{StaticResource ButtonWithIcon.MouseOver.Background}"/>
-                            <Setter Property="BorderBrush" TargetName="border" Value="{StaticResource ButtonWithIcon.MouseOver.Border}"/>
+                            <Setter Property="BorderBrush" TargetName="border" Value="{StaticResource ButtonWithIcon.Static.Border}"/>
                         </Trigger>
                         <Trigger Property="IsPressed" Value="true">
                             <Setter Property="Background" TargetName="border" Value="{StaticResource ButtonWithIcon.Pressed.Background}"/>
-                            <Setter Property="BorderBrush" TargetName="border" Value="{StaticResource ButtonWithIcon.Pressed.Border}"/>
+                            <Setter Property="BorderBrush" TargetName="border" Value="{StaticResource ButtonWithIcon.Static.Border}"/>
                         </Trigger>
                         <Trigger Property="IsEnabled" Value="false">
                             <Setter Property="Background" TargetName="border" Value="{StaticResource ButtonWithIcon.Disabled.Background}"/>
                             <Setter Property="BorderBrush" TargetName="border" Value="{StaticResource ButtonWithIcon.Disabled.Border}"/>
-                            <Setter Property="TextElement.Foreground" TargetName="contentPresenter" Value="{StaticResource ButtonWithIcon.Disabled.Foreground}"/>
+                            <Setter Property="TextElement.Foreground" TargetName="contentPresenter" Value="{StaticResource ButtonWithIcon.Static.Foreground}"/>
                         </Trigger>
                     </ControlTemplate.Triggers>
                 </ControlTemplate>

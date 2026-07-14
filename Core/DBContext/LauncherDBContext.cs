@@ -12,6 +12,7 @@ namespace TCM_Launcher.Core.DBContext
         public DbSet<VanillaVersion> VanillaVersions { get; set; }
         public DbSet<ForgeVersion> ForgeVersions { get; set; }
         public DbSet<ProfileSettings> ProfileSettings { get; set; }
+        public DbSet<Server> SavedServers { get; set; }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
