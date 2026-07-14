@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <OutputType>Exe</OutputType>
+    <OutputType>WinExe</OutputType>
     <TargetFramework>net10.0-windows</TargetFramework>
     <RootNamespace>TCM_Launcher</RootNamespace>
     <Nullable>enable</Nullable>
@@ -9,6 +9,7 @@
     <UseWPF>true</UseWPF>
 	<NoWarn>$(NoWarn);NU1903</NoWarn>
 	<Version>0.0.2</Version>
+	<IncludeNativeLibrariesForSelfExtract>true</IncludeNativeLibrariesForSelfExtract>
   </PropertyGroup>
 
   <ItemGroup>
