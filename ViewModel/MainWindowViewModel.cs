@@ -292,10 +292,10 @@ namespace TCM_Launcher.ViewModel
         }
         public async Task CheckForUpdatesAsync()
         {
-            #if DEBUG
-                Console.WriteLine("Developer mode: Update check cancelled.");
-                return;
-            #endif
+            //#if DEBUG
+            //    Console.WriteLine("Developer mode: Update check cancelled.");
+            //    return;
+            //#endif
 
             try
             {
@@ -330,6 +330,9 @@ namespace TCM_Launcher.ViewModel
             var update = p.ShowDialog();
             if (update == true)
             {
+                var tmpUpdate = AvailableUpdate;
+                tmpUpdate.IsUpdating = true;
+                AvailableUpdate = tmpUpdate;
                 await AvailableUpdate.Manager.PrepareUpdateAsync(AvailableUpdate.Version);
 
                 AvailableUpdate.Manager.LaunchUpdater(AvailableUpdate.Version);

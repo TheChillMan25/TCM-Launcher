@@ -6,6 +6,7 @@
         xmlns:local="clr-namespace:TCM_Launcher"
         xmlns:userControls="clr-namespace:TCM_Launcher.View.UserControls"
         xmlns:converters="clr-namespace:TCM_Launcher.Core.Utils.Converters"
+        xmlns:fa="http://schemas.fontawesome.io/icons/"
         mc:Ignorable="d"
         Title="TCM Launcher" 
         MinHeight="700"
@@ -18,6 +19,7 @@
         Loaded="Window_Loaded">
     <Window.Resources>
         <BooleanToVisibilityConverter x:Key="BoolToVis"/>
+        <converters:InverseBooleanConverter x:Key="InverseBool"/>
         <converters:InverseBooleanToVisibilityConverter x:Key="InverseBoolToVis"/>
     </Window.Resources>
     <WindowChrome.WindowChrome>
@@ -122,13 +124,26 @@
                 <Button x:Name="UpdateButton" 
                         Visibility="{Binding AvailableUpdate.CanUpdate,
                                 Converter={StaticResource BoolToVis}}"
+                        IsEnabled="{Binding AvailableUpdate.IsUpdating, Converter={StaticResource InverseBool}}"
                         Style="{StaticResource RoundButton}"
                         Click="UpdateButton_Click">
-                    <Path   Data="{StaticResource DownloadIcon}"
-                        Fill="#f2c480"
-                        Width="25"
-                        Height="25"
-                        Stretch="Uniform"/>
+                    <Grid>
+                        <Path   Data="{StaticResource DownloadIcon}"
+                            Visibility="{Binding AvailableUpdate.IsUpdating,
+                                Converter={StaticResource InverseBoolToVis}}"
+                            Fill="#f2c480"
+                            Width="25"
+                            Height="25"
+                            Stretch="Uniform"/>
+                        <fa:ImageAwesome Icon="Refresh"
+                                        Visibility="{Binding AvailableUpdate.IsUpdating,
+                                            UpdateSourceTrigger=PropertyChanged,
+                                            Converter={StaticResource BoolToVis}}"
+                                         Foreground="#f2c480" 
+                                         Spin="True" 
+                                         Height="20" 
+                                         Width="20"/>
+                    </Grid>
                 </Button>
                 <Button x:Name="BugReportButton" Grid.Row="2" 
                         VerticalAlignment="Bottom"
