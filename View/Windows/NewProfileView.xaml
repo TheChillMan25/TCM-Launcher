@@ -82,21 +82,15 @@
         </StackPanel>
         <Button Name="CreateProfileButton" 
                 Grid.Row="2" 
-                Grid.Column="1" 
-                Grid.ColumnSpan="2"
+                Grid.ColumnSpan="4"
                 Padding="5 1"
                 Click="CreateProfileButton_Click" 
                 IsEnabled="{Binding CanCreate}" 
-                Style="{StaticResource ButtonWithIcon}">
-            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
-                <Path   Data="{StaticResource AddIcon}"
-                        Fill="#333"
-                        Width="15"
-                        Height="15"
-                        Margin="5 0 2.5 0"
-                        Stretch="Uniform"/>
-                <TextBlock Text="Create profile" Grid.Column="1" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="2.5 0 5 0"/>
-            </StackPanel>
+                Style="{StaticResource ButtonWithIcon}"
+                VerticalAlignment="Center" 
+                HorizontalAlignment="Center">
+            <TextBlock Text="Create profile"
+                           Grid.Column="1"/>
         </Button>
     </Grid>
 </Window>

@@ -36,13 +36,7 @@ namespace TCM_Launcher.ViewModel
             }
         }
 
-        private ObservableCollection<Server> savedServers;/* = new ObservableCollection<Server>([new Server { 
-            Name = "Server name", 
-            MCVersion = "1.20.1", 
-            BindedProfileId = "", 
-            Id = 1, 
-            BindedProfile = null, 
-            IP="192.168.1.200"}]);*/
+        private ObservableCollection<Server> savedServers;
 
         public ObservableCollection<Server> SavedServers
         {
@@ -260,6 +254,15 @@ namespace TCM_Launcher.ViewModel
         public void DeleteProfile()
         {
             if(SelectedGameProfile != null) {
+                var serversToUnbind = SavedServers.Where(p => p.BindedProfileId == SelectedGameProfile.Id).ToList();
+
+                foreach (var s in serversToUnbind)
+                {
+                    int idx = SavedServers.IndexOf(s);
+                    SavedServers.RemoveAt(idx);
+                    s.BindedProfileId = null;
+                    SavedServers.Insert(idx, s);
+                }
                 GameProfiles.Remove(SelectedGameProfile);
             
                 if (GameProfiles.Count > 0)
@@ -284,18 +287,27 @@ namespace TCM_Launcher.ViewModel
         }
         public void UpdateProfile(string id)
         {
+            if (string.IsNullOrEmpty(id)) return;
+
             var p = GameProfiles.FirstOrDefault(p => p.Id == id);
+
+            if (p == null) return;
+
             int idx = GameProfiles.IndexOf(p);
-            p.IsPlaying = !p.IsPlaying;
-            GameProfiles[idx] = p;
-            SelectedGameProfile = p;
+
+            if (idx != -1)
+            {
+                p.IsPlaying = !p.IsPlaying;
+                GameProfiles[idx] = p;
+                SelectedGameProfile = p;
+            }
         }
         public async Task CheckForUpdatesAsync()
         {
-            //#if DEBUG
-            //    Console.WriteLine("Developer mode: Update check cancelled.");
-            //    return;
-            //#endif
+        #if DEBUG
+            Console.WriteLine("Developer mode: Update check cancelled.");
+            return;
+        #endif
 
             try
             {

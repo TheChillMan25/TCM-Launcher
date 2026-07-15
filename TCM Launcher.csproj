@@ -10,14 +10,23 @@
 	<NoWarn>$(NoWarn);NU1903</NoWarn>
 	<Version>0.0.2</Version>
 	<IncludeNativeLibrariesForSelfExtract>true</IncludeNativeLibrariesForSelfExtract>
+	<AssemblyTitle></AssemblyTitle>
+	<ApplicationIcon>Assets\TCM.ico</ApplicationIcon>
+	<AssemblyName>$(MSBuildProjectName)</AssemblyName>
   </PropertyGroup>
 
   <ItemGroup>
     <None Remove="Assets\mc_img.png" />
+    <None Remove="Assets\TCM.ico" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="Assets\TCM.ico" />
   </ItemGroup>
 
   <ItemGroup>
     <Resource Include="Assets\mc_img.png" />
+    <Resource Include="Assets\TCM.ico" />
   </ItemGroup>
 
   <ItemGroup>

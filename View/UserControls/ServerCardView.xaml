@@ -5,6 +5,7 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:TCM_Launcher.View.UserControls"
              xmlns:converters="clr-namespace:TCM_Launcher.Core.Utils.Converters"
+             xmlns:userControls="clr-namespace:TCM_Launcher.View.UserControls"
              mc:Ignorable="d" 
              Height="80"
              Width="230"
@@ -53,10 +54,7 @@
                            TextTrimming="CharacterEllipsis"
                            Grid.Row="2">
                     <TextBlock.ToolTip>
-                        <ToolTip>
-                            <TextBlock Text="{Binding Server.IP}"
-                                       Foreground="Black"/>
-                        </ToolTip>
+                        <userControls:Tooltip TooltipLabelText="Server address" TooltipContentText="{Binding Server.Address}"/>
                     </TextBlock.ToolTip>
                 </TextBlock>
                 <Grid Grid.Column="1">
@@ -140,6 +138,10 @@
                         Grid.RowSpan="2"
                         Grid.Column="1"
                         Grid.Row="1" Click="QuickStartButton_Click">
+                    <Button.ToolTip>
+                        <userControls:Tooltip TooltipLabelText="Quick launch" TooltipContentText="Quickly launch the profile thats compatible with this server."/>
+                    </Button.ToolTip>
+
                     <Path   Data="{StaticResource PlayIcon}"
                             Fill="#333"
                             StrokeThickness="2"
@@ -160,6 +162,10 @@
                         Grid.RowSpan="2"
                         Grid.Column="1"
                         Grid.Row="1" Click="Edit_Click">
+                    <Button.ToolTip>
+                        <userControls:Tooltip TooltipLabelText="Bind a profile" TooltipContentText="Bind a profile so that you can quicly join this server."/>
+                    </Button.ToolTip>
+
                     <Path   Data="{StaticResource AddIcon}"
                             Fill="#333"
                             StrokeThickness="2"

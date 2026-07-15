@@ -97,6 +97,9 @@
                     Style="{StaticResource RoundButton}"
                     Click="AddProfileButton_Click"
                     IsEnabled="{Binding IsVersionsLoaded}">
+                <Button.ToolTip>
+                    <userControls:Tooltip TooltipLabelText="Add profile" TooltipContentText="Create custom profile to have different experience with one click."/>
+                </Button.ToolTip>
                 <Path   Data="{StaticResource AddIcon}"
                         Fill="#f2c480"
                         Width="20"
@@ -112,11 +115,6 @@
                 <ListBox.ItemTemplate>
                     <DataTemplate>
                         <Image Source="Assets/mc_img.png"/>
-                        <!--<Path   Data="{StaticResource ProfileIcon}"
-                                Fill="#f2c480"
-                                Width="25"
-                                Height="25"
-                                Stretch="Uniform"/>-->
                     </DataTemplate>
                 </ListBox.ItemTemplate>
             </ListBox>
@@ -127,6 +125,9 @@
                         IsEnabled="{Binding AvailableUpdate.IsUpdating, Converter={StaticResource InverseBool}}"
                         Style="{StaticResource RoundButton}"
                         Click="UpdateButton_Click">
+                    <Button.ToolTip>
+                        <userControls:Tooltip TooltipLabelText="Update" TooltipContentText="Update to the latest version."/>
+                    </Button.ToolTip>
                     <Grid>
                         <Path   Data="{StaticResource DownloadIcon}"
                             Visibility="{Binding AvailableUpdate.IsUpdating,
@@ -151,12 +152,7 @@
                         Style="{StaticResource RoundButton}"
                         Click="BugReportButton_Click">
                     <Button.ToolTip>
-                        <ToolTip Background="#171717" BorderBrush="#f2c480" BorderThickness="1">
-                            <StackPanel Margin="5">
-                                <TextBlock Text="Report a bug" FontWeight="Bold" Foreground="#f2c480"/>
-                                <TextBlock Text="Opens the Google Form in your browser." Foreground="#ccc" FontSize="11"/>
-                            </StackPanel>
-                        </ToolTip>
+                        <userControls:Tooltip TooltipLabelText="Report bug" TooltipContentText="Fill out the bugreport form in the browser."/>
                     </Button.ToolTip>
                     <Path   Data="{StaticResource WriteIcon}"
                         Fill="#f2c480"
@@ -301,9 +297,12 @@
                             BorderThickness="0 1 0 0"/>
                     <Button x:Name="AddServerButton"
                             Style="{StaticResource RoundButton}"
-                            Click="AddServerButton_Click"
-                            Background="Transparent">
-                                <Path Data="{StaticResource AddIcon}"
+                            Click="AddServerButton_Click">
+                        <Button.ToolTip>
+                            <userControls:Tooltip TooltipLabelText="Add server" TooltipContentText="Add a server and keep track of it."/>
+                        </Button.ToolTip>
+
+                        <Path Data="{StaticResource AddIcon}"
                                       Fill="#f2c480"
                                       Width="20"
                                       Height="20"
