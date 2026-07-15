@@ -312,7 +312,7 @@ namespace TCM_Launcher.ViewModel
             try
             {
                 var manager = new UpdateManager(
-                    new GithubPackageResolver("TheChillMan25", "TCM-Launcher", "TCM_Launcher.zip"),
+                    new GithubPackageResolver("TheChillMan25", "TCM-Launcher", "TCM.Launcher.zip"),
                     new ZipPackageExtractor()
                 );
                 AvailableUpdate.Manager = manager;
