@@ -1,25 +1,22 @@
 ﻿using System.Windows;
-using TCM_Launcher.ViewModel.UI.Popup;
+using TCM_Launcher.ViewModel.Popup;
 
 namespace TCM_Launcher.View.PopUp
 {
     public partial class PopupView : Window
     {
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="labelText">Text to be displayed in the windwos label.</param>
-        /// <param name="text">Text to be displayed in the windwos textblock.</param>
-        /// <param name="remainTime">Time till the window is open. After this it closes.</param>
-        /// <param name="profileId">Id of the profile.</param>
-        public PopupView(string labelText, string text, PopupAction type, double? remainTime = null, string? profileId = null)
+        private readonly PopupViewModel viewModel;
+        public PopupView(PopupViewModel viewModel)
         {
             InitializeComponent();
-            viewModel = new PopupViewModel(this, labelText, text, type, remainTime, profileId);
-            DataContext = viewModel;
+            this.viewModel = viewModel;
+            DataContext = this.viewModel;
         }
 
-        PopupViewModel viewModel;
+        public void Initialize(string labelText, string text, PopupAction type, double? remainTime = null, string? profileId = null)
+        {
+            viewModel.Initialize(this, labelText, text, type, remainTime, profileId);
+        }
 
         private void CloseButton_Click(object sender, RoutedEventArgs e)
         {

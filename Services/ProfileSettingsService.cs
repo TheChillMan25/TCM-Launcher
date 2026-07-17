@@ -1,15 +1,14 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using System.Windows;
-using System.Windows.Interop;
 using TCM_Launcher.Core.DBContext;
 using TCM_Launcher.Core.Utils;
+using TCM_Launcher.Interfaces;
 using TCM_Launcher.Model.DB;
 
 namespace TCM_Launcher.Services
 {
-    public class ProfileSettingsService
+    public class ProfileSettingsService : IProfileSettingsService
     {
-        public static ProfileSettingsService Instance { get; set; } = new ProfileSettingsService();
 
         public async Task<ProfileSettings> SetProfileSettingsAsync(ProfileSettings data)
         {

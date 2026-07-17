@@ -1,45 +1,24 @@
 ﻿using System.Windows;
 using System.Windows.Threading;
+using TCM_Launcher.Interfaces;
 using TCM_Launcher.MVVM;
 using TCM_Launcher.Services;
 
-namespace TCM_Launcher.ViewModel.UI.Popup
+namespace TCM_Launcher.ViewModel.Popup
 {
     public enum PopupAction
     {
         CRASH, UPDATE
     }
 
-    internal class PopupViewModel : ViewModelBase
+    public class PopupViewModel : ViewModelBase
     {
 		private Window caller;
         private DateTime targetEndTime;
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="caller">The popup window that calls.</param>
-        /// <param name="lText">The text to be displayed in the label.</param>
-        /// <param name="t">The text to be displayed in the textblock.</param>
-        /// <param name="rTime">Time in milliseconds.</param>
-        public PopupViewModel(Window caller, string lText, string t, PopupAction type, double? rTime = null, string? profileId = null)
+        private readonly IGameProfileService gameProfileService;
+        public PopupViewModel(IGameProfileService gameProfileService)
         {
-			this.caller = caller;
-            LabelText = lText;
-			Text = t;
-            popupType = type;
-            switch (popupType)
-            {
-                case PopupAction.UPDATE:
-                    ButtonText = "Update";
-                    break;
-                case PopupAction.CRASH:
-                    ButtonText = "Open crash folder";
-                    break;
-            }
-			RemainTime = rTime;
-			MaxRemainTime = rTime;
-			this.profileId = profileId;
-			if(rTime != null) StartTimer();
+			this.gameProfileService = gameProfileService;
         }
 
 		private DispatcherTimer timer;
@@ -47,7 +26,6 @@ namespace TCM_Launcher.ViewModel.UI.Popup
         private PopupAction popupType;
 
         private string labelText;
-
 		public string LabelText
 		{
 			get { return labelText; }
@@ -59,7 +37,6 @@ namespace TCM_Launcher.ViewModel.UI.Popup
 		}
 
 		private string text;
-
 		public string Text
 		{
 			get { return text; }
@@ -71,7 +48,6 @@ namespace TCM_Launcher.ViewModel.UI.Popup
 		}
 
 		private double? remainTime;
-
 		public double? RemainTime
 		{
 			get { return remainTime; }
@@ -83,7 +59,6 @@ namespace TCM_Launcher.ViewModel.UI.Popup
 		}
 
         private double? maxRemainTime;
-
         public double? MaxRemainTime
         {
             get { return maxRemainTime; }
@@ -95,7 +70,6 @@ namespace TCM_Launcher.ViewModel.UI.Popup
         }
 
         private string buttonText;
-
         public string ButtonText
         {
             get { return buttonText; }
@@ -106,6 +80,26 @@ namespace TCM_Launcher.ViewModel.UI.Popup
             }
         }
 
+        public void Initialize(Window caller, string lText, string t, PopupAction type, double? rTime = null, string? profileId = null)
+        {
+            this.caller = caller;
+            LabelText = lText;
+            Text = t;
+            popupType = type;
+            switch (popupType)
+            {
+                case PopupAction.UPDATE:
+                    ButtonText = "Update";
+                    break;
+                case PopupAction.CRASH:
+                    ButtonText = "Open crash folder";
+                    break;
+            }
+            RemainTime = rTime;
+            MaxRemainTime = rTime;
+            this.profileId = profileId;
+            if (rTime != null) StartTimer();
+        }
 
         private void StartTimer()
         {
@@ -149,7 +143,7 @@ namespace TCM_Launcher.ViewModel.UI.Popup
 
 		public void OpenCRASH()
 		{
-			GameProfileService.Instance.OpenProfileFolder(profileId, "crash-reports");
+			gameProfileService.OpenProfileFolder(profileId, "crash-reports");
         }
 
         public void Update()

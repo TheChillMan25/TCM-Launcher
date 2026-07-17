@@ -4,14 +4,14 @@ using System.IO;
 using System.Net.Http;
 using System.Security.Cryptography;
 using TCM_Launcher.Core.Utils;
+using TCM_Launcher.Interfaces;
 
 namespace TCM_Launcher.Services
 {
-    public class MicrosoftService
+    public class MicrosoftService : IMicrosoftService
     {
-        public static MicrosoftService Instance { get; set; } = new MicrosoftService();
 
-        public JELoginHandler LoginHandler { get; set; }
+        private JELoginHandler LoginHandler;
 
         public MSession MSession { get; set; }
 
@@ -68,6 +68,10 @@ namespace TCM_Launcher.Services
             try
             {
                 await LoginHandler.Signout();
+                if (File.Exists(Constants.AccountsJSONPath))
+                {
+                    File.Delete(Constants.AccountsJSONPath);
+                }
                 MSession = null;
                 return true;
             }

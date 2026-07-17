@@ -1,5 +1,6 @@
 ﻿using CmlLib.Core.Auth;
 using CmlLib.Core.Auth.Microsoft;
+using Microsoft.Extensions.DependencyInjection;
 using Onova;
 using Onova.Services;
 using System.Collections.ObjectModel;
@@ -7,6 +8,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Windows;
 using TCM_Launcher.Core.Utils;
+using TCM_Launcher.Interfaces;
 using TCM_Launcher.Model;
 using TCM_Launcher.Model.DB;
 using TCM_Launcher.MVVM;
@@ -14,13 +16,28 @@ using TCM_Launcher.Services;
 using TCM_Launcher.View;
 using TCM_Launcher.View.PopUp;
 using TCM_Launcher.View.Windows;
+using TCM_Launcher.ViewModel.Popup;
 
 namespace TCM_Launcher.ViewModel
 {
-    class MainWindowViewModel : ViewModelBase
+    public class MainWindowViewModel : ViewModelBase
     {
-        public MainWindowViewModel()
+        private readonly IVersionService versionService;
+        private readonly IGameProfileService gameProfileService;
+        private readonly IProfileSettingsService profileSettingsService;
+        private readonly IMicrosoftService microsoftService;
+        private readonly IServerService serverService;
+        private readonly ILauncherService launcherService;
+        public MainWindowViewModel(
+            IVersionService versionService, IGameProfileService gameProfileService, IProfileSettingsService profileSettingsService,
+            IMicrosoftService microsoftService, IServerService serverService, ILauncherService launcherService)
         {
+            this.versionService = versionService;
+            this.gameProfileService = gameProfileService;
+            this.profileSettingsService = profileSettingsService;
+            this.microsoftService = microsoftService;
+            this.serverService = serverService;
+            this.launcherService = launcherService;
             InitializeAsync();
         }
 
@@ -146,7 +163,7 @@ namespace TCM_Launcher.ViewModel
 
             OpenLastPlayedProfile();
 
-            VersionsService.Instance.StartVersionCheck();
+            versionService.StartVersionCheck();
             InternetAvailable = await NetworkUtil.IsInternetAvailableAsync();
             if(File.Exists(Constants.AccountsJSONPath) && InternetAvailable) await MicrosoftLoginAsync();
             await WaitForVersionsAsync();
@@ -154,7 +171,7 @@ namespace TCM_Launcher.ViewModel
 
         public async Task OpenNewProfileWindow()
         {
-            NewProfileView npw = new NewProfileView();
+            var npw = App.ServiceProvider.GetRequiredService<NewProfileView>();
             npw.Owner = Application.Current.MainWindow;
             Application.Current.MainWindow.Opacity = 0.4;
             bool created = npw.ShowDialog() ?? false;
@@ -176,9 +193,9 @@ namespace TCM_Launcher.ViewModel
 
         public async Task LoadProfilesAsync()
         {
-            var profilesList = await GameProfileService.Instance.GetAllGameProfiles();
+            var profilesList = await gameProfileService.GetAllGameProfiles();
             GameProfiles = new ObservableCollection<GameProfile>(profilesList);
-            var serversList = await ServerService.Instance.GetSavedServersAsync();
+            var serversList = await serverService.GetSavedServersAsync();
             SavedServers = new ObservableCollection<Server>(serversList);
         }
 
@@ -186,9 +203,9 @@ namespace TCM_Launcher.ViewModel
         {
             IsVersionsLoaded = false;
 
-            if (VersionsService.Instance.SyncTask != null)
+            if (versionService.SyncTask != null)
             {
-                await VersionsService.Instance.SyncTask;
+                await versionService.SyncTask;
             }
 
             IsVersionsLoaded = true;
@@ -198,8 +215,8 @@ namespace TCM_Launcher.ViewModel
         {
             try
             {
-                var p = await GameProfileService.Instance.AddProfileAsync(data.ProfileName, data.MCVersion, data.ForgeVersion);
-                await ProfileSettingsService.Instance.SetProfileSettingsAsync(new ProfileSettings
+                var p = await gameProfileService.AddProfileAsync(data.ProfileName, data.MCVersion, data.ForgeVersion);
+                await profileSettingsService.SetProfileSettingsAsync(new ProfileSettings
                 {
                     GameProfileId = p.Id,
                     Ram = Constants.DefaultRam,
@@ -212,12 +229,12 @@ namespace TCM_Launcher.ViewModel
                 {
                     DownloadProgress = percent;
                 });
-                var fileName = await LauncherService.Instance.CreateProfileAsync(p.Id, data.MCVersion, data.ForgeVersion, progressHandler);
+                var fileName = await launcherService.CreateProfileAsync(p.Id, data.MCVersion, data.ForgeVersion, progressHandler);
                 IsDownloading = false;
                 DownloadProgress = 0;
                 if (!string.IsNullOrEmpty(fileName))
                 {
-                    await GameProfileService.Instance.UpdateProfileAsync(p.Id, new GameProfile {
+                    await gameProfileService.UpdateProfileAsync(p.Id, new GameProfile {
                         ProfileName = p.ProfileName,
                         MCVersion = p.MCVersion,
                         ForgeVersion = p.ForgeVersion,
@@ -337,7 +354,8 @@ namespace TCM_Launcher.ViewModel
         }
         public async Task Update()
         {
-            PopupView p = new PopupView("Update available", "There is an update available. Click the button to download it.", UI.Popup.PopupAction.UPDATE);
+            PopupView p = App.ServiceProvider.GetRequiredService<PopupView>();
+            p.Initialize("Update available", "There is an update available. Click the button to download it.", PopupAction.UPDATE);
             p.Owner = Application.Current.MainWindow;
             var update = p.ShowDialog();
             if (update == true)
@@ -379,7 +397,7 @@ namespace TCM_Launcher.ViewModel
 
         public async Task OpenAddServerWindowAsync()
         {
-            AddServerView s = new AddServerView();
+            var s = App.ServiceProvider.GetRequiredService<AddServerView>();
             await s.InitializeDataAsync();
             s.Owner = Application.Current.MainWindow;
             s.Owner.Opacity = 0.4;
@@ -393,11 +411,11 @@ namespace TCM_Launcher.ViewModel
 
         public async Task MicrosoftLoginAsync()
         {
-            MSession = await MicrosoftService.Instance.MicrosoftLoginAsync();
+            MSession = await microsoftService.MicrosoftLoginAsync();
         }
         public async Task MicrosoftLogoutAsync()
         {
-            bool success = await MicrosoftService.Instance.MicrosoftSignOutAsync();
+            bool success = await microsoftService.MicrosoftSignOutAsync();
             if (success)
             {
                 MSession = null;

@@ -1,18 +1,23 @@
-﻿using System.Windows;
+﻿using Microsoft.Extensions.DependencyInjection;
+using System.Windows;
 using System.Windows.Controls;
 using TCM_Launcher.Model.DB;
-using TCM_Launcher.ViewModel.UI.UserControls;
+using TCM_Launcher.ViewModel.UserControls;
 
 namespace TCM_Launcher.View.UserControls
 {
     public partial class ServerCardView : UserControl
     {
-        public ServerCardViewModel viewModel;
+        private readonly ServerCardViewModel viewModel;
         public ServerCardView()
         {
             InitializeComponent();
-            viewModel = new ServerCardViewModel();
-            RootGrid.DataContext = viewModel;
+
+            if (!System.ComponentModel.DesignerProperties.GetIsInDesignMode(this))
+            {
+                this.viewModel = App.ServiceProvider.GetRequiredService<ServerCardViewModel>();
+                RootGrid.DataContext = this.viewModel;
+            }
         }
 
         public static readonly RoutedEvent DeleteRequestedEvent = EventManager.RegisterRoutedEvent(

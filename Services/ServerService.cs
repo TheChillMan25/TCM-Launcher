@@ -1,17 +1,17 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using MineStatLib;
-using System.Runtime.Loader;
 using TCM_Launcher.Core.DBContext;
 using TCM_Launcher.Core.Utils;
+using TCM_Launcher.Interfaces;
 using TCM_Launcher.Model.DB;
 
 namespace TCM_Launcher.Services
 {
-    public class ServerService
-    {
-        public static ServerService Instance { get; set; } = new ServerService();
+    public class ServerService : IServerService
 
-        public Server? AddServer(string serverName, string address, string mcVersion, string? pId = null)
+    {
+
+        public async Task<Server?> AddServer(string serverName, string address, string mcVersion, string? pId = null)
         {
             try
             {
@@ -27,7 +27,7 @@ namespace TCM_Launcher.Services
                 };
 
                 db.SavedServers.Add(server);
-                db.SaveChanges();
+                await db.SaveChangesAsync();
                 return server;
             }
             catch(Exception ex)

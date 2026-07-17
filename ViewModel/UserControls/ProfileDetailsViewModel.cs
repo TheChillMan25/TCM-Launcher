@@ -1,15 +1,24 @@
-﻿using System.IO;
+﻿using Microsoft.Extensions.DependencyInjection;
+using System.IO;
 using System.Windows;
 using TCM_Launcher.Core.Utils;
+using TCM_Launcher.Interfaces;
 using TCM_Launcher.Model.DB;
 using TCM_Launcher.MVVM;
-using TCM_Launcher.Services;
 using TCM_Launcher.View.Windows;
 
-namespace TCM_Launcher.ViewModel.UI.UserControls
+namespace TCM_Launcher.ViewModel.UserControls
 {
-    internal class ProfileDetailsViewModel : ViewModelBase
+    public class ProfileDetailsViewModel : ViewModelBase
     {
+        private readonly IGameProfileService gameProfileService;
+        private readonly ILauncherService launcherService;
+        public ProfileDetailsViewModel(IGameProfileService gameProfileService, ILauncherService launcherService )
+        {
+            this.gameProfileService = gameProfileService;
+            this.launcherService = launcherService;
+        }
+
         private GameProfile selectedGameProfile;
 
         public GameProfile SelectedGameProfile
@@ -71,14 +80,15 @@ namespace TCM_Launcher.ViewModel.UI.UserControls
         }
 
 
-        public void OpenProfileSettings()
+        public async Task OpenProfileSettings()
         {
             if (SelectedGameProfile == null)
             {
                 MessageBox.Show("Select a profile.", "WARNING", MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
             }
-            ProfileSettingsView ps = new ProfileSettingsView(SelectedGameProfile);
+            var ps = App.ServiceProvider.GetRequiredService<ProfileSettingsView>();
+            await ps.Initialize(SelectedGameProfile);
             ps.Owner = Application.Current.MainWindow;
             Application.Current.MainWindow.Opacity = 0.4;
             ps.ShowDialog();
@@ -89,7 +99,7 @@ namespace TCM_Launcher.ViewModel.UI.UserControls
         {
             try
             {
-                bool success = await GameProfileService.Instance.DeleteProfileAsync(SelectedGameProfile.Id);
+                bool success = await gameProfileService.DeleteProfileAsync(SelectedGameProfile.Id);
                 if (success)
                 {
                     string profileDir = Path.Combine(Constants.ProfilesPath, SelectedGameProfile.Id);
@@ -114,7 +124,7 @@ namespace TCM_Launcher.ViewModel.UI.UserControls
 
         public void OpenProfileFolder()
         {
-            GameProfileService.Instance.OpenProfileFolder(SelectedGameProfile.Id);
+            gameProfileService.OpenProfileFolder(SelectedGameProfile.Id);
         }
 
         public async Task StartGame()
@@ -124,7 +134,7 @@ namespace TCM_Launcher.ViewModel.UI.UserControls
                 SelectedGameProfile.IsPlaying = true;
                 IsEnable = SelectedGameProfile.Installed && !SelectedGameProfile.IsPlaying;
                 PlayButtonText = "Running";
-                await LauncherService.Instance.LaunchProfileAsync(SelectedGameProfile);
+                await launcherService.LaunchProfileAsync(SelectedGameProfile);
             }
             finally
             {

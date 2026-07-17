@@ -7,12 +7,12 @@ namespace TCM_Launcher
 {
     public partial class MainWindow : Window
     {
-        private MainWindowViewModel viewModel;
-        public MainWindow()
+        private readonly MainWindowViewModel viewModel;
+        public MainWindow(MainWindowViewModel viewModel)
         {
-            viewModel = new MainWindowViewModel();
-            DataContext = viewModel;
             InitializeComponent();
+            this.viewModel = viewModel;
+            DataContext = this.viewModel;
         }
 
         private async void AddProfileButton_Click(object sender, RoutedEventArgs e)
@@ -58,7 +58,7 @@ namespace TCM_Launcher
         {
             if(sender is ServerCardView card)
             {
-                viewModel.DeleteServer(card.viewModel.Server);
+                viewModel.DeleteServer(card.Server);
             }
         }
 
@@ -66,7 +66,7 @@ namespace TCM_Launcher
         {
             if (sender is ServerCardView card)
             {
-                viewModel.UpdateServer(card.viewModel.Server);
+                viewModel.UpdateServer(card.Server);
             }
         }
 
@@ -74,7 +74,7 @@ namespace TCM_Launcher
         {
             if (sender is ServerCardView card)
             {
-                viewModel.UpdateProfile(card.viewModel.Server.BindedProfileId);
+                viewModel.UpdateProfile(card.Server.BindedProfileId);
             }
         }
 

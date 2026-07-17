@@ -1,17 +1,18 @@
 ﻿using System.Collections.ObjectModel;
 using System.Windows;
 using TCM_Launcher.Core.Utils;
+using TCM_Launcher.Interfaces;
 using TCM_Launcher.Model.DB.Versions;
-using TCM_Launcher.Model.UI.Forge;
 using TCM_Launcher.MVVM;
-using TCM_Launcher.Services;
 
-namespace TCM_Launcher.ViewModel.UI.Windows
+namespace TCM_Launcher.ViewModel.Windows
 {
-    internal class NewProfileViewModel : ViewModelBase
+    public class NewProfileViewModel : ViewModelBase
     {
-        public NewProfileViewModel()
+        private readonly IVersionService versionService;
+        public NewProfileViewModel(IVersionService versionService)
         {
+            this.versionService = versionService;
             InitializeVersions();
         }
 
@@ -77,11 +78,11 @@ namespace TCM_Launcher.ViewModel.UI.Windows
 
         private async Task InitializeVersions()
         {
-            if (VersionsService.Instance.SyncTask != null)
+            if (versionService.SyncTask != null)
             {
-                await VersionsService.Instance.SyncTask;
+                await versionService.SyncTask;
             }
-            var loadedVersions = await VersionsService.Instance.GetVanillaVersions();
+            var loadedVersions = await versionService.GetVanillaVersions();
 
             Versions = new ObservableCollection<VanillaVersion>(loadedVersions);
             ForgeVersions = new();
@@ -91,7 +92,7 @@ namespace TCM_Launcher.ViewModel.UI.Windows
         {
             try
             {
-                var versions = await VersionsService.Instance.GetForgeVersions(mcVersion);
+                var versions = await versionService.GetForgeVersions(mcVersion);
                 /*ForgeLoaderJSONData recommended = null;
                 if (versions.Count > 0 ) recommended = versions.FirstOrDefaultAsync(v => v.IsRecommended);
                 if (recommended != null) recommended.VersionName = string.Concat(recommended.VersionName, " Recommended");*/

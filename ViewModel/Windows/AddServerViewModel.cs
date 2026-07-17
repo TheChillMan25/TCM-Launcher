@@ -1,22 +1,22 @@
 ﻿using System.Collections.ObjectModel;
 using TCM_Launcher.Core.Utils;
+using TCM_Launcher.Interfaces;
 using TCM_Launcher.Model.DB;
 using TCM_Launcher.MVVM;
-using TCM_Launcher.Services;
 
-namespace TCM_Launcher.ViewModel.UI.Windows
+namespace TCM_Launcher.ViewModel.Windows
 {
-    class AddServerViewModel : ViewModelBase
+    public class AddServerViewModel : ViewModelBase
     {
-        public AddServerViewModel(string? serverId = null, string? serverName = null, string? serverAddress = null, string? serverVersion = null, string? bindedProfileId = null)
+        private readonly IGameProfileService gameProfileService;
+        private readonly IVersionService versionService;
+        private readonly IServerService serverService;
+
+        public AddServerViewModel(IGameProfileService gameProfileService, IVersionService versionService, IServerService serverService)
         {
-            if (serverName != null || serverAddress != null || serverVersion != null) Edit = true;
-            if (Edit) ButtonText = "Save";
-            ServerId = serverId;
-            ServerName = serverName;
-            ServerAddress = serverAddress;
-            ServerVersion = serverVersion;
-            BindedProfileId = bindedProfileId;
+            this.gameProfileService = gameProfileService;
+            this.versionService = versionService;
+            this.serverService = serverService;
         }
 
         private bool Edit;
@@ -116,15 +116,26 @@ namespace TCM_Launcher.ViewModel.UI.Windows
             }
         }
 
+        public void Initialize(string? serverId = null, string? serverName = null, string? serverAddress = null, string? serverVersion = null, string? bindedProfileId = null)
+        {
+            if (serverName != null || serverAddress != null || serverVersion != null) Edit = true;
+            if (Edit) ButtonText = "Save";
+            ServerId = serverId;
+            ServerName = serverName;
+            ServerAddress = serverAddress;
+            ServerVersion = serverVersion;
+            BindedProfileId = bindedProfileId;
+        }
+
         public async Task InitializeDataAsync()
 		{
-			var mcVersions = await VersionsService.Instance.GetVanillaVersions();
+			var mcVersions = await versionService.GetVanillaVersions();
 			MCVersions = new ObservableCollection<string>(mcVersions.Select(v => v.VersionName));
 		}
 
 		public async Task<Server?> AddServer()
 		{
-            if (Edit) return await ServerService.Instance.UpdateServer(new Server
+            if (Edit) return await serverService.UpdateServer(new Server
             {
                 Id = ServerId,
                 Address = ServerAddress,
@@ -132,14 +143,14 @@ namespace TCM_Launcher.ViewModel.UI.Windows
                 MCVersion = ServerVersion,
                 BindedProfileId = BindedProfile?.Id,
             });
-            return ServerService.Instance.AddServer(ServerName, ServerAddress, ServerVersion, BindedProfile?.Id);
+            return await serverService.AddServer(ServerName, ServerAddress, ServerVersion, BindedProfile?.Id);
 		}
 
         public async Task OnServerIPChanged()
         {
             if (!string.IsNullOrWhiteSpace(ServerAddress) && NetworkUtil.IsValidServerAddress(ServerAddress))
             {
-                var sInfo = await ServerService.Instance.FetchServerInfoAsync(ServerAddress);
+                var sInfo = await serverService.FetchServerInfoAsync(ServerAddress);
                 if (sInfo != null && sInfo.ServerUp && !string.IsNullOrWhiteSpace(sInfo.Version))
                 {
                     ServerVersion = sInfo.Version;
@@ -149,7 +160,7 @@ namespace TCM_Launcher.ViewModel.UI.Windows
 
         public async Task LoadProfiles()
         {
-            var profiles = await GameProfileService.Instance.GetProfilesWithVersionAsync(ServerVersion);
+            var profiles = await gameProfileService.GetProfilesWithVersionAsync(ServerVersion);
             Profiles = new ObservableCollection<GameProfile>(profiles);
 
             if(BindedProfileId != null)

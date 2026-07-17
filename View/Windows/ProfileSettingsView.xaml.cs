@@ -1,17 +1,22 @@
 ﻿using System.Windows;
 using TCM_Launcher.Model.DB;
-using TCM_Launcher.ViewModel.UI.Windows;
+using TCM_Launcher.ViewModel.Windows;
 
 namespace TCM_Launcher.View.Windows
 {
     public partial class ProfileSettingsView : Window
     {
-        ProfileSettingsViewModel viewModel;
-        public ProfileSettingsView(GameProfile p)
+        private readonly ProfileSettingsViewModel viewModel;
+        public ProfileSettingsView(ProfileSettingsViewModel viewModel)
         {
             InitializeComponent();
-            viewModel = new ProfileSettingsViewModel(p);
-            DataContext = viewModel;
+            this.viewModel = viewModel;
+            DataContext = this.viewModel;
+        }
+
+        public async Task Initialize(GameProfile p)
+        {
+            await viewModel.Initialize(p);
             if (viewModel.Settings == null) Close();
         }
 

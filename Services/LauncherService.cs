@@ -2,19 +2,29 @@
 using CmlLib.Core.Auth;
 using CmlLib.Core.Installer.Forge;
 using CmlLib.Core.ProcessBuilder;
+using Microsoft.Extensions.DependencyInjection;
 using System.IO;
-using System.Net;
 using System.Windows;
 using TCM_Launcher.Core.Utils;
+using TCM_Launcher.Interfaces;
 using TCM_Launcher.Model.DB;
 using TCM_Launcher.View.PopUp;
-using TCM_Launcher.ViewModel.UI.Popup;
+using TCM_Launcher.ViewModel.Popup;
 
 namespace TCM_Launcher.Services
 {
-    public class LauncherService
+    public class LauncherService : ILauncherService
     {
-        public static LauncherService Instance { get; set; } = new LauncherService();
+        private readonly IProfileSettingsService profileSettingsService;
+        private readonly IMicrosoftService microsoftService;
+        private readonly IGameProfileService gameProfileService;
+
+        public LauncherService(IProfileSettingsService profileSettingsService, IMicrosoftService microsoftService, IGameProfileService gameProfileService)
+        {
+            this.profileSettingsService = profileSettingsService;
+            this.gameProfileService = gameProfileService;
+            this.microsoftService = microsoftService;
+        }
 
         public async Task<string> CreateProfileAsync(string pName, string mcVersion, string fVersion, IProgress<double> progress = null)
         {
@@ -53,7 +63,7 @@ namespace TCM_Launcher.Services
                 }
                 MinecraftPath path = CreateProfilePath(profile.Id);
                 var launcher = new MinecraftLauncher(path);
-                var profileSettings = await ProfileSettingsService.Instance.GetProfileSettings(profile.Id);
+                var profileSettings = await profileSettingsService.GetProfileSettings(profile.Id);
                 var jvmArgs = new List<MArgument>();
                 if (!string.IsNullOrWhiteSpace(profileSettings.JVMArgs))
                 {
@@ -70,7 +80,7 @@ namespace TCM_Launcher.Services
                 var launchOptions = new MLaunchOption
                 {
                     MaximumRamMb = profileSettings.Ram ?? Constants.DefaultRam,
-                    Session = MicrosoftService.Instance.MSession == null ? MSession.CreateOfflineSession("Gamer123") : MicrosoftService.Instance.MSession,
+                    Session = microsoftService.MSession == null ? MSession.CreateOfflineSession("Gamer123") : microsoftService.MSession,
                     ExtraJvmArguments = jvmArgs,
                 };
                 if(serverAddress != null)
@@ -98,7 +108,7 @@ namespace TCM_Launcher.Services
                     }
                 };
                 
-                GameProfileService.Instance.UpdateLastPlayedProfileAsync(profile.Id);
+                gameProfileService.UpdateLastPlayedProfileAsync(profile.Id);
                 Logger.Log($"Started game profile with id: {profile.Id} ({profile.FileName})");
                 processWrapper.StartWithEvents();
 
@@ -125,7 +135,8 @@ namespace TCM_Launcher.Services
                         }
                     }
                     Logger.Log($"Game with id {profile.Id} crashed. {crashReportInfo}");
-                    var p = new PopupView($"The game crashed (Code: {exitCode})", crashReportInfo, PopupAction.CRASH, 5000d, profile.Id);
+                    var p = App.ServiceProvider.GetRequiredService<PopupView>();
+                    p.Initialize($"The game crashed (Code: {exitCode})", crashReportInfo, PopupAction.CRASH, 5000d, profile.Id);
                     p.Owner = Application.Current.MainWindow;
                     p.Show();
                 }

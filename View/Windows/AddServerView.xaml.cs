@@ -1,18 +1,23 @@
 ﻿using System.Windows;
 using TCM_Launcher.Core.Utils;
 using TCM_Launcher.Model.DB;
-using TCM_Launcher.ViewModel.UI.Windows;
+using TCM_Launcher.ViewModel.Windows;
 
 namespace TCM_Launcher.View.Windows
 {
     public partial class AddServerView : Window
     {
-        AddServerViewModel viewModel;
-        public AddServerView(string? serverId = null, string? serverName = null, string? serverAddress = null, string? serverVersion = null, string? bindedProfileId = null)
+        private readonly AddServerViewModel viewModel;
+        public AddServerView(AddServerViewModel viewModel)
         {
             InitializeComponent();
-            viewModel = new AddServerViewModel(serverId, serverName, serverAddress, serverVersion, bindedProfileId);
-            DataContext = viewModel;
+            this.viewModel = viewModel;
+            DataContext = this.viewModel;
+        }
+
+        public void Initialize(string? serverId = null, string? serverName = null, string? serverAddress = null, string? serverVersion = null, string? bindedProfileId = null)
+        {
+            viewModel.Initialize(serverId, serverName, serverAddress, serverVersion, bindedProfileId);
         }
 
         private CancellationTokenSource cT;

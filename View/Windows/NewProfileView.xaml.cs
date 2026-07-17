@@ -1,21 +1,20 @@
 ﻿using System.Windows;
 using TCM_Launcher.Model.DB;
 using TCM_Launcher.Model.DB.Versions;
-using TCM_Launcher.ViewModel.UI.Windows;
+using TCM_Launcher.ViewModel.Windows;
 
 namespace TCM_Launcher.View
 {
     public partial class NewProfileView : Window
     {
-        private NewProfileViewModel viewModel;
-
+        private readonly NewProfileViewModel viewModel;
         public GameProfile NewProfileData { get; set; }
 
-        public NewProfileView()
+        public NewProfileView(NewProfileViewModel viewModel)
         {
             InitializeComponent();
-            viewModel = new NewProfileViewModel();
-            DataContext = viewModel;
+            this.viewModel = viewModel;
+            DataContext = this.viewModel;
         }
 
 

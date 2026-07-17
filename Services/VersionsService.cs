@@ -1,19 +1,17 @@
 ﻿using CmlLib.Core;
 using CmlLib.Core.Installer.Forge;
-using CmlLib.Core.Version;
 using Microsoft.EntityFrameworkCore;
 using System.Collections.Concurrent;
-using System.IO;
 using System.Windows;
 using TCM_Launcher.Core.DBContext;
 using TCM_Launcher.Core.Utils;
+using TCM_Launcher.Interfaces;
 using TCM_Launcher.Model.DB.Versions;
 
 namespace TCM_Launcher.Services
 {
-    public class VersionsService
+    public class VersionsService : IVersionService
     {
-        public static VersionsService Instance { get; set; } = new VersionsService();
         public Task SyncTask { get; private set; }
 
         public void StartVersionCheck()

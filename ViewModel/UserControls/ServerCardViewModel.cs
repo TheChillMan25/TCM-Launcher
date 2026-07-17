@@ -1,15 +1,27 @@
-﻿using MineStatLib;
+﻿using Microsoft.Extensions.DependencyInjection;
+using MineStatLib;
 using System.Windows;
 using System.Windows.Media;
+using TCM_Launcher.Interfaces;
 using TCM_Launcher.Model.DB;
 using TCM_Launcher.MVVM;
 using TCM_Launcher.Services;
 using TCM_Launcher.View.Windows;
 
-namespace TCM_Launcher.ViewModel.UI.UserControls
+namespace TCM_Launcher.ViewModel.UserControls
 {
     public class ServerCardViewModel : ViewModelBase
     {
+		private readonly IServerService serverService;
+		private readonly IGameProfileService gameProfileService;
+		private readonly ILauncherService launcherService;
+        public ServerCardViewModel(IServerService serverService, IGameProfileService gameProfileService, ILauncherService launcherService)
+        {
+            this.serverService = serverService;
+            this.gameProfileService = gameProfileService;
+            this.launcherService = launcherService;
+        }
+
         private Server server;
 		public Server Server
 		{
@@ -51,12 +63,13 @@ namespace TCM_Launcher.ViewModel.UI.UserControls
 
 		public async Task<bool> DeleteServer()
 		{
-			return await ServerService.Instance.DeleteServer(Server.Id);
+			return await serverService.DeleteServer(Server.Id);
 		}
 
 		public async Task<bool> EditServer()
 		{
-			AddServerView s = new AddServerView(Server.Id, Server.Name, Server.Address, Server.MCVersion, Server.BindedProfileId);
+			var s = App.ServiceProvider.GetRequiredService<AddServerView>();
+			s.Initialize(Server.Id, Server.Name, Server.Address, Server.MCVersion, Server.BindedProfileId);
 			s.Owner = Application.Current.MainWindow;
 			await s.InitializeDataAsync();
 			bool edit = s.ShowDialog() ?? false;
@@ -66,19 +79,19 @@ namespace TCM_Launcher.ViewModel.UI.UserControls
 
 		public async Task QuickLaunchAsync()
 		{
-			var profile = await GameProfileService.Instance.GetProfile(Server.BindedProfileId!);
-			if (profile != null) await LauncherService.Instance.LaunchProfileAsync(profile, Server.Address);
+			var profile = await gameProfileService.GetProfile(Server.BindedProfileId!);
+			if (profile != null) await launcherService.LaunchProfileAsync(profile, Server.Address);
 		}
 
 		private async Task StartContinuousPingAsync()
 		{
-			Ping = await ServerService.Instance.FetchServerInfoAsync(Server.Address);
+			Ping = await serverService.FetchServerInfoAsync(Server.Address);
 			UpdateColor();
 
 			using var timer = new PeriodicTimer(TimeSpan.FromSeconds(10));
 			while(await timer.WaitForNextTickAsync())
 			{
-				Ping = await ServerService.Instance.FetchServerInfoAsync(Server.Address);
+				Ping = await serverService.FetchServerInfoAsync(Server.Address);
 				UpdateColor();
             }
 		}

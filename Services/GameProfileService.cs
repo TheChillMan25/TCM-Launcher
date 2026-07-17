@@ -4,13 +4,13 @@ using System.IO;
 using System.Windows;
 using TCM_Launcher.Core.DBContext;
 using TCM_Launcher.Core.Utils;
+using TCM_Launcher.Interfaces;
 using TCM_Launcher.Model.DB;
 
 namespace TCM_Launcher.Services
 {
-    public class GameProfileService
+    public class GameProfileService : IGameProfileService
     {
-        public static GameProfileService Instance { get; } = new GameProfileService();
         public async Task<GameProfile> AddProfileAsync(string name, string mcVersion, string fVersion, string? fileName = null)
         {
             try
@@ -85,7 +85,7 @@ namespace TCM_Launcher.Services
             }
         }
 
-        public async Task UpdateProfileAsync(string profileId, GameProfile updateData)
+        public async Task<GameProfile> UpdateProfileAsync(string profileId, GameProfile updateData)
         {
             try
             {
@@ -103,15 +103,18 @@ namespace TCM_Launcher.Services
 
                     await db.SaveChangesAsync();
                 }
+
+                return profile;
             }
             catch (Exception ex)
             {
                 Logger.Error($"There was an exception thrown during updating profile: {profileId}, Data: ProfileName={updateData.ProfileName}, MCVersion={updateData.MCVersion}, ForgeVersion={updateData.ForgeVersion}, FileName={updateData.FileName}, Installed={updateData.Installed}", ex);
                 MessageBox.Show("An error occured during updation the profle.", "ERROR", MessageBoxButton.OK, MessageBoxImage.Error);
+                return null;
             }
         }
 
-        public async Task UpdateLastPlayedProfileAsync(string profileId)
+        public async Task<GameProfile> UpdateLastPlayedProfileAsync(string profileId)
         {
             GameProfile? profile = null;
             GameProfile? oldProfile = null;
@@ -126,8 +129,7 @@ namespace TCM_Launcher.Services
                 if (profile != null) profile.LastPlayed = true;
 
                 await db.SaveChangesAsync();
-
-
+                return profile;
             }
             catch (Exception ex)
             {
@@ -135,6 +137,7 @@ namespace TCM_Launcher.Services
                 string foundId = profile != null ? profile.Id : "NULL (New not found)";
                 Logger.Error($"There was an exception thrown during updating last played profile with id: {profileId}\nData: New id={foundId}, Old id={oldId}", ex);
                 MessageBox.Show("An error occured updating lastly played profile information.", "ERROR", MessageBoxButton.OK, MessageBoxImage.Error);
+                return null;
             }
         }
 

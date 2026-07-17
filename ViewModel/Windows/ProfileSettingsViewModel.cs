@@ -1,16 +1,17 @@
-﻿using TCM_Launcher.Model.DB;
+﻿using TCM_Launcher.Interfaces;
+using TCM_Launcher.Model.DB;
 using TCM_Launcher.MVVM;
-using TCM_Launcher.Services;
 
-namespace TCM_Launcher.ViewModel.UI.Windows
+namespace TCM_Launcher.ViewModel.Windows
 {
-	internal class ProfileSettingsViewModel : ViewModelBase
+	public class ProfileSettingsViewModel : ViewModelBase
     {
-        public ProfileSettingsViewModel(GameProfile p)
+		private readonly IGameProfileService gameProfileService;
+		private readonly IProfileSettingsService profileSettingsService;
+        public ProfileSettingsViewModel(IGameProfileService gameProfileService, IProfileSettingsService profileSettingsService)
         {
-            GameProfile = p;
-			Title = $"{GameProfile.ProfileName} : Settings";
-			_ = LoadSettingsAsync();
+			this.gameProfileService = gameProfileService;
+			this.profileSettingsService = profileSettingsService;
         }
 
         private GameProfile gameProfile;
@@ -73,11 +74,19 @@ namespace TCM_Launcher.ViewModel.UI.Windows
 			}
 		}
 
+		public async Task Initialize(GameProfile p)
+		{
+
+            GameProfile = p;
+            Title = $"{GameProfile.ProfileName} : Settings";
+            await LoadSettingsAsync();
+        }
+
 		public async Task SaveSettingsAsync(string pName, int ram, string jvmArgs)
 		{
 			GameProfile.ProfileName = pName;
-			await GameProfileService.Instance.UpdateProfileAsync(GameProfile.Id, GameProfile);
-			await ProfileSettingsService.Instance.SetProfileSettingsAsync(new ProfileSettings
+			await gameProfileService.UpdateProfileAsync(GameProfile.Id, GameProfile);
+			await profileSettingsService.SetProfileSettingsAsync(new ProfileSettings
 			{
 				GameProfileId = GameProfile.Id,
 				Ram = ram,
@@ -87,7 +96,7 @@ namespace TCM_Launcher.ViewModel.UI.Windows
 
 		public async Task LoadSettingsAsync()
         {
-            Settings = await ProfileSettingsService.Instance.GetProfileSettings(GameProfile.Id);
+            Settings = await profileSettingsService.GetProfileSettings(GameProfile.Id);
 			MaxRam = Settings.Ram ?? 4096;
 			JVMArgs = Settings.JVMArgs ?? "";
         }
