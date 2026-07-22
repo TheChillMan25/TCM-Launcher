@@ -18,12 +18,17 @@ namespace TCM_Launcher.Services
         private readonly IProfileSettingsService profileSettingsService;
         private readonly IMicrosoftService microsoftService;
         private readonly IGameProfileService gameProfileService;
+        private readonly IProfileModService profileModService;
 
-        public LauncherService(IProfileSettingsService profileSettingsService, IMicrosoftService microsoftService, IGameProfileService gameProfileService)
+        public LauncherService(IProfileSettingsService profileSettingsService, 
+            IMicrosoftService microsoftService, 
+            IGameProfileService gameProfileService, 
+            IProfileModService profileModService)
         {
             this.profileSettingsService = profileSettingsService;
             this.gameProfileService = gameProfileService;
             this.microsoftService = microsoftService;
+            this.profileModService = profileModService;
         }
 
         public async Task<string> CreateProfileAsync(string pName, string mcVersion, string fVersion, IProgress<double> progress = null)
@@ -98,6 +103,7 @@ namespace TCM_Launcher.Services
                     launchOptions.ServerIp = ip;
                     launchOptions.ServerPort = port;
                 }
+                await profileModService.SyncProfileModsAsync(profile.Id);
                 var process = await launcher.BuildProcessAsync(profile.FileName, launchOptions);
                 var processWrapper = new ProcessWrapper(process);
                 processWrapper.OutputReceived += (sender, log) =>

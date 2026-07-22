@@ -1,7 +1,9 @@
 ﻿<Application x:Class="TCM_Launcher.App"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:local="clr-namespace:TCM_Launcher">
+             xmlns:local="clr-namespace:TCM_Launcher"
+             xmlns:vmUc="clr-namespace:TCM_Launcher.ViewModel.UserControls"
+             xmlns:uc="clr-namespace:TCM_Launcher.View.UserControls">
     <Application.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
@@ -12,6 +14,28 @@
                 <ResourceDictionary Source="Styles/Icons.xaml"/>
                 <ResourceDictionary Source="Styles/TooltipStyles.xaml"/>
             </ResourceDictionary.MergedDictionaries>
+
+            <DataTemplate DataType="{x:Type vmUc:ProfileDetailsViewModel}">
+                <uc:ProfileDetailsView />
+            </DataTemplate>
+            <DataTemplate DataType="{x:Type vmUc:AddContentViewModel}">
+                <uc:AddContentView />
+            </DataTemplate>
+            <DataTemplate DataType="{x:Type vmUc:ServerCardViewModel}">
+                <uc:ServerCardView />
+            </DataTemplate>
+            <DataTemplate DataType="{x:Type vmUc:ModSearchResultCardViewModel}">
+                <uc:ModSearchResultCardView />
+            </DataTemplate>
+            <DataTemplate DataType="{x:Type vmUc:ModDetailsViewModel}">
+                <uc:ModDetailsView />
+            </DataTemplate>
+            <DataTemplate DataType="{x:Type vmUc:ModVersionCardViewModel}">
+                <uc:ModVersionCardView />
+            </DataTemplate>
+            <DataTemplate DataType="{x:Type vmUc:ProfileModViewModel}">
+                <uc:ProfileModView />
+            </DataTemplate>
         </ResourceDictionary>
     </Application.Resources>
 </Application>

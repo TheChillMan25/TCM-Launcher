@@ -1,6 +1,5 @@
 ﻿using System.Windows;
 using System.Windows.Controls;
-using TCM_Launcher.View.UserControls;
 using TCM_Launcher.ViewModel;
 
 namespace TCM_Launcher
@@ -35,12 +34,12 @@ namespace TCM_Launcher
             if(WindowState == WindowState.Maximized)
             {
                 WindowState = WindowState.Normal;
-                BugReportButton.Margin = new Thickness(0, 0, 0, 5);
+                BottomSpacer.Height = 0;
             }
             else
             {
                 WindowState = WindowState.Maximized;
-                BugReportButton.Margin = new Thickness(0, 0 , 0, 60);
+                BottomSpacer.Height = 55;
             }
         }
 
@@ -49,43 +48,14 @@ namespace TCM_Launcher
             Application.Current.Shutdown();
         }
 
-        private void DeleteProfileEventHandler(object sender, RoutedEventArgs e)
-        {
-            viewModel.DeleteProfile();
-        }
-
-        private void DeleteServerEventHandler(object sender, RoutedEventArgs e)
-        {
-            if(sender is ServerCardView card)
-            {
-                viewModel.DeleteServer(card.Server);
-            }
-        }
-
-        private void UpdatedServerEventHandler(object sender, RoutedEventArgs e)
-        {
-            if (sender is ServerCardView card)
-            {
-                viewModel.UpdateServer(card.Server);
-            }
-        }
-
-        private void QuickLaunchEventHandler(object sender, RoutedEventArgs e)
-        {
-            if (sender is ServerCardView card)
-            {
-                viewModel.UpdateProfile(card.Server.BindedProfileId);
-            }
-        }
-
         private async void Window_Loaded(object sender, RoutedEventArgs e)
         {
             await viewModel.CheckForUpdatesAsync();
         }
 
-        private void UpdateButton_Click(object sender, RoutedEventArgs e)
+        private async void UpdateButton_Click(object sender, RoutedEventArgs e)
         {
-            viewModel.Update();
+            await viewModel.Update();
         }
 
         private void BugReportButton_Click(object sender, RoutedEventArgs e)

@@ -13,11 +13,11 @@
             <Setter.Value>
                 <ControlTemplate TargetType="ListBoxItem">
                     <Border x:Name="ButtonBorder" 
-                                            Background="{TemplateBinding Background}" 
-                                            CornerRadius="50" 
-                                            BorderBrush="Transparent" 
-                                            BorderThickness="0"
-                                            Padding="{TemplateBinding Padding}">
+                            Background="{TemplateBinding Background}" 
+                            CornerRadius="50" 
+                            BorderBrush="Transparent" 
+                            BorderThickness="0"
+                            Padding="{TemplateBinding Padding}">
                         <ContentPresenter />
                     </Border>
 
@@ -31,6 +31,40 @@
                             <Setter TargetName="ButtonBorder" Property="Background" Value="#333"/>
                             <Setter TargetName="ButtonBorder" Property="BorderBrush" Value="#555"/>
                             <Setter Property="Foreground" Value="White"/>
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+    
+    <Style x:Key="SearchResultListBoxItemStyle"  TargetType="ListBoxItem">
+        <Setter Property="Background" Value="#282828"/>
+        <Setter Property="Margin" Value="2,4"/>
+        <Setter Property="Padding" Value="0"/>
+
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="ListBoxItem">
+                    <Border x:Name="ButtonBorder" 
+                            Background="{TemplateBinding Background}" 
+                            CornerRadius="8" 
+                            BorderBrush="#444" 
+                            BorderThickness="2"
+                            Padding="{TemplateBinding Padding}">
+                        <ContentPresenter />
+                    </Border>
+
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="ButtonBorder" Property="Background" Value="#333"/>
+                            <Setter TargetName="ButtonBorder" Property="BorderBrush" Value="#f2c480"/>
+                            <Setter Property="Cursor" Value="Hand"/>
+                        </Trigger>
+
+                        <Trigger Property="IsSelected" Value="True">
+                            <Setter TargetName="ButtonBorder" Property="Background" Value="#111"/>
+                            <Setter TargetName="ButtonBorder" Property="BorderBrush" Value="#333"/>
                         </Trigger>
                     </ControlTemplate.Triggers>
                 </ControlTemplate>

@@ -60,7 +60,7 @@
                     VerticalAlignment="Center" 
                     HorizontalAlignment="Center">
             <Label Name="ProfileNameLabel">Profile name:</Label>
-            <TextBox Name="ProfileNameInput"
+            <TextBox Style="{StaticResource DarkTextBox}" Name="ProfileNameInput"
                      Text="{Binding PlaceholderProfileName,
                 UpdateSourceTrigger=PropertyChanged}"
                      MaxLength="30"/>

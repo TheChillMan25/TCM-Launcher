@@ -35,27 +35,44 @@ namespace TCM_Launcher
 
         private void ConfigureServices(ServiceCollection services)
         {
+            // Services //
             services.AddSingleton<IGameProfileService, GameProfileService>();
             services.AddSingleton<IProfileSettingsService, ProfileSettingsService>();
             services.AddSingleton<IServerService, ServerService>();
             services.AddSingleton<IVersionService, VersionsService>();
             services.AddSingleton<IMicrosoftService, MicrosoftService>();
             services.AddSingleton<ILauncherService, LauncherService>();
+            services.AddSingleton<IBackendService, BackendService>();
+            services.AddSingleton<IDownloadService, DownloadService>();
+            services.AddSingleton<IProfileModService, ProfileModService>();
 
+            // ViewModels //
             services.AddTransient<MainWindowViewModel>();
             services.AddTransient<NewProfileViewModel>();
             services.AddTransient<ProfileSettingsViewModel>();
             services.AddTransient<NewProfileViewModel>();
             services.AddTransient<AddServerViewModel>();
+            services.AddTransient<AddContentViewModel>();
+            services.AddTransient<ModSearchResultCardViewModel>();
+            services.AddTransient<ModDetailsViewModel>();
+            services.AddTransient<ModVersionCardViewModel>();
+            services.AddTransient<ProfileModViewModel>();
 
+            // UserControls //
             services.AddTransient<ServerCardViewModel>();
             services.AddTransient<ProfileDetailsViewModel>();
+            services.AddTransient<ModSearchResultCardView>();
+            services.AddTransient<ModDetailsView>();
+            services.AddTransient<ModVersionCardView>();
+            services.AddTransient<ProfileModView>();
 
+            // Windows //
             services.AddTransient<MainWindow>();
             services.AddTransient<NewProfileView>();
             services.AddTransient<ProfileSettingsView>();
             services.AddTransient<NewProfileView>();
             services.AddTransient<AddServerView>();
+            services.AddTransient<AddContentView>();
 
         }
     }

@@ -11,5 +11,6 @@ namespace TCM_Launcher.Core.Utils
         public static readonly int DefaultRam = 4096;
         public static readonly string BugReportFormURL = "https://forms.gle/UxmTjoazkzG5yLBd6";
         public static readonly string AccountsJSONPath = Path.Combine(LauncherFolder, "accounts.json");
+        public static readonly string ProfileModsManifest = "profile_mods.json";
     }
 }

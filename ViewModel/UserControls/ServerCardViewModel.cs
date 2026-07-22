@@ -22,6 +22,10 @@ namespace TCM_Launcher.ViewModel.UserControls
             this.launcherService = launcherService;
         }
 
+        public Action<Server>? OnDeleteRequested { get; set; }
+        public Action<Server>? OnUpdateRequested { get; set; }
+        public Action<string>? OnQuickLaunchRequested { get; set; }
+
         private Server server;
 		public Server Server
 		{
@@ -48,6 +52,15 @@ namespace TCM_Launcher.ViewModel.UserControls
 			set { ping = value; }
 		}
 
+		private bool playButtonIsEnabled = true;
+
+		public bool PlayButtonIsEnabled
+		{
+			get { return playButtonIsEnabled; }
+			set { playButtonIsEnabled = value; OnPropertyChange(); }
+		}
+
+
 
 		private SolidColorBrush color = Brushes.Red;
 
@@ -61,26 +74,37 @@ namespace TCM_Launcher.ViewModel.UserControls
 			}
 		}
 
-		public async Task<bool> DeleteServer()
+		public async Task DeleteServer()
 		{
-			return await serverService.DeleteServer(Server.Id);
+			bool success = await serverService.DeleteServer(Server.Id);
+			if (success) OnDeleteRequested?.Invoke(Server);
 		}
 
-		public async Task<bool> EditServer()
+		public async Task EditServer()
 		{
 			var s = App.ServiceProvider.GetRequiredService<AddServerView>();
 			s.Initialize(Server.Id, Server.Name, Server.Address, Server.MCVersion, Server.BindedProfileId);
 			s.Owner = Application.Current.MainWindow;
 			await s.InitializeDataAsync();
 			bool edit = s.ShowDialog() ?? false;
-			if (edit && s.CreatedServer != null) Server = s.CreatedServer;
-			return edit;
+			if (edit && s.CreatedServer != null)
+			{
+                Server = s.CreatedServer;
+				OnUpdateRequested?.Invoke(Server);
+            }
 		}
 
 		public async Task QuickLaunchAsync()
 		{
 			var profile = await gameProfileService.GetProfile(Server.BindedProfileId!);
-			if (profile != null) await launcherService.LaunchProfileAsync(profile, Server.Address);
+			if (profile != null)
+			{
+                PlayButtonIsEnabled = false;
+				OnQuickLaunchRequested?.Invoke(profile.Id);
+                await launcherService.LaunchProfileAsync(profile, Server.Address);
+				PlayButtonIsEnabled = true;
+                OnQuickLaunchRequested?.Invoke(profile.Id);
+            }
 		}
 
 		private async Task StartContinuousPingAsync()

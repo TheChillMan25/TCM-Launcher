@@ -18,11 +18,11 @@
     </WindowChrome.WindowChrome>
     <Window.Resources>
         <Style TargetType="TextBlock">
-            <Setter Property="Foreground" Value="#f5f5f5"/>
+            <Setter Property="Foreground" Value="WhiteSmoke"/>
             <Setter Property="VerticalAlignment" Value="Center"/>
             <Setter Property="Margin" Value="5"/>
             <Setter Property="FontSize" Value="18"/>
-            <Setter Property="Foreground" Value="#f5f5f5"/>
+            <Setter Property="Foreground" Value="WhiteSmoke"/>
         </Style>
     </Window.Resources>
     <Grid Background="#171717">
@@ -68,7 +68,7 @@
                Grid.Row="3"/>
         <TextBlock Text="Bind profile"
                Grid.Row="4"/>
-        <TextBox x:Name="ServerNameInput"
+        <TextBox Style="{StaticResource DarkTextBox}" x:Name="ServerNameInput"
              Text="{Binding ServerName,
                 UpdateSourceTrigger=PropertyChanged,
                 Mode=TwoWay}"
@@ -78,7 +78,7 @@
              MaxLength="30" 
              FontSize="14"
              Margin="5"/>
-        <TextBox x:Name="ServerIPInput"
+        <TextBox Style="{StaticResource DarkTextBox}" x:Name="ServerIPInput"
              Text="{Binding ServerAddress,
                 UpdateSourceTrigger=PropertyChanged,
                 Mode=TwoWay}"

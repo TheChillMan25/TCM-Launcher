@@ -10,7 +10,7 @@
         Title="{Binding Title}" Height="250" Width="400" ResizeMode="NoResize" WindowStyle="None" WindowStartupLocation="CenterOwner">
     <Window.Resources>
         <Style TargetType="Label">
-            <Setter Property="Foreground" Value="#f5f5f5"/>
+            <Setter Property="Foreground" Value="WhiteSmoke"/>
         </Style>
         
     </Window.Resources>
@@ -68,7 +68,7 @@
                 Grid.Row="3" 
                 FontSize="16" 
                 VerticalAlignment="Top"/>
-        <TextBox Name="ProfileNameInput"
+        <TextBox Style="{StaticResource DarkTextBox}" Name="ProfileNameInput"
                  Grid.Row="1"
                  Margin="0 0 5 0"
                  Text="{Binding GameProfile.ProfileName}" 
@@ -89,13 +89,13 @@
                     TickFrequency="512" 
                     IsSnapToTickEnabled="True"
                     Value="{Binding MaxRam, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
-            <TextBox Width="60"
+            <TextBox Style="{StaticResource DarkTextBox}" Width="60"
                      Grid.Column="1"
                      Margin="10,0,0,0" 
                      VerticalAlignment="Center"
                      Text="{Binding MaxRam, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
         </Grid>
-        <TextBox Name="JVMArgInput"
+        <TextBox Style="{StaticResource DarkTextBox}" Name="JVMArgInput"
                  Grid.Column="1"
                  Grid.Row="3" 
                  Margin="0 0 5 0"

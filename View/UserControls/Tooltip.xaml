@@ -18,7 +18,7 @@
                        FontSize="20" 
                        FontFamily="Calibri"/>
             <TextBlock x:Name="TooltipTextBox" 
-                           Foreground="#f5f5f5" 
+                           Foreground="WhiteSmoke" 
                            FontSize="15"
                            FontFamily="Calibri"
                            Grid.Row="1"

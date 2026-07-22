@@ -31,6 +31,7 @@
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition/>
+            <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="70"/>
@@ -87,7 +88,7 @@
                 </Button>
             </StackPanel>
         </Grid>
-        <Grid Name="LeftSideBar" Grid.Row="2">
+        <Grid Name="LeftSideBar" Grid.Row="1">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/>
                 <RowDefinition/>
@@ -148,7 +149,6 @@
                 </Button>
                 <Button x:Name="BugReportButton" Grid.Row="2" 
                         VerticalAlignment="Bottom"
-                        Margin="0,0,0,60"
                         Style="{StaticResource RoundButton}"
                         Click="BugReportButton_Click">
                     <Button.ToolTip>
@@ -162,23 +162,19 @@
                 </Button>
             </StackPanel>
         </Grid>
-        <Border Name="ProfileDetails"
+        <Border Name="MiddleContent"
                 Grid.Column="1" 
-                Grid.Row="2" 
+                Grid.Row="1" 
                 Background="#222" 
                 BorderBrush="#666" 
                 BorderThickness="1,1,0,0"
                 CornerRadius="25,0,0,0">
-            <userControls:ProfileDetailsView 
-                    SelectedGameProfile="{Binding SelectedGameProfile}"
-                    DownloadProgress="{Binding DownloadProgress}"
-                    DeleteRequested="DeleteProfileEventHandler" 
-                    Visibility="{Binding HasSelectedProfile, 
-                                Converter={StaticResource BoolToVis}}"/>
+            <ContentControl Content="{Binding CurrentView, 
+                UpdateSourceTrigger=PropertyChanged}"/>
         </Border>
         <Border Name="RightSideBar"
                 Grid.Column="3"
-                Grid.Row="2"
+                Grid.Row="1"
                 BorderBrush="#666"
                 BorderThickness="1 1 0 0">
             <Grid>
@@ -257,7 +253,7 @@
                                 Height="20"
                                 Margin="0 0 5 0"
                                 Stretch="Uniform"/>
-                        <TextBlock  Text="{Binding MSession.Username}"
+                        <TextBlock  Text="{Binding MSession.Username, FallbackValue=MSUsername}"
                                     Grid.Column="1"
                                     VerticalAlignment="Center" 
                                     HorizontalAlignment="Center"/>
@@ -313,17 +309,7 @@
                                     UpdateSourceTrigger=PropertyChanged}"
                                   Background="Transparent" 
                                   Grid.Row="1"
-                                  Padding="5">
-                        <ItemsControl.ItemTemplate>
-                            <DataTemplate>
-                                <userControls:ServerCardView 
-                                    Server="{Binding}"
-                                    DeleteRequested="DeleteServerEventHandler"
-                                    UpdatedServer="UpdatedServerEventHandler"
-                                    QuickLaunch="QuickLaunchEventHandler"/>
-                            </DataTemplate>
-                        </ItemsControl.ItemTemplate>
-                    </ItemsControl>
+                                  Padding="5"/>
 
                 </Grid>
             </Grid>
@@ -337,5 +323,9 @@
                 BorderThickness="1" 
                 CornerRadius="8" 
                 IsHitTestVisible="False"/>
+        <Border x:Name="BottomSpacer"
+                Grid.ColumnSpan="3"
+                Grid.Row="2"
+                Height="55"/>
     </Grid>
 </Window>

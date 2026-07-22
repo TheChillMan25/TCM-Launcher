@@ -19,7 +19,7 @@
         <Style TargetType="TextBlock">
             <Setter Property="FontFamily" Value="Calibri"/>
             <Setter Property="FontSize" Value="16"/>
-            <Setter Property="Foreground" Value="#f5f5f5"/>
+            <Setter Property="Foreground" Value="WhiteSmoke"/>
             <Setter Property="VerticalAlignment" Value="Center"/>
         </Style>
     </UserControl.Resources>
@@ -75,7 +75,7 @@
                           HorizontalAlignment="Center"
                           Height="25"
                           Width="25"
-                          Fill="#f5f5f5"/>
+                          Fill="WhiteSmoke"/>
 
                 </Grid>
                 <Button Name="OptionsButton"
@@ -129,6 +129,8 @@
                         Style="{StaticResource ButtonWithIcon}"
                         Height="30"
                         Width="45"
+                        IsEnabled="{Binding PlayButtonIsEnabled,
+                        UpdateSourceTrigger=PropertyChanged}"
                         Visibility="{Binding HasBindedProfile, 
                         UpdateSourceTrigger=PropertyChanged, 
                         Converter={StaticResource BoolToVis}}"

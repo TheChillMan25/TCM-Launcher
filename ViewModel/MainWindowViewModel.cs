@@ -17,6 +17,8 @@ using TCM_Launcher.View;
 using TCM_Launcher.View.PopUp;
 using TCM_Launcher.View.Windows;
 using TCM_Launcher.ViewModel.Popup;
+using TCM_Launcher.ViewModel.UserControls;
+using TCML_Class_library;
 
 namespace TCM_Launcher.ViewModel
 {
@@ -28,9 +30,16 @@ namespace TCM_Launcher.ViewModel
         private readonly IMicrosoftService microsoftService;
         private readonly IServerService serverService;
         private readonly ILauncherService launcherService;
+        private readonly IProfileModService profileModService;
+        private readonly IBackendService backendService;
+
+        private readonly ProfileDetailsViewModel profileDetailsViewModel;
+        private readonly AddContentViewModel addContentViewModel;
+        private readonly ModDetailsViewModel modDetailsViewModel;
         public MainWindowViewModel(
-            IVersionService versionService, IGameProfileService gameProfileService, IProfileSettingsService profileSettingsService,
-            IMicrosoftService microsoftService, IServerService serverService, ILauncherService launcherService)
+            IVersionService versionService, IGameProfileService gameProfileService, IProfileSettingsService profileSettingsService, IBackendService backendService,
+            IMicrosoftService microsoftService, IServerService serverService, ILauncherService launcherService, IProfileModService profileModService,
+            ProfileDetailsViewModel profileDetailsViewModel, AddContentViewModel addContentViewModel, ModDetailsViewModel modDetailsViewModel)
         {
             this.versionService = versionService;
             this.gameProfileService = gameProfileService;
@@ -38,11 +47,33 @@ namespace TCM_Launcher.ViewModel
             this.microsoftService = microsoftService;
             this.serverService = serverService;
             this.launcherService = launcherService;
+            this.profileModService = profileModService;
+            this.backendService = backendService;
+
+            this.profileDetailsViewModel = profileDetailsViewModel;
+            this.profileDetailsViewModel.OnDeleteRequested = DeleteProfile;
+            this.profileDetailsViewModel.ShowContentBorwserRequested = ShowAsync;
+            this.profileDetailsViewModel.OnLaunch = UpdateServer;
+
+            this.addContentViewModel = addContentViewModel;
+            this.addContentViewModel.OnCloseRequested = ShowAsync;
+            this.addContentViewModel.OnModDetailsRequested = ShowModDetailsAsync;
+
+            this.modDetailsViewModel = modDetailsViewModel;
+            this.modDetailsViewModel.OnBackToBrowseRequested = ShowAsync;
+
             InitializeAsync();
         }
 
-        private ObservableCollection<GameProfile> gameProfiles;
+        private ViewModelBase currentView;
 
+        public ViewModelBase CurrentView
+        {
+            get { return currentView; }
+            set { currentView = value; OnPropertyChange(); }
+        }
+
+        private ObservableCollection<GameProfile> gameProfiles;
         public ObservableCollection<GameProfile> GameProfiles
         {
             get { return gameProfiles; }
@@ -53,9 +84,8 @@ namespace TCM_Launcher.ViewModel
             }
         }
 
-        private ObservableCollection<Server> savedServers;
-
-        public ObservableCollection<Server> SavedServers
+        private ObservableCollection<ServerCardViewModel> savedServers;
+        public ObservableCollection<ServerCardViewModel> SavedServers
         {
             get { return savedServers; }
             set 
@@ -66,7 +96,7 @@ namespace TCM_Launcher.ViewModel
         }
 
         private GameProfile selectedGameProfile;
-        public GameProfile? SelectedGameProfile
+        public GameProfile SelectedGameProfile
         {
             get { return selectedGameProfile; }
             set
@@ -74,6 +104,11 @@ namespace TCM_Launcher.ViewModel
                 selectedGameProfile = value;
                 OnPropertyChange();
                 OnPropertyChange(nameof(HasSelectedProfile));
+
+                if(profileDetailsViewModel != null)
+                {
+                    _ = ShowAsync(ContentToShow.ProfileDetails);
+                }
             }
         }
         public bool HasSelectedProfile => SelectedGameProfile != null;
@@ -99,6 +134,11 @@ namespace TCM_Launcher.ViewModel
             { 
                 downloadProgress = value;
                 OnPropertyChange();
+
+                if(profileDetailsViewModel != null)
+                {
+                    profileDetailsViewModel.DownloadProgress = downloadProgress;
+                }
             }
         }
 
@@ -195,8 +235,21 @@ namespace TCM_Launcher.ViewModel
         {
             var profilesList = await gameProfileService.GetAllGameProfiles();
             GameProfiles = new ObservableCollection<GameProfile>(profilesList);
+
             var serversList = await serverService.GetSavedServersAsync();
-            SavedServers = new ObservableCollection<Server>(serversList);
+
+            var serverViewModels = serversList.Select(server =>
+            {
+                var cardVM = App.ServiceProvider.GetRequiredService<ServerCardViewModel>();
+                cardVM.Server = server;
+
+                cardVM.OnDeleteRequested = DeleteServer;
+                cardVM.OnUpdateRequested = UpdateServer;
+                cardVM.OnQuickLaunchRequested = UpdateProfile;
+
+                return cardVM;
+            });
+            SavedServers = new ObservableCollection<ServerCardViewModel>(serverViewModels);
         }
 
         private async Task WaitForVersionsAsync()
@@ -268,40 +321,6 @@ namespace TCM_Launcher.ViewModel
                 SelectedGameProfile = GameProfiles[0];
             }
         }
-        public void DeleteProfile()
-        {
-            if(SelectedGameProfile != null) {
-                var serversToUnbind = SavedServers.Where(p => p.BindedProfileId == SelectedGameProfile.Id).ToList();
-
-                foreach (var s in serversToUnbind)
-                {
-                    int idx = SavedServers.IndexOf(s);
-                    SavedServers.RemoveAt(idx);
-                    s.BindedProfileId = null;
-                    SavedServers.Insert(idx, s);
-                }
-                GameProfiles.Remove(SelectedGameProfile);
-            
-                if (GameProfiles.Count > 0)
-                {
-                    SelectedGameProfile = GameProfiles[0];
-                }
-                else SelectedGameProfile = null;
-            }
-        }
-        public void DeleteServer(Server s)
-        {
-            SavedServers.Remove(s);
-        }
-        public void UpdateServer(Server s)
-        {
-            var oldServer = SavedServers.FirstOrDefault(ser => ser.Id == s.Id);
-            if (oldServer != null)
-            {
-                int idx = SavedServers.IndexOf(oldServer);
-                SavedServers[idx] = s;
-            }
-        }
         public void UpdateProfile(string id)
         {
             if (string.IsNullOrEmpty(id)) return;
@@ -317,6 +336,52 @@ namespace TCM_Launcher.ViewModel
                 p.IsPlaying = !p.IsPlaying;
                 GameProfiles[idx] = p;
                 SelectedGameProfile = p;
+            }
+        }
+        public void DeleteProfile()
+        {
+            if(SelectedGameProfile != null) {
+                var serversToUnbind = SavedServers.Where(p => p.Server.BindedProfileId == SelectedGameProfile.Id).ToList();
+
+                foreach (var s in serversToUnbind)
+                {
+                    int idx = SavedServers.IndexOf(s);
+                    SavedServers.RemoveAt(idx);
+                    s.Server.BindedProfileId = null;
+                    SavedServers.Insert(idx, s);
+                }
+                GameProfiles.Remove(SelectedGameProfile);
+            
+                if (GameProfiles.Count > 0)
+                {
+                    SelectedGameProfile = GameProfiles[0];
+                }
+                else
+                {
+                    SelectedGameProfile = null;
+                    ShowAsync(ContentToShow.None);
+                }
+            }
+        }
+        public void DeleteServer(Server s)
+        {
+            var vmToRemove = SavedServers.FirstOrDefault(vm => vm.Server.Id == s.Id);
+            if (vmToRemove != null) SavedServers.Remove(vmToRemove);
+        }
+        public void UpdateServer(Server s)
+        {
+            var sVM = SavedServers.FirstOrDefault(ser => ser.Server.Id == s.Id);
+            if (sVM != null)
+            {
+                sVM.Server = s;
+            }
+        }
+        public void UpdateServer(string profileId)
+        {
+            var sVM = SavedServers.FirstOrDefault(ser => ser.Server.BindedProfileId == profileId);
+            if (sVM != null)
+            {
+                sVM.PlayButtonIsEnabled = !sVM.PlayButtonIsEnabled;
             }
         }
         public async Task CheckForUpdatesAsync()
@@ -404,9 +469,52 @@ namespace TCM_Launcher.ViewModel
             bool create = s.ShowDialog() ?? false;
             if(s.CreatedServer != null)
             {
-                SavedServers.Add(s.CreatedServer);
+                var cardVM = App.ServiceProvider.GetRequiredService<ServerCardViewModel>();
+                cardVM.Server = s.CreatedServer;
+                cardVM.OnDeleteRequested = DeleteServer;
+                cardVM.OnUpdateRequested = UpdateServer;
+                cardVM.OnQuickLaunchRequested = UpdateProfile;
+                SavedServers.Add(cardVM);
             }
             s.Owner.Opacity = 1;
+        }
+
+        public enum ContentToShow
+        {
+            ProfileDetails, AddContent, None
+        }
+        private async Task ShowAsync(ContentToShow content)
+        {
+            switch (content)
+            {
+                case ContentToShow.ProfileDetails:
+                    profileDetailsViewModel.SelectedGameProfile = SelectedGameProfile;
+                    await profileDetailsViewModel.LoadProfileMods();
+                    CurrentView = profileDetailsViewModel;
+                    break;
+                case ContentToShow.AddContent:
+                    if (addContentViewModel.SelectedSearchResult != null) addContentViewModel.SelectedSearchResult = null;
+                    if (addContentViewModel.MCVersion != SelectedGameProfile.MCVersion) addContentViewModel.MCVersion= SelectedGameProfile.MCVersion;
+                    CurrentView = addContentViewModel;
+                    break;
+                case ContentToShow.None:
+                    CurrentView = null;
+                    break;
+            }
+        }
+
+        private async Task ShowModDetailsAsync(string projectId, ModSource source)
+        {
+            modDetailsViewModel.Details = await backendService.GetModDetailsAsync(projectId, SelectedGameProfile.MCVersion, source);
+            if(modDetailsViewModel.Details == null)
+            {
+                MessageBox.Show("There was an error when opening the mods details.", "ERROR", MessageBoxButton.OK, MessageBoxImage.Error);
+                return;
+            }
+            modDetailsViewModel.ProfileId = SelectedGameProfile.Id;
+            modDetailsViewModel.MCVersion = SelectedGameProfile.MCVersion;
+            await modDetailsViewModel.SetVersionsAsync();
+            CurrentView = modDetailsViewModel;
         }
 
         public async Task MicrosoftLoginAsync()
