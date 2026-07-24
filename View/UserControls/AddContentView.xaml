@@ -20,7 +20,7 @@
             </Grid.ColumnDefinitions>
             <Image Source="/Assets/mc_img.png"
                    Margin="10"/>
-            <TextBlock Text="{Binding Profile.ProfileName, FallbackValue=Profile name}"
+            <TextBlock Text="{Binding ProfileName, FallbackValue=Profile name}"
                        FontSize="24"
                        Grid.Column="1"
                        Foreground="#f2c480"

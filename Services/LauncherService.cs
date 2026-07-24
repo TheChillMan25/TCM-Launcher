@@ -31,10 +31,11 @@ namespace TCM_Launcher.Services
             this.profileModService = profileModService;
         }
 
-        public async Task<string> CreateProfileAsync(string pName, string mcVersion, string fVersion, IProgress<double> progress = null)
+        public async Task<string> CreateProfileAsync(string pName, string mcVersion, string fVersion, IProgress<double> progress, IProgress<string> status, IProgress<bool> progressVisible)
         {
             try
             {
+                progressVisible.Report(true);
                 MinecraftPath path = CreateProfilePath(pName);
                 var launcher = new MinecraftLauncher(path);
                 launcher.ByteProgressChanged += (sender, args) =>
@@ -45,7 +46,7 @@ namespace TCM_Launcher.Services
                         progress?.Report(percentage);
                     }
                 };
-                return await InstallForgeAsync(launcher, mcVersion, fVersion, progress);
+                return await InstallForgeAsync(launcher, mcVersion, fVersion, progress, status, progressVisible);
             }
             catch (Exception ex)
             {
@@ -54,7 +55,7 @@ namespace TCM_Launcher.Services
             }
         }
 
-        public async Task LaunchProfileAsync(GameProfile profile, string? serverAddress = null)
+        public async Task LaunchProfileAsync(GameProfile profile, IProgress<double> progress, IProgress<string> status, IProgress<bool> progressVisible, string? serverAddress = null)
         {
             try
             {
@@ -66,9 +67,11 @@ namespace TCM_Launcher.Services
                         "No internet. Connect to the internet before launching game.", "Warning", MessageBoxButton.OK, MessageBoxImage.Warning);
                     return;
                 }
-                MinecraftPath path = CreateProfilePath(profile.Id);
-                var launcher = new MinecraftLauncher(path);
+                progressVisible.Report(true);
+                status.Report("Starting game");
+                progress.Report(10);
                 var profileSettings = await profileSettingsService.GetProfileSettings(profile.Id);
+                progress.Report(30);
                 var jvmArgs = new List<MArgument>();
                 if (!string.IsNullOrWhiteSpace(profileSettings.JVMArgs))
                 {
@@ -81,6 +84,17 @@ namespace TCM_Launcher.Services
                         }
                     }
                 }
+                MinecraftPath path = CreateProfilePath(profile.Id);
+                var launcher = new MinecraftLauncher(path);
+                launcher.ByteProgressChanged += (sender, args) =>
+                {
+                    if (args.TotalBytes > 0)
+                    {
+                        double percent = (double)args.ProgressedBytes / args.TotalBytes * 100;
+                        progress.Report(percent);
+                    }
+                };
+                status.Report("Checking file integrity");
                 await launcher.InstallAsync(profile.FileName);
                 var launchOptions = new MLaunchOption
                 {
@@ -102,8 +116,8 @@ namespace TCM_Launcher.Services
 
                     launchOptions.ServerIp = ip;
                     launchOptions.ServerPort = port;
-                }
-                await profileModService.SyncProfileModsAsync(profile.Id);
+                }  
+                await profileModService.SyncProfileModsAsync(profile.Id, progress, status);
                 var process = await launcher.BuildProcessAsync(profile.FileName, launchOptions);
                 var processWrapper = new ProcessWrapper(process);
                 processWrapper.OutputReceived += (sender, log) =>
@@ -116,6 +130,8 @@ namespace TCM_Launcher.Services
                 
                 gameProfileService.UpdateLastPlayedProfileAsync(profile.Id);
                 Logger.Log($"Started game profile with id: {profile.Id} ({profile.FileName})");
+                progress.Report(100);
+                progressVisible.Report(false);
                 processWrapper.StartWithEvents();
 
                 int exitCode = await processWrapper.WaitForExitTaskAsync();
@@ -155,10 +171,11 @@ namespace TCM_Launcher.Services
             
         }
 
-        private async Task<string> InstallForgeAsync(MinecraftLauncher launcher, string mcVersion, string fVersion, IProgress<double> progress = null)
+        private async Task<string> InstallForgeAsync(MinecraftLauncher launcher, string mcVersion, string fVersion, IProgress<double> progress, IProgress<string> status, IProgress<bool> progressVisible)
         {
             try
             {
+                status.Report("Installing forge files");
                 Logger.Log($"Installing forge ({fVersion} for minecraft with version {mcVersion}) started", "FORGE");
                 var fInstaller = new ForgeInstaller(launcher);
                 var installOptions = new ForgeInstallOptions
@@ -174,10 +191,11 @@ namespace TCM_Launcher.Services
                     CancellationToken = CancellationToken.None,
                     SkipIfAlreadyInstalled = true,
                 };
-
                 var latestForgeInstallName = await fInstaller.Install(mcVersion, fVersion, installOptions);
+                status.Report("Installing minecraft files");
                 await launcher.InstallAsync(latestForgeInstallName);
                 Logger.Log($"Installing forge ({fVersion} for minecraft with version {mcVersion}) completed", "FORGE");
+                progressVisible.Report(false);
                 return latestForgeInstallName;
             }
             catch (Exception ex)

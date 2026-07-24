@@ -24,7 +24,7 @@ namespace TCM_Launcher.ViewModel.UserControls
 
         public Action<Server>? OnDeleteRequested { get; set; }
         public Action<Server>? OnUpdateRequested { get; set; }
-        public Action<string>? OnQuickLaunchRequested { get; set; }
+        public Func<string, Server, Task>? OnQuickLaunchRequested { get; set; }
 
         private Server server;
 		public Server Server
@@ -100,10 +100,7 @@ namespace TCM_Launcher.ViewModel.UserControls
 			if (profile != null)
 			{
                 PlayButtonIsEnabled = false;
-				OnQuickLaunchRequested?.Invoke(profile.Id);
-                await launcherService.LaunchProfileAsync(profile, Server.Address);
-				PlayButtonIsEnabled = true;
-                OnQuickLaunchRequested?.Invoke(profile.Id);
+				OnQuickLaunchRequested?.Invoke(profile.Id, server);
             }
 		}
 

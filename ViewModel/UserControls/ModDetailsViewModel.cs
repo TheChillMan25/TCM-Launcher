@@ -94,11 +94,6 @@ namespace TCM_Launcher.ViewModel.UserControls
 			await SetLatestBindedEnabled();
         }
 
-		public async Task SyncProfileModsAsync()
-		{
-			await profileModService.SyncProfileModsAsync(ProfileId);
-        }
-
         private async Task SetLatestBindedEnabled(ModVersion? latest = null)
         {
 			if(latest == null) latest = Versions.FirstOrDefault()?.Version;

@@ -29,9 +29,11 @@
                     <ColumnDefinition Width="Auto"/>
                     <ColumnDefinition/>
                 </Grid.ColumnDefinitions>
-                <Image Source="{Binding Mod.IconUrl, FallbackValue=Assets/mc_img.png}"
-               Height="40" 
-               Width="40"/>
+                <Image Source="{Binding IconUrl, 
+                        FallbackValue='pack://application:,,,/Assets/mc_img.png', 
+                        TargetNullValue='pack://application:,,,/Assets/mc_img.png'}"
+                       Height="40" 
+                       Width="40"/>
                 <StackPanel Grid.Column="1"
                     VerticalAlignment="Center">
                     <TextBlock Text="{Binding Mod.Name, FallbackValue=Mod name}"

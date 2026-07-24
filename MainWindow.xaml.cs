@@ -65,24 +65,16 @@ namespace TCM_Launcher
 
         private async void MicrosoftLoginButton_Click(object sender, RoutedEventArgs e)
         {
+            MicrosoftLoginButton.IsEnabled = false;
             await viewModel.MicrosoftLoginAsync();
-        }
-
-        private void MicrosoftAccountButton_Click(object sender, RoutedEventArgs e)
-        {
-            if (sender is Button btn && btn.ContextMenu != null)
-            {
-                btn.ContextMenu.PlacementTarget = btn;
-                btn.ContextMenu.VerticalOffset = 5;
-                btn.ContextMenu.Placement = System.Windows.Controls.Primitives.PlacementMode.Bottom;
-                btn.ContextMenu.IsOpen = true;
-            }
-
+            MicrosoftLoginButton.IsEnabled = true;
         }
 
         private async void MicrosoftLogoutButton_Click(object sender, RoutedEventArgs e)
         {
+            MicrosoftLogoutButton.IsEnabled = false;
             await viewModel.MicrosoftLogoutAsync();
+            MicrosoftLogoutButton.IsEnabled = true;
         }
 
         public async void CheckNetworkButton_Click(object sender, RoutedEventArgs e)

@@ -58,9 +58,14 @@ namespace TCM_Launcher.View.UserControls
             viewModel.ShowContentBorwser();
         }
 
-        //private void ExportModpack_Click(object sender, RoutedEventArgs e)
-        //{
-        //    MessageBox.Show("Modpack exportalasa...");
-        //}
+        private async void ExportModpack_Click(object sender, RoutedEventArgs e)
+        {
+            await viewModel.ExportModpackAsync();
+        }
+
+        private async void ImportModpackButton_Click(object sender, RoutedEventArgs e)
+        {
+            await viewModel.ImportModpackAsync();
+        }
     }
 }

@@ -105,7 +105,7 @@ namespace TCM_Launcher.ViewModel
                 OnPropertyChange();
                 OnPropertyChange(nameof(HasSelectedProfile));
 
-                if(profileDetailsViewModel != null)
+                if(selectedGameProfile != null)
                 {
                     _ = ShowAsync(ContentToShow.ProfileDetails);
                 }
@@ -125,33 +125,6 @@ namespace TCM_Launcher.ViewModel
             }
         }
         public bool IsVersionsLoading => !IsVersionsLoaded;
-
-        private double downloadProgress;
-        public double DownloadProgress
-        {
-            get { return downloadProgress; }
-            set
-            { 
-                downloadProgress = value;
-                OnPropertyChange();
-
-                if(profileDetailsViewModel != null)
-                {
-                    profileDetailsViewModel.DownloadProgress = downloadProgress;
-                }
-            }
-        }
-
-        private bool isDownloading;
-        public bool IsDownloading
-        {
-            get { return isDownloading; }
-            set 
-            {
-                isDownloading = value; 
-                OnPropertyChange();
-            }
-        }
 
         private UpdateData availableUpdtea = new UpdateData();
         public UpdateData AvailableUpdate
@@ -245,7 +218,7 @@ namespace TCM_Launcher.ViewModel
 
                 cardVM.OnDeleteRequested = DeleteServer;
                 cardVM.OnUpdateRequested = UpdateServer;
-                cardVM.OnQuickLaunchRequested = UpdateProfile;
+                cardVM.OnQuickLaunchRequested = QuickStartAsync;
 
                 return cardVM;
             });
@@ -276,15 +249,10 @@ namespace TCM_Launcher.ViewModel
                 });
                 await LoadProfilesAsync();
                 SelectedGameProfile = GameProfiles.FirstOrDefault(prof => prof.Id == p.Id);
-                IsDownloading = true;
-                DownloadProgress = 0;
-                var progressHandler = new Progress<double>(percent =>
-                {
-                    DownloadProgress = percent;
-                });
-                var fileName = await launcherService.CreateProfileAsync(p.Id, data.MCVersion, data.ForgeVersion, progressHandler);
-                IsDownloading = false;
-                DownloadProgress = 0;
+                var progressHandler = new Progress<double>(percent => profileDetailsViewModel.ProgressNumber = percent);
+                var progressStatus = new Progress<string>(status => profileDetailsViewModel.ProgressText = status);
+                var progressVisible = new Progress<bool>(visible => profileDetailsViewModel.ProgressVisible = visible);
+                var fileName = await launcherService.CreateProfileAsync(p.Id, data.MCVersion, data.ForgeVersion, progressHandler, progressStatus, progressVisible);
                 if (!string.IsNullOrEmpty(fileName))
                 {
                     await gameProfileService.UpdateProfileAsync(p.Id, new GameProfile {
@@ -321,13 +289,15 @@ namespace TCM_Launcher.ViewModel
                 SelectedGameProfile = GameProfiles[0];
             }
         }
-        public void UpdateProfile(string id)
+        public async Task QuickStartAsync(string profileId, Server server = null)
         {
-            if (string.IsNullOrEmpty(id)) return;
+            if (string.IsNullOrEmpty(profileId)) return;
 
-            var p = GameProfiles.FirstOrDefault(p => p.Id == id);
+            var p = GameProfiles.FirstOrDefault(p => p.Id == profileId);
+            var s = SavedServers.FirstOrDefault(s => s.Server.Id == server.Id);
 
             if (p == null) return;
+            if(s == null) return; 
 
             int idx = GameProfiles.IndexOf(p);
 
@@ -336,6 +306,8 @@ namespace TCM_Launcher.ViewModel
                 p.IsPlaying = !p.IsPlaying;
                 GameProfiles[idx] = p;
                 SelectedGameProfile = p;
+                await profileDetailsViewModel.StartGame(server.Address);
+                s.PlayButtonIsEnabled = true;
             }
         }
         public void DeleteProfile()
@@ -473,7 +445,7 @@ namespace TCM_Launcher.ViewModel
                 cardVM.Server = s.CreatedServer;
                 cardVM.OnDeleteRequested = DeleteServer;
                 cardVM.OnUpdateRequested = UpdateServer;
-                cardVM.OnQuickLaunchRequested = UpdateProfile;
+                cardVM.OnQuickLaunchRequested = QuickStartAsync;
                 SavedServers.Add(cardVM);
             }
             s.Owner.Opacity = 1;
@@ -489,12 +461,13 @@ namespace TCM_Launcher.ViewModel
             {
                 case ContentToShow.ProfileDetails:
                     profileDetailsViewModel.SelectedGameProfile = SelectedGameProfile;
-                    await profileDetailsViewModel.LoadProfileMods();
+                    await profileDetailsViewModel.LoadProfileModsAsync();
                     CurrentView = profileDetailsViewModel;
                     break;
                 case ContentToShow.AddContent:
                     if (addContentViewModel.SelectedSearchResult != null) addContentViewModel.SelectedSearchResult = null;
                     if (addContentViewModel.MCVersion != SelectedGameProfile.MCVersion) addContentViewModel.MCVersion= SelectedGameProfile.MCVersion;
+                    if (addContentViewModel.ProfileName != SelectedGameProfile.ProfileName) addContentViewModel.ProfileName = SelectedGameProfile.ProfileName;
                     CurrentView = addContentViewModel;
                     break;
                 case ContentToShow.None:

@@ -1,5 +1,7 @@
-﻿using System.IO;
+﻿using System.Diagnostics;
+using System.IO;
 using System.Text.Json;
+using System.Windows.Forms;
 using TCM_Launcher.Core.Utils;
 using TCM_Launcher.Interfaces;
 using TCM_Launcher.Model.Mods;
@@ -11,10 +13,12 @@ namespace TCM_Launcher.Services
     {
         private readonly IDownloadService downloadService;
         private readonly IBackendService backendService;
-        public ProfileModService(IDownloadService downloadService, IBackendService backendService)
+        private readonly IGameProfileService gameProfileService;
+        public ProfileModService(IDownloadService downloadService, IBackendService backendService, IGameProfileService gameProfileService)
         {
             this.downloadService = downloadService;
             this.backendService = backendService;
+            this.gameProfileService = gameProfileService;
         }
 
         public async Task AddModWithDependenciesAsync(string profileId, string mcVersion, ModDetails modDetails, ModVersion selectedVersion)
@@ -24,7 +28,7 @@ namespace TCM_Launcher.Services
                 var manifest = await LoadManifestAsync(profileId);
                 manifest.Mods ??= new List<ProfileModInfo>();
 
-                var processedProjectIds = manifest.Mods.Select(m => m.Id).ToHashSet(StringComparer.OrdinalIgnoreCase);
+                var processedProjectIds = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
                 var processingQueue = new Queue<(ModDetails details, ModVersion version)>();
                 processingQueue.Enqueue((modDetails, selectedVersion));
@@ -33,10 +37,25 @@ namespace TCM_Launcher.Services
                 {
                     var (currentDetails, currentVersion) = processingQueue.Dequeue();
 
-                    if (!manifest.Mods.Any(m => m.Id == currentDetails.Id))
+                    if (processedProjectIds.Contains(currentDetails.Id)) continue;
+
+                    processedProjectIds.Add(currentDetails.Id);
+                    var primaryFile = currentVersion.Files.FirstOrDefault();
+                    if (primaryFile != null)
                     {
-                        var primaryFile = currentVersion.Files.FirstOrDefault();
-                        if (primaryFile != null)
+                        var existingMod = manifest.Mods.FirstOrDefault(m => m.Id == currentDetails.Id);
+
+                        if(existingMod != null)
+                        {
+                            existingMod.Version = currentVersion.VersionNumber;
+                            existingMod.FileName = primaryFile.FileName;
+                            existingMod.DownloadUrl = primaryFile.Url;
+                            existingMod.Name = currentDetails.Title;
+                            existingMod.IconUrl = currentDetails.IconUrl;
+                            existingMod.Author = currentDetails.Author;
+                            existingMod.IsEnabled = true;
+                        }
+                        else
                         {
                             manifest.Mods.Add(new ProfileModInfo
                             {
@@ -48,12 +67,12 @@ namespace TCM_Launcher.Services
                                 Version = currentVersion.VersionNumber,
                                 IconUrl = currentDetails.IconUrl,
                                 Author = currentDetails.Author,
+                                Client_Side = currentDetails.Client_Side,
+                                Server_Side = currentDetails.Server_Side,
                                 IsEnabled = true
                             });
                         }
                     }
-
-                    processedProjectIds.Add(currentDetails.Id);
 
                     var requiredDependencies = currentVersion.Dependencies?
                         .Where(d => d.DependencyType.Equals("required", StringComparison.OrdinalIgnoreCase))
@@ -64,7 +83,8 @@ namespace TCM_Launcher.Services
 
                     foreach (var dep in requiredDependencies)
                     {
-                        if (processedProjectIds.Contains(dep.ProjectId))
+                        bool isAlreadyInManifest = manifest.Mods.Any(m => m.Id == dep.ProjectId);
+                        if (processedProjectIds.Contains(dep.ProjectId) || isAlreadyInManifest)
                             continue;
 
                         ModDetails? depDetails = await backendService.GetModDetailsAsync(dep.ProjectId, mcVersion, currentDetails.Source, false);
@@ -74,7 +94,6 @@ namespace TCM_Launcher.Services
                             var depVersion = depDetails.Versions.FirstOrDefault();
                             if (depVersion != null)
                             {
-                                processedProjectIds.Add(depDetails.Id);
                                 processingQueue.Enqueue((depDetails, depVersion));
                             }
                         }
@@ -88,8 +107,87 @@ namespace TCM_Launcher.Services
                 Logger.Error("There was an exception while addin mod to profile", ex);
             }
         }
+
+        public async Task ExportModpackAsync(string profileId, string profileName)
+        {
+            string exportName = string.Join("_", profileName.Split(Path.GetInvalidFileNameChars()));
+            try
+            {
+                var dialog = new SaveFileDialog
+                {
+                    Title = "Export modpack",
+                    FileName = $"{exportName}_modpack",
+                    DefaultExt = "json",
+                    Filter = "JSON files (*.json)|*.json",
+                    InitialDirectory = Environment.GetFolderPath(Environment.SpecialFolder.Desktop)
+                };
+                var result = dialog.ShowDialog();
+                if (result == DialogResult.OK)
+                {
+                    string source = GetManifestPath(profileId);
+                    string destination = dialog.FileName;
+
+                    if (File.Exists(source))
+                    {
+                        File.Copy(source, destination, true);
+
+                        Process.Start(new ProcessStartInfo
+                        {
+                            FileName = "explorer.exe",
+                            Arguments = $"/select,\"{destination}\"",
+                            UseShellExecute = true
+                        });
+                    }
+                    else
+                    {
+                        MessageBox.Show("No mods to export");
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.Error("There was an exception when exporting modpack.", ex);
+            }
+        }
+
         public string GetManifestPath(string profileId)
             => Path.Combine(Constants.ProfilesPath, profileId, Constants.ProfileModsManifest);
+
+        public async Task ImportModpackAsync(string profileId)
+        {
+            try
+            {
+                var dialog = new OpenFileDialog
+                {
+                    Title = "Select a modpack to import",
+                    Filter = "JSON files (*.json)|*.json",
+                    InitialDirectory = Environment.GetFolderPath(Environment.SpecialFolder.Desktop),
+                };
+                var result = dialog.ShowDialog();
+                if (result == DialogResult.OK)
+                {
+                    string source = dialog.FileName;
+                    if (File.Exists(source))
+                    {
+                        string json = await File.ReadAllTextAsync(source);
+                        var manifest = JsonSerializer.Deserialize<ProfileModpackManifest>(json);
+                        if (manifest != null)
+                        {
+                            manifest.ProfileId = profileId;
+                            manifest.LastUpdated = DateTime.Now;
+
+                            string destination = Path.Combine(Constants.ProfilesPath, profileId, Constants.ProfileModsManifest);
+                            await File.WriteAllTextAsync(destination, json);
+                            MessageBox.Show("Modpack imported");
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.Error("There was an exception while importing modpack.", ex);
+            }
+        }
 
         public async Task<bool> IsVersionBindedToProfileAsync(string profileId, ModVersion version)
         {
@@ -139,9 +237,10 @@ namespace TCM_Launcher.Services
             await File.WriteAllTextAsync(path, json);
         }
 
-        public async Task SyncProfileModsAsync(string profileId)
+        public async Task SyncProfileModsAsync(string profileId, IProgress<double> progress, IProgress<string> status)
         {
             string modsFolder = Path.Combine(Constants.ProfilesPath, profileId, "mods");
+            if (!Directory.Exists(modsFolder)) Directory.CreateDirectory(modsFolder);
             try
             {
                 var manifest = await LoadManifestAsync(profileId);
@@ -153,11 +252,22 @@ namespace TCM_Launcher.Services
                     string expectedName = m.IsEnabled ? m.FileName : m.FileName + ".disabled";
                     return !existingFiles.Contains(expectedName);
                 }).ToList();
-                await Parallel.ForEachAsync(missingMods, parallelOptions, async (mod, token) =>
+                int missing = missingMods.Count;
+                if (missing == 0) progress.Report(100);
+                else
                 {
-                    string targetName = mod.IsEnabled ? mod.FileName : mod.FileName + ".disabled";
-                    await downloadService.DownloadFileAsync(mod.DownloadUrl, modsFolder, targetName);
-                });
+                    int downloaded = 0;
+                    status.Report("Installing mods");
+                    await Parallel.ForEachAsync(missingMods, parallelOptions, async (mod, token) =>
+                    {
+                        string targetName = mod.IsEnabled ? mod.FileName : mod.FileName + ".disabled";
+                        await downloadService.DownloadFileAsync(mod.DownloadUrl, modsFolder, targetName);
+                        int currentCompleted = Interlocked.Increment(ref downloaded);
+                        double currentPercent = (double)currentCompleted / missing * 100;
+                        progress?.Report(currentPercent);
+                    });
+                }
+                
                 var orphanMods = existingFiles.Where(file => !expectedFiles.Contains(file)).ToList();
                 foreach (var orphanMod in orphanMods)
                 {
@@ -205,5 +315,7 @@ namespace TCM_Launcher.Services
                 Logger.Error("There was an exception when setting mod IsEnabled property.", ex);
             }
         }
+
+
     }
 }

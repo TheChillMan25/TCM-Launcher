@@ -32,6 +32,13 @@ namespace TCM_Launcher.ViewModel.UserControls
 
         private CancellationTokenSource _searchCts;
 
+		private string profileName;
+		public string ProfileName
+		{
+			get { return profileName; }
+			set { profileName = value; OnPropertyChange(); }
+		}
+
 		private string mcVersion;
 		public string MCVersion
 		{

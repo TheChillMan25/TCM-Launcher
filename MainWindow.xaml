@@ -240,8 +240,7 @@
                         Visibility="{Binding LoggedIntoMSAccount, 
                                     Converter={StaticResource BoolToVis}}"
                         Margin="10"
-                        HorizontalAlignment="Center"
-                        Click="MicrosoftAccountButton_Click">
+                        HorizontalAlignment="Center">
                     <Grid Width="Auto">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition/>

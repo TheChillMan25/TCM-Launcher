@@ -9,7 +9,11 @@ namespace TCM_Launcher.Services
     public class BackendService : IBackendService
     {
         private static readonly HttpClient httpClient = new HttpClient();
+        #if DEBUG
         private const string BaseUrl = "http://localhost:7050/api";
+        #else
+        private const string BaseUrl = "https://tcm-launcher-api-ceeda5a8hng9hebv.francecentral-01.azurewebsites.net/api";
+        #endif
         private JsonSerializerOptions jsonSerializerOptions = new JsonSerializerOptions
         {
             PropertyNameCaseInsensitive = true

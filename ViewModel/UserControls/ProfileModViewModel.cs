@@ -20,8 +20,26 @@ namespace TCM_Launcher.ViewModel.UserControls
 		public ProfileModInfo Mod
 		{
 			get { return mod; }
-			set { mod = value; OnPropertyChange(); }
+			set { mod = value; OnPropertyChange(); IconUrl = Mod.IconUrl; }
 		}
+
+
+        private string iconUrl;
+        public string IconUrl
+        {
+            get
+            {
+                if (string.IsNullOrWhiteSpace(iconUrl) || iconUrl.Trim() == "#")
+                    return null;
+
+                return iconUrl;
+            }
+            set
+            {
+                iconUrl = value;
+                OnPropertyChange();
+            }
+        }
 
         public async Task RemoveModFromProfile()
         {

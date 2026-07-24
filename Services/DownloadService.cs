@@ -8,7 +8,7 @@ namespace TCM_Launcher.Services
     public class DownloadService : IDownloadService
     {
         private static readonly HttpClient httpClient = new HttpClient();
-        public async Task DownloadFileAsync(string url, string destinationPath, string fileName, IProgress<double>? progress = null)
+        public async Task DownloadFileAsync(string url, string destinationPath, string fileName)
         {
             if(!Directory.Exists(destinationPath))
             {
@@ -25,6 +25,7 @@ namespace TCM_Launcher.Services
 
                 using var read = await response.Content.ReadAsStreamAsync();
                 using var write = File.Open(targetDestination, FileMode.Create);
+
                 await read.CopyToAsync(write);
             }
             catch (Exception ex) 

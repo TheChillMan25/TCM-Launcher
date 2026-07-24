@@ -8,7 +8,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <UseWPF>true</UseWPF>
 	<NoWarn>$(NoWarn);NU1903</NoWarn>
-	<Version>0.0.2</Version>
+	<Version>0.0.3</Version>
 	<IncludeNativeLibrariesForSelfExtract>true</IncludeNativeLibrariesForSelfExtract>
 	<AssemblyTitle></AssemblyTitle>
 	<ApplicationIcon>Assets\TCM.ico</ApplicationIcon>
@@ -25,7 +25,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Resource Include="Assets\mc_img.png" />
+    <Resource Include="Assets\mc_img.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Resource>
     <Resource Include="Assets\TCM.ico" />
   </ItemGroup>
 
@@ -49,7 +51,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\TCML Class library\TCML Class library.csproj" />
+    <ProjectReference Include="..\TCM Launcher Backend\TCML Class library\TCML Class library.csproj" />
   </ItemGroup>
 
   <ItemGroup>

@@ -37,7 +37,9 @@
                 <ColumnDefinition Width="Auto"/>
             </Grid.ColumnDefinitions>
             <Image Source="{Binding Details.IconUrl,
-                UpdateSourceTrigger=PropertyChanged, FallbackValue=Assets/mc_img.png}"
+                UpdateSourceTrigger=PropertyChanged, 
+                FallbackValue='pack://application:,,,/Assets/mc_img.png', 
+                TargetNullValue='pack://application:,,,/Assets/mc_img.png'}"
                    Height="120"
                    Width="120"
                    Margin="10"/>

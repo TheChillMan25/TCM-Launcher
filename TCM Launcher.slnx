@@ -1,5 +1,5 @@
 <Solution>
-  <Project Path="../TCM Launcher Backend/TCM Launcher Backend.csproj" Id="b2e4940a-6d5f-4686-9078-f44c57c0e9c1" />
-  <Project Path="../TCML Class library/TCML Class library.csproj" />
+  <Project Path="../TCM Launcher Backend/TCM Launcher Backend/TCM Launcher Backend.csproj" />
+  <Project Path="../TCM Launcher Backend/TCML Class library/TCML Class library.csproj" />
   <Project Path="TCM Launcher.csproj" />
 </Solution>
