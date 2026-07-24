@@ -113,18 +113,16 @@ namespace TCM_Launcher.ViewModel
         }
         public bool HasSelectedProfile => SelectedGameProfile != null;
 
-        private bool isVersionsLoaded;
-        public bool IsVersionsLoaded
+        private bool addProfileEnabled;
+        public bool AddProfileEnabled
         {
-            get { return isVersionsLoaded; }
+            get { return addProfileEnabled; }
             set 
             {
-                isVersionsLoaded = value;
+                addProfileEnabled = value;
                 OnPropertyChange();
-                OnPropertyChange(nameof(IsVersionsLoading));
             }
         }
-        public bool IsVersionsLoading => !IsVersionsLoaded;
 
         private UpdateData availableUpdtea = new UpdateData();
         public UpdateData AvailableUpdate
@@ -227,20 +225,21 @@ namespace TCM_Launcher.ViewModel
 
         private async Task WaitForVersionsAsync()
         {
-            IsVersionsLoaded = false;
+            AddProfileEnabled = false;
 
             if (versionService.SyncTask != null)
             {
                 await versionService.SyncTask;
             }
 
-            IsVersionsLoaded = true;
+            AddProfileEnabled = true;
         }
 
         private async Task<bool> CreateProfile(GameProfile data)
         {
             try
             {
+                AddProfileEnabled = false;
                 var p = await gameProfileService.AddProfileAsync(data.ProfileName, data.MCVersion, data.ForgeVersion);
                 await profileSettingsService.SetProfileSettingsAsync(new ProfileSettings
                 {
@@ -273,6 +272,10 @@ namespace TCM_Launcher.ViewModel
                 Logger.Error("There was an exception during profile creation", ex);
                 MessageBox.Show($"An error occured during profile creation.", "ERROR", MessageBoxButton.OK, MessageBoxImage.Error);
                 return false;
+            }
+            finally
+            {
+                AddProfileEnabled = true;
             }
         }
         private void OpenLastPlayedProfile()

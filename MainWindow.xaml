@@ -97,7 +97,7 @@
             <Button x:Name="AddProfileButton"
                     Style="{StaticResource RoundButton}"
                     Click="AddProfileButton_Click"
-                    IsEnabled="{Binding IsVersionsLoaded}">
+                    IsEnabled="{Binding AddProfileEnabled}">
                 <Button.ToolTip>
                     <userControls:Tooltip TooltipLabelText="Add profile" TooltipContentText="Create custom profile to have different experience with one click."/>
                 </Button.ToolTip>
