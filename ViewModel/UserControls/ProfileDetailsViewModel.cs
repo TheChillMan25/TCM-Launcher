@@ -199,11 +199,16 @@ namespace TCM_Launcher.ViewModel.UserControls
 
         public async Task StartGame(string serverAddress = null)
         {
+            var profileToLaunch = SelectedGameProfile;
+            if (profileToLaunch == null) return;
             try
             {
-                SelectedGameProfile.IsPlaying = true;
-                IsEnable = SelectedGameProfile.Installed && !SelectedGameProfile.IsPlaying;
-                PlayButtonText = "Running";
+                profileToLaunch.IsPlaying = true;
+                if (SelectedGameProfile?.Id == profileToLaunch.Id)
+                {
+                    IsEnable = profileToLaunch.Installed && !profileToLaunch.IsPlaying;
+                    PlayButtonText = "Running";
+                }
                 OnLaunch.Invoke(SelectedGameProfile.Id);
                 var progress = new Progress<double>(percent => ProgressNumber = percent);
                 var status = new Progress<string>(status => ProgressText = status);
@@ -213,9 +218,12 @@ namespace TCM_Launcher.ViewModel.UserControls
             }
             finally
             {
-                SelectedGameProfile.IsPlaying = false;
-                PlayButtonText = "Play";
-                IsEnable = SelectedGameProfile.Installed && !SelectedGameProfile.IsPlaying;
+                profileToLaunch.IsPlaying = false;
+                if (SelectedGameProfile?.Id == profileToLaunch.Id)
+                {
+                    IsEnable = profileToLaunch.Installed && !profileToLaunch.IsPlaying;
+                    PlayButtonText = "Play";
+                }
             }
         }
 
