@@ -11,7 +11,6 @@
     <UserControl.Resources>
         <BooleanToVisibilityConverter x:Key="BoolToVis"/>
         <converters:DownloadCountConverter x:Key="DownloadConverter"/>
-        <converters:InverseBooleanConverter x:Key="InverseBool"/>
         <converters:InverseBooleanToVisibilityConverter x:Key="InverseBoolToVis"/>
         <Style TargetType="TextBlock">
             <Setter Property="Margin" Value="10 5"/>
@@ -101,13 +100,13 @@
                 </Button>
                 <Button x:Name="InstallLatestButton"
                         Style="{StaticResource ButtonWithIcon}"
-                        IsEnabled="{Binding IsLatestBindedToProfile,
-                    UpdateSourceTrigger=PropertyChanged, 
-                    Converter={StaticResource InverseBool}}"
+                        IsEnabled="{Binding CanInstallLatest,
+                    UpdateSourceTrigger=PropertyChanged}"
                         Grid.Row="1"
                         Grid.RowSpan="2"
                         Margin="10"
-                        HorizontalAlignment="Center" Click="InstallLatestButton_Click">
+                        HorizontalAlignment="Center"
+                        Click="InstallLatestButton_Click">
                     <Grid>
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition/>

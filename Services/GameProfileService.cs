@@ -22,7 +22,6 @@ namespace TCM_Launcher.Services
                     MCVersion = mcVersion,
                     ForgeVersion = fVersion,
                     FileName = fileName,
-                    Installed = false,
                 };
 
                 db.GameProfiles.Add(newProfile);
@@ -70,7 +69,21 @@ namespace TCM_Launcher.Services
 
         }
 
-        public async Task<GameProfile?> GetProfile(string profileId)
+        public async Task<List<GameProfile>> GetPinnedProfilesAsync()
+        {
+            try
+            {
+                using var db = new LauncherDBContext();
+                return db.GameProfiles.Where(p => p.Pinned == true).ToList() ?? new List<GameProfile>();
+            }
+            catch(Exception ex)
+            {
+                Logger.Error("There was an exception when fetching pinned profiles.", ex);
+                return new List<GameProfile>();
+            }
+        }
+
+        public async Task<GameProfile?> GetProfileAsync(string profileId)
         {
             try
             {
@@ -85,7 +98,7 @@ namespace TCM_Launcher.Services
             }
         }
 
-        public async Task<GameProfile> UpdateProfileAsync(string profileId, GameProfile updateData)
+        public async Task<GameProfile?> UpdateProfileAsync(string profileId, GameProfile updateData)
         {
             try
             {
@@ -95,11 +108,12 @@ namespace TCM_Launcher.Services
 
                 if (profile != null)
                 {
-                    profile.ProfileName = updateData.ProfileName == null ? profile.ProfileName : updateData.ProfileName;
-                    profile.MCVersion = updateData.MCVersion == null ? profile.MCVersion: updateData.MCVersion; ;
-                    profile.ForgeVersion = updateData.ForgeVersion == null ? profile.ForgeVersion : updateData.ForgeVersion;
-                    profile.FileName = updateData.FileName == null ? profile.FileName : updateData.FileName;
-                    profile.Installed = updateData.Installed == null ? profile.Installed : updateData.Installed;
+                    profile.ProfileName = CheckUpdateData(updateData.ProfileName, profile.ProfileName);
+                    profile.MCVersion = CheckUpdateData(updateData.MCVersion, profile.MCVersion);
+                    profile.ForgeVersion = CheckUpdateData(updateData.ForgeVersion, profile.ForgeVersion);
+                    profile.FileName = CheckUpdateData(updateData.FileName, profile.FileName);
+                    profile.Installed = CheckUpdateData(updateData.Installed, profile.Installed);
+                    profile.Pinned = CheckUpdateData(updateData.Pinned, profile.Pinned);
 
                     await db.SaveChangesAsync();
                 }
@@ -112,6 +126,12 @@ namespace TCM_Launcher.Services
                 MessageBox.Show("An error occured during updation the profle.", "ERROR", MessageBoxButton.OK, MessageBoxImage.Error);
                 return null;
             }
+        }
+
+        private T CheckUpdateData<T>(T updateData, T oldData)
+        {
+            if (updateData != null && !EqualityComparer<T>.Default.Equals(updateData, oldData)) return updateData;
+            return oldData;
         }
 
         public async Task<GameProfile> UpdateLastPlayedProfileAsync(string profileId)

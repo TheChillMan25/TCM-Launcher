@@ -2,9 +2,10 @@
 using System.Collections.ObjectModel;
 using System.Windows.Forms;
 using TCM_Launcher.Interfaces;
+using TCM_Launcher.Model.Mods;
 using TCM_Launcher.MVVM;
+using TCM_Launcher.ViewModel.UserControls.ControlItems;
 using TCML_Class_library;
-using static TCM_Launcher.ViewModel.MainWindowViewModel;
 
 namespace TCM_Launcher.ViewModel.UserControls
 {
@@ -19,7 +20,8 @@ namespace TCM_Launcher.ViewModel.UserControls
 			this.profileModService = profileModService;
         }
 
-		public Func<ContentToShow, Task>? OnBackToBrowseRequested;
+		public Func<string?, string?, string?, Task>? OnBackToBrowseRequested;
+		public Action<List<ProfileModInfo>>? OnModpackUpdated;
 
         public string ProfileId { get; set; }
         public string MCVersion { get; set; }
@@ -46,10 +48,29 @@ namespace TCM_Launcher.ViewModel.UserControls
 		public bool IsLatestBindedToProfile
         {
 			get { return installEnabled; }
-			set { installEnabled = value; OnPropertyChange(); }
+			set 
+			{
+				installEnabled = value; 
+				OnPropertyChange(); 
+				OnPropertyChange(nameof(CanInstallLatest)); 
+			}
 		}
 
-		private string installText;
+		private bool isInstalling = false;
+		public bool IsInstalling
+        {
+			get { return isInstalling; }
+			set 
+			{
+				isInstalling = value;
+				OnPropertyChange();
+                OnPropertyChange(nameof(CanInstallLatest));
+            }
+		}
+
+		public bool CanInstallLatest => !IsLatestBindedToProfile && !IsInstalling;
+
+        private string installText;
 		public string InstallText
 		{
 			get { return installText; }
@@ -82,14 +103,26 @@ namespace TCM_Launcher.ViewModel.UserControls
         public async Task AddLatestAsync()
 		{
 			var latest = Versions.FirstOrDefault()?.Version;
-			if (latest != null) await AddModToProfileAsync(latest);
+			if (latest != null)
+			{
+				try
+				{
+					IsInstalling = true;
+                    await AddModToProfileAsync(latest);
+                }
+				finally
+				{
+					IsInstalling = false;
+				}
+			}
 			else MessageBox.Show("There was an error fetching file data.", "ERROR", MessageBoxButtons.OK, MessageBoxIcon.Error);
 			await SetLatestBindedEnabled(latest);
 		}
 
 		public async Task AddModToProfileAsync(ModVersion version)
         {
-			await profileModService.AddModWithDependenciesAsync(ProfileId, MCVersion, Details, version);
+			var mods = await profileModService.AddModWithDependenciesAsync(ProfileId, MCVersion, Details, version);
+			OnModpackUpdated?.Invoke(mods);
 			await RefreshVersionCardsStatusAsync();
 			await SetLatestBindedEnabled();
         }
@@ -103,7 +136,7 @@ namespace TCM_Launcher.ViewModel.UserControls
 
         public void BackToBrowse()
         {
-			OnBackToBrowseRequested.Invoke(ContentToShow.AddContent);
+			OnBackToBrowseRequested?.Invoke(null, null, null);
         }
     }
 }

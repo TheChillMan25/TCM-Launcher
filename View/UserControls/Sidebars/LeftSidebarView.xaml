@@ -1,0 +1,194 @@
+﻿<UserControl x:Class="TCM_Launcher.View.UserControls.Sidebars.LeftSidebarView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:TCM_Launcher.View.UserControls.Sidebars"
+             xmlns:converters="clr-namespace:TCM_Launcher.Core.Utils.Converters"
+             xmlns:fa="http://schemas.fontawesome.io/icons/"
+             mc:Ignorable="d" 
+             d:DesignHeight="800" d:DesignWidth="250"
+             Loaded="OnLoaded">
+    <UserControl.Resources>
+        <BooleanToVisibilityConverter x:Key="BoolToVis"/>
+        <converters:InverseBooleanToVisibilityConverter x:Key="InverseBoolToVis"/>
+        <converters:InverseBooleanConverter x:Key="InverseBool"/>
+    </UserControl.Resources>
+    <Grid Name="LeftSidebar"
+          Background="#222">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition />
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+        <Button x:Name="HomeButton"
+                    Style="{StaticResource SidebarListItem}" Click="HomeButton_Click">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition/>
+                </Grid.ColumnDefinitions>
+                <Path Data="{StaticResource HomeIcon}"
+                      Height="30"
+                      Width="30"
+                      Stretch="Uniform"
+                      Margin="0 0 10 0">
+                    <Path.Style>
+                        <Style TargetType="Path">
+                            <Setter Property="Stroke" Value="#f2c480"/>
+                            <Setter Property="StrokeThickness" Value="2"/>
+
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding IsMouseOver, 
+                                        RelativeSource={RelativeSource AncestorType=Button}}" 
+                                                 Value="True">
+                                    <Setter Property="Stroke" Value="#333"/>
+                                </DataTrigger>
+                                <DataTrigger Binding="{Binding IsPressed, 
+                                        RelativeSource={RelativeSource AncestorType=Button}}" 
+                                                 Value="True">
+                                    <Setter Property="Stroke" Value="WhiteSmoke"/>
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Path.Style>
+                </Path>
+                <TextBlock Text="Home"
+                               Grid.Column="1"/>
+            </Grid>
+        </Button>
+        <Button x:Name="SettingsButton"
+                    Style="{StaticResource SidebarListItem}"
+                Grid.Row="1" Click="SettingsButton_Click">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition/>
+                </Grid.ColumnDefinitions>
+                <Path Data="{StaticResource SettingsIcon}"
+                      Height="30"
+                      Width="30"
+                      Stretch="Uniform"
+                      Margin="0 0 10 0">
+                    <Path.Style>
+                        <Style TargetType="Path">
+                            <Setter Property="Stroke" Value="#f2c480"/>
+                            <Setter Property="StrokeThickness" Value="2"/>
+
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding IsMouseOver, 
+                                        RelativeSource={RelativeSource AncestorType=Button}}" 
+                                                 Value="True">
+                                    <Setter Property="Stroke" Value="#333"/>
+                                </DataTrigger>
+                                <DataTrigger Binding="{Binding IsPressed, 
+                                        RelativeSource={RelativeSource AncestorType=Button}}" 
+                                                 Value="True">
+                                    <Setter Property="Stroke" Value="WhiteSmoke"/>
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Path.Style>
+                </Path>
+                <TextBlock Text="Settings"
+                           Grid.Column="1"/>
+            </Grid>
+        </Button>
+        <Grid Grid.Row="2">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition/>
+            </Grid.ColumnDefinitions>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition/>
+            </Grid.RowDefinitions>
+            <Path Data="{StaticResource GamepadIcon}"
+                  Height="30"
+                  Width="30"
+                  Fill="#f2c480"
+                  Stretch="Uniform"
+                  Margin="15 0 10 0">
+            </Path>
+            <TextBlock Text="Pinned profiles"
+                       Grid.Column="1"
+                       VerticalAlignment="Center"
+                       FontSize="28"
+                       FontFamily="Calibri"
+                       Foreground="#f2c480"/>
+            <ScrollViewer VerticalScrollBarVisibility="Auto"
+                         Grid.Row="1"
+                         Grid.ColumnSpan="2">
+                <ItemsControl ItemsSource="{Binding Profiles}"
+                     Background="Transparent"
+                     BorderThickness="0"/>
+            </ScrollViewer>
+        </Grid>
+        <Button x:Name="UpdateButton"
+                    Style="{StaticResource SidebarListItem}"
+                Grid.Row="3"
+                Visibility="{Binding AvailableUpdate.CanUpdate,
+                    Converter={StaticResource BoolToVis}}"
+                IsEnabled="{Binding AvailableUpdate.IsUpdating,
+                    Converter={StaticResource InverseBool}}">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition/>
+                </Grid.ColumnDefinitions>
+                <Path Data="{StaticResource DownloadIcon}"
+                      Height="30"
+                      Width="30"
+                      Stretch="Uniform"
+                      Visibility="{Binding AvailableUpdate.IsUpdating,
+                            Converter={StaticResource InverseBoolToVis}}"
+                      Margin="0 0 10 0">
+                    <Path.Style>
+                        <Style TargetType="Path">
+                            <Setter Property="Stroke" Value="#f2c480"/>
+                            <Setter Property="StrokeThickness" Value="2"/>
+
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding IsMouseOver, 
+                                        RelativeSource={RelativeSource AncestorType=Button}}" 
+                                                 Value="True">
+                                    <Setter Property="Stroke" Value="#333"/>
+                                </DataTrigger>
+                                <DataTrigger Binding="{Binding IsPressed, 
+                                        RelativeSource={RelativeSource AncestorType=Button}}" 
+                                                 Value="True">
+                                    <Setter Property="Stroke" Value="WhiteSmoke"/>
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Path.Style>
+                </Path>
+                <fa:ImageAwesome Icon="Refresh"
+                                 Visibility="{Binding AvailableUpdate.IsUpdating,
+                                    UpdateSourceTrigger=PropertyChanged,
+                                    Converter={StaticResource BoolToVis},
+                                    FallbackValue=Hidden,
+                                    TargetNullValue=Hidden}"
+                                 Foreground="#f2c480" 
+                                 Spin="True" 
+                                 Height="20" 
+                                 Width="20"
+                                 Margin="0 0 10 0"/>
+
+                <TextBlock Text="Update"
+                               Grid.Column="1"/>
+            </Grid>
+        </Button>
+        <TextBlock Text="{Binding AppVersion,
+            FallbackValue=vX.X.X,
+            TargetNullValue=vX.X.X}"
+                   Grid.Row="4"
+                   FontFamily="Calibri"
+                   FontSize="20"
+                   Foreground="#777"
+                   HorizontalAlignment="Right"
+                   Margin="5"/>
+    </Grid>
+</UserControl>

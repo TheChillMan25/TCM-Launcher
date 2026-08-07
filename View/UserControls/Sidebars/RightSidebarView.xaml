@@ -1,0 +1,123 @@
+﻿<UserControl x:Class="TCM_Launcher.View.UserControls.Sidebars.RightSidebarView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:TCM_Launcher.View.UserControls.Sidebars"
+             mc:Ignorable="d" 
+             d:DesignHeight="800" d:DesignWidth="250"
+             Loaded="OnLoaded">
+    <UserControl.Resources>
+        <BooleanToVisibilityConverter x:Key="BoolToVis"/>
+    </UserControl.Resources>
+    <Grid Name="RightSidebar"
+          Background="#222">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="30"/>
+        </Grid.RowDefinitions>
+        <Grid Name="UserHeader"
+              Margin="5">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+            <TextBlock Text="{Binding Username,
+                FallbackValue='Username',
+                TargetNullValue='Username'}"
+                       FontFamily="Calibri"
+                       FontSize="28"
+                       Foreground="WhiteSmoke"
+                       VerticalAlignment="Center"/>
+            <Button x:Name="UserSessionButton"
+                    Style="{StaticResource RoundButton}"
+                    Grid.Column="1"
+                    Height="40"
+                    Width="40" Click="UserSessionButton_Click">
+                <Path Data="{Binding ButtonIcon,
+                    FallbackValue={StaticResource MicrosoftIcon},
+                    TargetNullValue={StaticResource MicrosoftIcon}}"
+                      Fill="#f2c480"
+                      Height="20"
+                      Width="20"
+                      Stretch="Uniform"/>
+            </Button>
+        </Grid>
+        <Grid Name="ServersContainer"
+              Grid.Row="1">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition/>
+            </Grid.RowDefinitions>
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="40"/>
+                    <ColumnDefinition/>
+                    <ColumnDefinition Width="40"/>
+                </Grid.ColumnDefinitions>
+                <TextBlock Text="Quick join"
+                           Grid.Column="1"
+                           FontFamily="Calibri"
+                           FontSize="26"
+                           Foreground="#f2c480"
+                           VerticalAlignment="Center"
+                           HorizontalAlignment="Center"/>
+                <Button x:Name="AddServerButton"
+                        Grid.Column="2"
+                        Style="{StaticResource RoundButton}"
+                        Height="25"
+                        Width="25"
+                        VerticalAlignment="Top" 
+                        Click="AddServerButton_Click">
+                    <Path Data="{StaticResource AddIcon}"
+                          Fill="#999"
+                          Width="15"
+                          Height="15"
+                          Stretch="Uniform"/>
+                </Button>
+            </Grid>
+            <ScrollViewer VerticalScrollBarVisibility="Auto"
+                          Grid.Row="1">
+                <ItemsControl ItemsSource="{Binding Servers}"/>
+            </ScrollViewer>
+        </Grid>
+        <Button x:Name="BugReportButton"
+                Style="{StaticResource SidebarListItem}"
+                Grid.Row="2" Click="BugReportButton_Click">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition/>
+                </Grid.ColumnDefinitions>
+                <Path Data="{StaticResource WriteIcon}"
+                      Height="30"
+                      Width="30"
+                      Stretch="Uniform"
+                      Margin="0 0 10 0">
+                    <Path.Style>
+                        <Style TargetType="Path">
+                            <Setter Property="Fill" Value="#f2c480"/>
+
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding IsMouseOver, 
+                                        RelativeSource={RelativeSource AncestorType=Button}}" 
+                                                 Value="True">
+                                    <Setter Property="Fill" Value="#333"/>
+                                </DataTrigger>
+                                <DataTrigger Binding="{Binding IsPressed, 
+                                        RelativeSource={RelativeSource AncestorType=Button}}" 
+                                                 Value="True">
+                                    <Setter Property="Fill" Value="WhiteSmoke"/>
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Path.Style>
+                </Path>
+                <TextBlock Text="Bug report"
+                               Grid.Column="1"/>
+            </Grid>
+        </Button>
+    </Grid>
+</UserControl>

@@ -8,7 +8,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <UseWPF>true</UseWPF>
 	<NoWarn>$(NoWarn);NU1903</NoWarn>
-	<Version>0.0.3</Version>
+	<Version>0.0.4</Version>
 	<IncludeNativeLibrariesForSelfExtract>true</IncludeNativeLibrariesForSelfExtract>
 	<AssemblyTitle></AssemblyTitle>
 	<ApplicationIcon>Assets\TCM.ico</ApplicationIcon>
@@ -16,15 +16,21 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="Assets\def_prof_img.png" />
     <None Remove="Assets\mc_img.png" />
     <None Remove="Assets\TCM.ico" />
   </ItemGroup>
 
   <ItemGroup>
-    <Content Include="Assets\TCM.ico" />
+    <Content Include="Assets\TCM.ico">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
 
   <ItemGroup>
+    <Resource Include="Assets\def_prof_img.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Resource>
     <Resource Include="Assets\mc_img.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Resource>
@@ -36,7 +42,7 @@
     <PackageReference Include="CmlLib.Core.Auth.Microsoft" Version="3.3.1" />
     <PackageReference Include="CmlLib.Core.Commons" Version="4.0.0" />
     <PackageReference Include="CmlLib.Core.Installer.Forge" Version="1.1.1" />
-    <PackageReference Include="FontAwesome.WPF" Version="4.7.0.9" />
+    <PackageReference Include="FontAwesome.WPF" Version="4.7.0.9" NoWarn="NU1701" />
     <PackageReference Include="Markdig.Wpf" Version="0.5.0.1" />
     <PackageReference Include="Microsoft.EntityFrameworkCore" Version="10.0.10" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="10.0.10" />
@@ -56,6 +62,12 @@
 
   <ItemGroup>
     <SplashScreen Include="Assets\LoadImg.png" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Update="View\UserControls\Misc\CustomTooltip.xaml.cs">
+      <Generator>Compile</Generator>
+    </Compile>
   </ItemGroup>
 
 </Project>

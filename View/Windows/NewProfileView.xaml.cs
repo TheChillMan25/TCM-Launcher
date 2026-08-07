@@ -29,7 +29,7 @@ namespace TCM_Launcher.View
                 if(VersionCombo.SelectedItem is VanillaVersion selectedVanilla)
                 {
                     string pName = ProfileNameInput.Text;
-                    viewModel.UpdateForgeVersions(selectedVanilla.VersionName, pName);
+                    await viewModel.UpdateForgeVersions(selectedVanilla.VersionName, pName);
                     ForgeVersionCombo.SelectedIndex = 0;
                 }
             }
@@ -52,7 +52,6 @@ namespace TCM_Launcher.View
                     ForgeVersion = selectedForge.VersionName,
                 };
                 CreateProfileButton.IsEnabled = false;
-                MessageBox.Show("Installation started");
                 DialogResult = true;
                 Close();
             }

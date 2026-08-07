@@ -23,7 +23,6 @@ namespace TCM_Launcher.ViewModel.Windows
         private string ServerId;
 
         private string buttonText = "Add server";
-
         public string ButtonText
         {
             get { return buttonText; }
@@ -36,7 +35,6 @@ namespace TCM_Launcher.ViewModel.Windows
 
 
         private ObservableCollection<GameProfile> profiles = new ObservableCollection<GameProfile>();
-
 		public ObservableCollection<GameProfile> Profiles
 		{
 			get { return profiles; }
@@ -49,8 +47,8 @@ namespace TCM_Launcher.ViewModel.Windows
 		}
         public bool HasProfiles => Profiles.Count > 0;
 
-		private ObservableCollection<string> mcVersions;
 
+		private ObservableCollection<string> mcVersions;
 		public ObservableCollection<string> MCVersions
 		{
 			get { return mcVersions; }
@@ -62,7 +60,6 @@ namespace TCM_Launcher.ViewModel.Windows
 		}
 
 		private string serverName;
-
 		public string ServerName
 		{
 			get { return serverName; }
@@ -74,7 +71,6 @@ namespace TCM_Launcher.ViewModel.Windows
 		}
 
         private string serverAddress;
-
         public string ServerAddress
         {
             get { return serverAddress; }
@@ -84,6 +80,7 @@ namespace TCM_Launcher.ViewModel.Windows
                 OnPropertyChange();
             }
         }
+
         private string serverVersion;
         public string ServerVersion
         {
@@ -95,18 +92,15 @@ namespace TCM_Launcher.ViewModel.Windows
             }
         }
 
-        private string bindedProfileId;
-
-        public string BindedProfileId
+        private string? bindedProfileId;
+        public string? BindedProfileId
         {
             get { return bindedProfileId; }
             set { bindedProfileId = value; }
         }
 
-
-        private GameProfile bindedProfile;
-
-        public GameProfile BindedProfile
+        private GameProfile? bindedProfile;
+        public GameProfile? BindedProfile
         {
             get { return bindedProfile; }
             set 
@@ -115,6 +109,14 @@ namespace TCM_Launcher.ViewModel.Windows
                 OnPropertyChange();
             }
         }
+
+        private string windowTitle = "Add server";
+        public string WindowTitle
+        {
+            get { return windowTitle; }
+            set { windowTitle = value; OnPropertyChange(); }
+        }
+
 
         public void Initialize(string? serverId = null, string? serverName = null, string? serverAddress = null, string? serverVersion = null, string? bindedProfileId = null)
         {
@@ -167,6 +169,12 @@ namespace TCM_Launcher.ViewModel.Windows
             {
                 BindedProfile = Profiles.FirstOrDefault(p => p.Id == BindedProfileId);
             }
+        }
+
+        public void ResetBindedProfile()
+        {
+            BindedProfile = null;
+            BindedProfileId = null;
         }
     }
 }

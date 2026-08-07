@@ -7,7 +7,7 @@ namespace TCM_Launcher.View.Windows
 {
     public partial class AddServerView : Window
     {
-        private readonly AddServerViewModel viewModel;
+        public readonly AddServerViewModel viewModel;
         public AddServerView(AddServerViewModel viewModel)
         {
             InitializeComponent();
@@ -89,6 +89,11 @@ namespace TCM_Launcher.View.Windows
         private async void MCVersionCombo_SelectionChanged(object sender, System.Windows.Controls.SelectionChangedEventArgs e)
         {
             await viewModel.LoadProfiles();
+        }
+
+        private void ResetProfile_Click(object sender, RoutedEventArgs e)
+        {
+            viewModel.ResetBindedProfile();
         }
     }
 }

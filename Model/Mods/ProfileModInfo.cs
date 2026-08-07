@@ -14,7 +14,7 @@ namespace TCM_Launcher.Model.Mods
         public string Author { get; set; }
         public string Client_Side { get; set; }
         public string Server_Side { get; set; }
-        public bool IsEnabled { get; set; }
+        public bool IsEnabled { get; set; } = true;
     }
 
     public class ProfileModpackManifest

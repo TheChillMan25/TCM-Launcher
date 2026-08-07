@@ -10,6 +10,7 @@ using TCM_Launcher.Interfaces;
 using TCM_Launcher.Model.DB;
 using TCM_Launcher.View.PopUp;
 using TCM_Launcher.ViewModel.Popup;
+using static TCM_Launcher.Core.Utils.Constants;
 
 namespace TCM_Launcher.Services
 {
@@ -19,23 +20,26 @@ namespace TCM_Launcher.Services
         private readonly IMicrosoftService microsoftService;
         private readonly IGameProfileService gameProfileService;
         private readonly IProfileModService profileModService;
+        private readonly IAppSettingsService appSettingsService;
 
         public LauncherService(IProfileSettingsService profileSettingsService, 
             IMicrosoftService microsoftService, 
             IGameProfileService gameProfileService, 
-            IProfileModService profileModService)
+            IProfileModService profileModService,
+            IAppSettingsService appSettingsService)
         {
             this.profileSettingsService = profileSettingsService;
             this.gameProfileService = gameProfileService;
             this.microsoftService = microsoftService;
             this.profileModService = profileModService;
+            this.appSettingsService = appSettingsService;
         }
 
-        public async Task<string> CreateProfileAsync(string pName, string mcVersion, string fVersion, IProgress<double> progress, IProgress<string> status, IProgress<bool> progressVisible)
+        public async Task<string> CreateProfileAsync(string pName, string mcVersion, string fVersion, IProgress<double>? progress = null, IProgress<string>? status = null, IProgress<bool>? progressVisible = null)
         {
             try
             {
-                progressVisible.Report(true);
+                progressVisible?.Report(true);
                 MinecraftPath path = CreateProfilePath(pName);
                 var launcher = new MinecraftLauncher(path);
                 launcher.ByteProgressChanged += (sender, args) =>
@@ -55,7 +59,7 @@ namespace TCM_Launcher.Services
             }
         }
 
-        public async Task LaunchProfileAsync(GameProfile profile, IProgress<double> progress, IProgress<string> status, IProgress<bool> progressVisible, string? serverAddress = null)
+        public async Task LaunchProfileAsync(GameProfile profile, IProgress<double>? progress = null, IProgress<string>? status = null, IProgress<bool>? progressVisible = null, string? serverAddress = null)
         {
             try
             {
@@ -67,11 +71,11 @@ namespace TCM_Launcher.Services
                         "No internet. Connect to the internet before launching game.", "Warning", MessageBoxButton.OK, MessageBoxImage.Warning);
                     return;
                 }
-                progressVisible.Report(true);
-                status.Report("Starting game");
-                progress.Report(10);
+                progressVisible?.Report(true);
+                status?.Report("Starting game");
+                progress?.Report(10);
                 var profileSettings = await profileSettingsService.GetProfileSettings(profile.Id);
-                progress.Report(30);
+                progress?.Report(30);
                 var jvmArgs = new List<MArgument>();
                 if (!string.IsNullOrWhiteSpace(profileSettings.JVMArgs))
                 {
@@ -91,10 +95,10 @@ namespace TCM_Launcher.Services
                     if (args.TotalBytes > 0)
                     {
                         double percent = (double)args.ProgressedBytes / args.TotalBytes * 100;
-                        progress.Report(percent);
+                        progress?.Report(percent);
                     }
                 };
-                status.Report("Checking file integrity");
+                status?.Report("Checking file integrity");
                 await launcher.InstallAsync(profile.FileName);
                 var launchOptions = new MLaunchOption
                 {
@@ -117,7 +121,13 @@ namespace TCM_Launcher.Services
                     launchOptions.ServerIp = ip;
                     launchOptions.ServerPort = port;
                 }  
-                await profileModService.SyncProfileModsAsync(profile.Id, progress, status);
+                bool syncSuccess = await profileModService.SyncProfileModsAsync(profile.Id, progress, status, serverAddress);
+                if (!syncSuccess)
+                {
+                    progressVisible?.Report(false);
+                    return;
+                }
+                status?.Report("Starting game");
                 var process = await launcher.BuildProcessAsync(profile.FileName, launchOptions);
                 var processWrapper = new ProcessWrapper(process);
                 processWrapper.OutputReceived += (sender, log) =>
@@ -128,10 +138,14 @@ namespace TCM_Launcher.Services
                     }
                 };
                 
-                gameProfileService.UpdateLastPlayedProfileAsync(profile.Id);
+                await gameProfileService.UpdateLastPlayedProfileAsync(profile.Id);
                 Logger.Log($"Started game profile with id: {profile.Id} ({profile.FileName})");
-                progress.Report(100);
-                progressVisible.Report(false);
+                progress?.Report(100);
+                progressVisible?.Report(false);
+
+                if (appSettingsService.AppSettings.OnGameStart == LauncherWindowBehaviour.Minimize)
+                    appSettingsService.LauncherWindowBehaviour(appSettingsService.AppSettings.OnGameStart, true);
+
                 processWrapper.StartWithEvents();
 
                 int exitCode = await processWrapper.WaitForExitTaskAsync();
@@ -162,20 +176,27 @@ namespace TCM_Launcher.Services
                     p.Owner = Application.Current.MainWindow;
                     p.Show();
                 }
+                //string modsFolder = Path.Combine(Constants.ProfilesPath, profile.Id, "mods");
+                //await profileModService.ToggleQuickJoinServerMods(profile.Id, modsFolder, true);
             }
             catch (Exception ex)
             {
                 Logger.Error($"There was an exception during launching profile with id: {profile.Id}", ex);
                 MessageBox.Show("An error occured during launching game.", "ERROR", MessageBoxButton.OK, MessageBoxImage.Error);
             }
+            finally
+            {
+                if (appSettingsService.AppSettings.OnGameStart == LauncherWindowBehaviour.Minimize)
+                    appSettingsService.LauncherWindowBehaviour(appSettingsService.AppSettings.OnGameStart, false);
+            }
             
         }
 
-        private async Task<string> InstallForgeAsync(MinecraftLauncher launcher, string mcVersion, string fVersion, IProgress<double> progress, IProgress<string> status, IProgress<bool> progressVisible)
+        private async Task<string> InstallForgeAsync(MinecraftLauncher launcher, string mcVersion, string fVersion, IProgress<double>? progress = null, IProgress<string>? status = null, IProgress<bool>? progressVisible = null)
         {
             try
             {
-                status.Report("Installing forge files");
+                status?.Report("Installing forge files");
                 Logger.Log($"Installing forge ({fVersion} for minecraft with version {mcVersion}) started", "FORGE");
                 var fInstaller = new ForgeInstaller(launcher);
                 var installOptions = new ForgeInstallOptions
@@ -192,10 +213,10 @@ namespace TCM_Launcher.Services
                     SkipIfAlreadyInstalled = true,
                 };
                 var latestForgeInstallName = await fInstaller.Install(mcVersion, fVersion, installOptions);
-                status.Report("Installing minecraft files");
+                status?.Report("Installing minecraft files");
                 await launcher.InstallAsync(latestForgeInstallName);
                 Logger.Log($"Installing forge ({fVersion} for minecraft with version {mcVersion}) completed", "FORGE");
-                progressVisible.Report(false);
+                progressVisible?.Report(false);
                 return latestForgeInstallName;
             }
             catch (Exception ex)

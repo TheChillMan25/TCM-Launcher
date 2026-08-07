@@ -1,9 +1,11 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using System.Collections.ObjectModel;
+using TCM_Launcher.Core.Utils;
 using TCM_Launcher.Interfaces;
+using TCM_Launcher.Model.DB;
 using TCM_Launcher.MVVM;
+using TCM_Launcher.ViewModel.UserControls.ControlItems;
 using TCML_Class_library;
-using static TCM_Launcher.ViewModel.MainWindowViewModel;
 
 namespace TCM_Launcher.ViewModel.UserControls
 {
@@ -15,8 +17,8 @@ namespace TCM_Launcher.ViewModel.UserControls
             this.backendService = backendService;
         }
 
-        public Func<ContentToShow, Task>? OnCloseRequested { get; set; }
-        public Func<string, ModSource, Task> OnModDetailsRequested { get; set; }
+        public Func<GameProfile, Task>? OnCloseRequested { get; set; }
+        public Func<string, ModSearchResult, string, Task> OnModDetailsRequested { get; set; }
 
         private string searchText;
 		public string SearchText
@@ -37,6 +39,12 @@ namespace TCM_Launcher.ViewModel.UserControls
 		{
 			get { return profileName; }
 			set { profileName = value; OnPropertyChange(); }
+		}
+		private string profileId;
+		public string ProfileId
+		{
+			get { return profileId; }
+			set { profileId = value; OnPropertyChange(); }
 		}
 
 		private string mcVersion;
@@ -98,7 +106,7 @@ namespace TCM_Launcher.ViewModel.UserControls
             }
             catch (Exception ex) when (ex is TaskCanceledException || ex is OperationCanceledException)
             {
-
+                Logger.Error("There was an exception when searching for content.", ex);
             }
         }
 
@@ -107,14 +115,14 @@ namespace TCM_Launcher.ViewModel.UserControls
             if (SelectedSearchResult?.Mod == null) return;
             if (OnModDetailsRequested != null)
             {
-                await OnModDetailsRequested.Invoke(SelectedSearchResult.Mod.Id, SelectedSearchResult.Mod.Source);
+                await OnModDetailsRequested.Invoke(ProfileId, SelectedSearchResult.Mod, MCVersion);
             }
         }
 
         public void Close()
         {
             SearchText = "";
-            OnCloseRequested.Invoke(ContentToShow.ProfileDetails);
+            OnCloseRequested?.Invoke(null);
         }
 
 	}

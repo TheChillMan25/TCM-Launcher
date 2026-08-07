@@ -7,10 +7,13 @@
         xmlns:svgc="http://sharpvectors.codeplex.com/svgc/"
         xmlns:userControls="clr-namespace:TCM_Launcher.View.UserControls"
         mc:Ignorable="d"
-        Title="{Binding Title}" Height="250" Width="400" ResizeMode="NoResize" WindowStyle="None" WindowStartupLocation="CenterOwner">
+        Title="{Binding Title}" Height="300" Width="550" ResizeMode="NoResize" WindowStyle="None" WindowStartupLocation="CenterOwner">
     <Window.Resources>
         <Style TargetType="Label">
             <Setter Property="Foreground" Value="WhiteSmoke"/>
+            <Setter Property="FontSize" Value="20"/>
+            <Setter Property="VerticalAlignment" Value="Center"/>
+            <Setter Property="Margin" Value="10 5"/>
         </Style>
         
     </Window.Resources>
@@ -19,11 +22,11 @@
                       CornerRadius="15" 
                       CaptionHeight="0"/>
     </WindowChrome.WindowChrome>
-    <Grid Background="#252525">
+    <Grid Background="#171717">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
-            <RowDefinition Height="40"/>
-            <RowDefinition Height="40"/>
+            <RowDefinition Height="50"/>
+            <RowDefinition Height="50"/>
             <RowDefinition/>
             <RowDefinition Height="60"/>
         </Grid.RowDefinitions>
@@ -39,7 +42,8 @@
         <Label Grid.Row="0"
                Grid.ColumnSpan="3"
                VerticalAlignment="Center"
-               FontSize="24" Content="Settings"
+               FontSize="28" 
+               Content="Settings"
                Margin="5 0 0 0"
                Foreground="#f2c480"/>
         <Button Name="CloseButton"    
@@ -57,21 +61,20 @@
                     Stretch="Uniform"/>
         </Button>
         <Label  Content="Profile name"
-                Grid.Row="1"
-                FontSize="16"
-                VerticalAlignment="Center"/>
+                Grid.Row="1"/>
         <Label  Content="Memory"
-                Grid.Row="2"
-                FontSize="16"
-                VerticalAlignment="Center"/>
+                Grid.Row="2"/>
         <Label  Content="JVM Arguments" 
-                Grid.Row="3" 
-                FontSize="16" 
+                Grid.Row="3"
                 VerticalAlignment="Top"/>
         <TextBox Style="{StaticResource DarkTextBox}" Name="ProfileNameInput"
                  Grid.Row="1"
-                 Margin="0 0 5 0"
-                 Text="{Binding GameProfile.ProfileName}" 
+                 Margin="5"
+                 VerticalContentAlignment="Center"
+                 FontSize="20"
+                 Text="{Binding GameProfile.ProfileName,
+            TargetNullValue='Profile name',
+            FallbackValue='Forge profile'}" 
                  Grid.Column="1"
                  VerticalAlignment="Center"
                  MaxLength="30"/>
@@ -88,19 +91,34 @@
                     Maximum="16384" 
                     TickFrequency="512" 
                     IsSnapToTickEnabled="True"
-                    Value="{Binding MaxRam, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                    Value="{Binding MaxRam,
+                Mode=TwoWay,
+                UpdateSourceTrigger=PropertyChanged,
+                FallbackValue=4092,
+                TargetNullValue=4092}" />
             <TextBox Style="{StaticResource DarkTextBox}" Width="60"
                      Grid.Column="1"
-                     Margin="10,0,0,0" 
-                     VerticalAlignment="Center"
-                     Text="{Binding MaxRam, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                     Margin="5"
+                     FontSize="16"
+                     VerticalContentAlignment="Center"
+                     TextAlignment="Center"
+                     Text="{Binding MaxRam, 
+                Mode=TwoWay, 
+                UpdateSourceTrigger=PropertyChanged,
+                FallbackValue=4092,
+                TargetNullValue=4092}" />
         </Grid>
         <TextBox Style="{StaticResource DarkTextBox}" Name="JVMArgInput"
                  Grid.Column="1"
                  Grid.Row="3" 
-                 Margin="0 0 5 0"
+                 Margin="5"
                  TextWrapping="Wrap"
-                 Text="{Binding JVMArgs, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}"/>
+                 FontSize="16"
+                 Text="{Binding JVMArgs, 
+                UpdateSourceTrigger=PropertyChanged,
+                Mode=TwoWay,
+                FallbackValue='JVM args',
+                TargetNullValue='JVM args'}"/>
         <Button Name="SaveButton" 
                 Grid.ColumnSpan="2"
                 Grid.Row="4"

@@ -12,6 +12,12 @@ namespace TCM_Launcher.Services
 {
     public class VersionsService : IVersionService
     {
+        private readonly IAppSettingsService appSettingsService;
+        public VersionsService(IAppSettingsService appSettingsService)
+        {
+            this.appSettingsService = appSettingsService;
+        }
+
         public Task SyncTask { get; private set; }
 
         public void StartVersionCheck()
@@ -94,7 +100,7 @@ namespace TCM_Launcher.Services
                 }).ToList();
 
                 var forgeEntitiesBag = new ConcurrentBag<ForgeVersion>();
-                var parallelOptions = new ParallelOptions { MaxDegreeOfParallelism = 10 };
+                var parallelOptions = new ParallelOptions { MaxDegreeOfParallelism = appSettingsService.AppSettings.MaximumParalellDownloads };
 
                 await Parallel.ForEachAsync(releaseVersions, parallelOptions, async (v, token) =>
                 {

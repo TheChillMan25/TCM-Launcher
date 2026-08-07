@@ -6,24 +6,24 @@ namespace TCM_Launcher.View.UserControls
 {
     public partial class ProfileDetailsView : UserControl
     {
-        private ProfileDetailsViewModel? viewModel => DataContext as ProfileDetailsViewModel;
+        private ProfileDetailsViewModel viewModel => DataContext as ProfileDetailsViewModel;
         public ProfileDetailsView()
         {
             InitializeComponent();
         }
         private async void StartButton_Click(object sender, RoutedEventArgs e)
         {
-            if (viewModel.SelectedGameProfile == null)
+            if (viewModel.Profile == null)
             {
                 MessageBox.Show("Select a profile to START.", "WARNING", MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
             }
-            if (viewModel.SelectedGameProfile.Installed != true)
+            if (viewModel.Profile.Installed != true)
             {
                 MessageBox.Show("Profile is installing files. Please wait", "WARNING", MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
             }
-            await viewModel.StartGame();
+            await viewModel.StartGameAsync();
         }
 
         private async void OptionsButton_Click(object sender, RoutedEventArgs e)
@@ -66,6 +66,21 @@ namespace TCM_Launcher.View.UserControls
         private async void ImportModpackButton_Click(object sender, RoutedEventArgs e)
         {
             await viewModel.ImportModpackAsync();
+        }
+
+        private async void Pin_Click(object sender, RoutedEventArgs e)
+        {
+            await viewModel.PinProfile();
+        }
+
+        private async void ImportModButton_Click(object sender, RoutedEventArgs e)
+        {
+            await viewModel.ImportModAsync();
+        }
+
+        private void SortCombo_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            viewModel?.SortMods();
         }
     }
 }

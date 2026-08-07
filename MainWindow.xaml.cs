@@ -1,5 +1,4 @@
 ﻿using System.Windows;
-using System.Windows.Controls;
 using TCM_Launcher.ViewModel;
 
 namespace TCM_Launcher
@@ -14,14 +13,13 @@ namespace TCM_Launcher
             DataContext = this.viewModel;
         }
 
-        private async void AddProfileButton_Click(object sender, RoutedEventArgs e)
-        {
-            await viewModel.OpenNewProfileWindow();
-        }
-
         private void HeaderBar_MouseLeftButtonDown(object sender, System.Windows.Input.MouseButtonEventArgs e)
         {
-            DragMove();
+            if(e.ClickCount == 2)
+            {
+                MaximizeButton_Click(sender, e);
+            }
+            else DragMove();
         }
 
         private void MinimizeButton_Click(object sender, RoutedEventArgs e)
@@ -45,46 +43,12 @@ namespace TCM_Launcher
 
         private void CloseButton_Click(object sender, RoutedEventArgs e)
         {
-            Application.Current.Shutdown();
+            viewModel.CloseButtonClick();
         }
-
-        private async void Window_Loaded(object sender, RoutedEventArgs e)
+        
+        private async void OnLoaded(object sender, RoutedEventArgs e)
         {
-            await viewModel.CheckForUpdatesAsync();
-        }
-
-        private async void UpdateButton_Click(object sender, RoutedEventArgs e)
-        {
-            await viewModel.Update();
-        }
-
-        private void BugReportButton_Click(object sender, RoutedEventArgs e)
-        {
-            viewModel.Bugreport();
-        }
-
-        private async void MicrosoftLoginButton_Click(object sender, RoutedEventArgs e)
-        {
-            MicrosoftLoginButton.IsEnabled = false;
-            await viewModel.MicrosoftLoginAsync();
-            MicrosoftLoginButton.IsEnabled = true;
-        }
-
-        private async void MicrosoftLogoutButton_Click(object sender, RoutedEventArgs e)
-        {
-            MicrosoftLogoutButton.IsEnabled = false;
-            await viewModel.MicrosoftLogoutAsync();
-            MicrosoftLogoutButton.IsEnabled = true;
-        }
-
-        public async void CheckNetworkButton_Click(object sender, RoutedEventArgs e)
-        {
-            await viewModel.CheckNetworkAsync();
-        }
-
-        private async void AddServerButton_Click(object sender, RoutedEventArgs e)
-        {
-            await viewModel.OpenAddServerWindowAsync();
+            await viewModel.OnLoadedAsync();
         }
     }
 }

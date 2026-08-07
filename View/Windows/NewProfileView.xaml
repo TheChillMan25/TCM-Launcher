@@ -6,7 +6,7 @@
         xmlns:local="clr-namespace:TCM_Launcher.View"
         xmlns:userControls="clr-namespace:TCM_Launcher.View.UserControls"
         mc:Ignorable="d"
-        Title="NewProfileView" Height="350" Width="300" ResizeMode="NoResize" WindowStyle="None" ShowInTaskbar="False" WindowStartupLocation="CenterOwner" HorizontalAlignment="Center" VerticalAlignment="Center" 
+        Title="NewProfileView" Height="400" Width="350" ResizeMode="NoResize" WindowStyle="None" ShowInTaskbar="False" WindowStartupLocation="CenterOwner" HorizontalAlignment="Center" VerticalAlignment="Center" 
     xmlns:theme="clr-namespace:Microsoft.Windows.Themes;assembly=PresentationFramework.Aero2">
     <WindowChrome.WindowChrome>
         <WindowChrome GlassFrameThickness="0" CornerRadius="15" CaptionHeight="0"/>
@@ -15,7 +15,7 @@
         <Style TargetType="Label">
             <Setter Property="Foreground" Value="#f2c480"/>
             <Setter Property="FontFamily" Value="Calibri"/>
-            <Setter Property="FontSize" Value="18"/>
+            <Setter Property="FontSize" Value="24"/>
         </Style>
     </Window.Resources>
     <Grid Background="#171717">
@@ -38,9 +38,9 @@
         <Label Grid.Row="0"
                Grid.ColumnSpan="3" 
                VerticalAlignment="Center"
-               FontSize="24" 
+               FontSize="28" 
                Content="Create profile" 
-               Margin="5 0 0 0"/>
+               Margin="5"/>
         <Button Name="CloseButton"    
                 Width="30"
                 Height="30"
@@ -56,11 +56,16 @@
         </Button>
         <StackPanel Grid.Row="1"
                     Grid.ColumnSpan="4" 
-                    Width="200" 
+                    Width="250" 
                     VerticalAlignment="Center" 
                     HorizontalAlignment="Center">
             <Label Name="ProfileNameLabel">Profile name:</Label>
-            <TextBox Style="{StaticResource DarkTextBox}" Name="ProfileNameInput"
+            <TextBox Style="{StaticResource DarkTextBox}" 
+                     Name="ProfileNameInput"
+                     Height="40"
+                     Margin="5"
+                     FontSize="18"
+                     VerticalContentAlignment="Center"
                      Text="{Binding PlaceholderProfileName,
                 UpdateSourceTrigger=PropertyChanged}"
                      MaxLength="30"/>
@@ -68,6 +73,9 @@
             <ComboBox Name="VersionCombo"
                       ItemsSource="{Binding Versions, 
                 UpdateSourceTrigger=PropertyChanged}"
+                      Height="40"
+                      Margin="5"
+                     FontSize="18"
                       DisplayMemberPath="VersionName"
                       SelectionChanged="VersionCombo_SelectionChanged" 
                       SelectedIndex="0"/>
@@ -75,6 +83,9 @@
             <ComboBox Name="ForgeVersionCombo" 
                       ItemsSource="{Binding ForgeVersions, 
                 UpdateSourceTrigger=PropertyChanged}"
+                      Height="40"
+                      Margin="5"
+                      FontSize="18"
                       DisplayMemberPath="VersionName" 
                       IsEnabled="{Binding HasForgeVersions,
                 UpdateSourceTrigger=PropertyChanged}"

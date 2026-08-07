@@ -48,12 +48,12 @@ namespace TCM_Launcher.Services
             }
         }
 
-        public async Task<ModDetails?> GetModDetailsAsync(string projectId, string version, ModSource source, bool needDesc = true)
+        public async Task<ModDetails?> GetModDetailsAsync(string projectId, string? modrinthId, string? curseforgeId, string version, ModSource source, bool needDesc = true)
         {
             string encodedQuery = Uri.EscapeDataString(projectId);
             string encodedMCVersion = Uri.EscapeDataString(version);
 
-            string url = $"{BaseUrl}/GetModDetails?query={encodedQuery}&mcVersion={encodedMCVersion}&source={source}&needDesc={needDesc}";
+            string url = $"{BaseUrl}/GetModDetails?query={encodedQuery}&modrinthId={modrinthId}&curseforgeId={curseforgeId}&mcVersion={encodedMCVersion}&source={source}&needDesc={needDesc}";
 
             try
             {

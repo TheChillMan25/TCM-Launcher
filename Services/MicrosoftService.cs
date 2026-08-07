@@ -15,7 +15,7 @@ namespace TCM_Launcher.Services
 
         public MSession MSession { get; set; }
 
-        public async Task<MSession> MicrosoftLoginAsync()
+        public async Task<MSession> MicrosoftLoginAsync(bool silent = false)
         {
             string tmpFilePath = Path.GetTempFileName();
             try
@@ -34,7 +34,8 @@ namespace TCM_Launcher.Services
                     .WithAccountManager(tmpFilePath)
                     .Build();
 
-                MSession = await LoginHandler.Authenticate();
+                if (!silent) MSession = await LoginHandler.Authenticate();
+                else MSession = await LoginHandler.AuthenticateSilently();
                 return MSession;
             }
             catch (Exception ex)

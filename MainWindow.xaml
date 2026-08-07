@@ -5,18 +5,18 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:TCM_Launcher"
         xmlns:userControls="clr-namespace:TCM_Launcher.View.UserControls"
+        xmlns:sidebars="clr-namespace:TCM_Launcher.View.UserControls.Sidebars"
         xmlns:converters="clr-namespace:TCM_Launcher.Core.Utils.Converters"
         xmlns:fa="http://schemas.fontawesome.io/icons/"
         mc:Ignorable="d"
         Title="TCM Launcher" 
         MinHeight="700"
-        MinWidth="1000"
-        Height="700"
-        Width="1000"
+        MinWidth="1020"
+        d:DesignHeight="1080" d:DesignWidth="1920"
         WindowStartupLocation="CenterOwner"
         WindowState="Maximized"
         WindowStyle="None"
-        Loaded="Window_Loaded">
+        Loaded="OnLoaded">
     <Window.Resources>
         <BooleanToVisibilityConverter x:Key="BoolToVis"/>
         <converters:InverseBooleanConverter x:Key="InverseBool"/>
@@ -34,14 +34,14 @@
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="70"/>
+            <ColumnDefinition Width="250"/>
             <ColumnDefinition/>
             <ColumnDefinition Width="250"/>
         </Grid.ColumnDefinitions>
         <Grid Name="HeaderBar" 
               Grid.ColumnSpan="3" 
               MouseLeftButtonDown="HeaderBar_MouseLeftButtonDown"
-              Background="Transparent" 
+              Background="#141414"
               Margin="10 5 10 0">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition/>
@@ -88,231 +88,20 @@
                 </Button>
             </StackPanel>
         </Grid>
-        <Grid Name="LeftSideBar" Grid.Row="1">
-            <Grid.RowDefinitions>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition/>
-                <RowDefinition Height="Auto"/>
-            </Grid.RowDefinitions>
-            <Button x:Name="AddProfileButton"
-                    Style="{StaticResource RoundButton}"
-                    Click="AddProfileButton_Click"
-                    IsEnabled="{Binding AddProfileEnabled}">
-                <Button.ToolTip>
-                    <userControls:Tooltip TooltipLabelText="Add profile" TooltipContentText="Create custom profile to have different experience with one click."/>
-                </Button.ToolTip>
-                <Path   Data="{StaticResource AddIcon}"
-                        Fill="#f2c480"
-                        Width="20"
-                        Height="20"
-                        Stretch="Uniform"/>
-            </Button>
-            <ListBox    ItemsSource="{Binding GameProfiles}"
-                        SelectedItem="{Binding SelectedGameProfile, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}" 
-                        Background="Transparent" 
-                        Grid.Row="1"
-                        BorderThickness="0"
-                        ItemContainerStyle="{StaticResource SideBarListBoxItemStyle}">
-                <ListBox.ItemTemplate>
-                    <DataTemplate>
-                        <Image Source="Assets/mc_img.png"/>
-                    </DataTemplate>
-                </ListBox.ItemTemplate>
-            </ListBox>
-            <StackPanel Grid.Row="2">
-                <Button x:Name="UpdateButton" 
-                        Visibility="{Binding AvailableUpdate.CanUpdate,
-                                Converter={StaticResource BoolToVis}}"
-                        IsEnabled="{Binding AvailableUpdate.IsUpdating, Converter={StaticResource InverseBool}}"
-                        Style="{StaticResource RoundButton}"
-                        Click="UpdateButton_Click">
-                    <Button.ToolTip>
-                        <userControls:Tooltip TooltipLabelText="Update" TooltipContentText="Update to the latest version."/>
-                    </Button.ToolTip>
-                    <Grid>
-                        <Path   Data="{StaticResource DownloadIcon}"
-                            Visibility="{Binding AvailableUpdate.IsUpdating,
-                                Converter={StaticResource InverseBoolToVis}}"
-                            Fill="#f2c480"
-                            Width="25"
-                            Height="25"
-                            Stretch="Uniform"/>
-                        <fa:ImageAwesome Icon="Refresh"
-                                        Visibility="{Binding AvailableUpdate.IsUpdating,
-                                            UpdateSourceTrigger=PropertyChanged,
-                                            Converter={StaticResource BoolToVis}}"
-                                         Foreground="#f2c480" 
-                                         Spin="True" 
-                                         Height="20" 
-                                         Width="20"/>
-                    </Grid>
-                </Button>
-                <Button x:Name="BugReportButton" Grid.Row="2" 
-                        VerticalAlignment="Bottom"
-                        Style="{StaticResource RoundButton}"
-                        Click="BugReportButton_Click">
-                    <Button.ToolTip>
-                        <userControls:Tooltip TooltipLabelText="Report bug" TooltipContentText="Fill out the bugreport form in the browser."/>
-                    </Button.ToolTip>
-                    <Path   Data="{StaticResource WriteIcon}"
-                        Fill="#f2c480"
-                        Width="25"
-                        Height="25"
-                        Stretch="Uniform"/>
-                </Button>
-            </StackPanel>
-        </Grid>
+        
+        <ContentControl
+            Content="{Binding LeftSidebarViewModel}"
+            Grid.Row="1"/>
         <Border Name="MiddleContent"
                 Grid.Column="1" 
-                Grid.Row="1" 
-                Background="#222" 
-                BorderBrush="#666" 
-                BorderThickness="1,1,0,0"
-                CornerRadius="25,0,0,0">
+                Grid.Row="1" >
             <ContentControl Content="{Binding CurrentView, 
                 UpdateSourceTrigger=PropertyChanged}"/>
         </Border>
-        <Border Name="RightSideBar"
-                Grid.Column="3"
-                Grid.Row="1"
-                BorderBrush="#666"
-                BorderThickness="1 1 0 0">
-            <Grid>
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition/>
-                </Grid.RowDefinitions>
-                <Button x:Name="MicrosoftLoginButton"
-                        Style="{StaticResource ButtonWithIcon}"
-                        IsEnabled="{Binding InternetAvailable, UpdateSourceTrigger=PropertyChanged}"
-                        Visibility="{Binding LoggedIntoMSAccount,
-                                    UpdateSourceTrigger=PropertyChanged,
-                                    Converter={StaticResource InverseBoolToVis}}"
-                        Margin="10"
-                        HorizontalAlignment="Center"
-                        Click="MicrosoftLoginButton_Click">
-                    <Grid Width="Auto">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition/>
-                            <ColumnDefinition Width="Auto"/>
-                        </Grid.ColumnDefinitions>
-                        <Path   Data="{StaticResource MicrosoftIcon}"
-                                Fill="#333"
-                                Width="20"
-                                Height="20"
-                                Margin="0 0 5 0"
-                                Stretch="Uniform"/>
-                        <TextBlock  Text="Microsoft login" 
-                                    Grid.Column="1"
-                                    VerticalAlignment="Center" 
-                                    HorizontalAlignment="Center"/>
-                    </Grid>
-                </Button>
-                <Button x:Name="CheckNetworkButton"
-                        Style="{StaticResource ButtonWithIcon}"
-                        Visibility="{Binding LoggedIntoMSAccount,
-                                    UpdateSourceTrigger=PropertyChanged,
-                                    Converter={StaticResource InverseBoolToVis}}"
-                        Margin="10"
-                        Grid.Row="1"
-                        HorizontalAlignment="Center"
-                        Click="CheckNetworkButton_Click">
-                    <Grid Width="Auto">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition/>
-                            <ColumnDefinition Width="Auto"/>
-                        </Grid.ColumnDefinitions>
-                        <Path   Data="{StaticResource RetryIcon}"
-                                Fill="#333"
-                                Width="20"
-                                Height="20"
-                                Margin="0 0 5 0"
-                                Stretch="Uniform"/>
-                        <TextBlock  Text="Network" 
-                                    Grid.Column="1"
-                                    VerticalAlignment="Center" 
-                                    HorizontalAlignment="Center"/>
-                    </Grid>
-                </Button>
-                <Button x:Name="MicrosoftAccountButton"
-                        Style="{StaticResource ButtonWithIcon}"
-                        Visibility="{Binding LoggedIntoMSAccount, 
-                                    Converter={StaticResource BoolToVis}}"
-                        Margin="10"
-                        HorizontalAlignment="Center">
-                    <Grid Width="Auto">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition/>
-                            <ColumnDefinition Width="Auto"/>
-                        </Grid.ColumnDefinitions>
-                        <Path   Data="{StaticResource UserIcon}"
-                                Fill="#333"
-                                Width="20"
-                                Height="20"
-                                Margin="0 0 5 0"
-                                Stretch="Uniform"/>
-                        <TextBlock  Text="{Binding MSession.Username, FallbackValue=MSUsername}"
-                                    Grid.Column="1"
-                                    VerticalAlignment="Center" 
-                                    HorizontalAlignment="Center"/>
-                    </Grid>
-                </Button>
-                <Button x:Name="MicrosoftLogoutButton"
-                        Style="{StaticResource ButtonWithIcon}"                        
-                        Visibility="{Binding LoggedIntoMSAccount, 
-                                    Converter={StaticResource BoolToVis}}"
-                        Margin="10"
-                        HorizontalAlignment="Center"
-                        Grid.Row="1"
-                        Click="MicrosoftLogoutButton_Click">
-                    <Grid Width="Auto">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition/>
-                            <ColumnDefinition Width="Auto"/>
-                        </Grid.ColumnDefinitions>
-                        <Path   Data="{StaticResource LogoutIcon}"
-                                Fill="#333"
-                                Width="20"
-                                Height="20"
-                                Margin="0 0 5 0"
-                                Stretch="Uniform"/>
-                        <TextBlock  Text="Logout"
-                                    Grid.Column="1"
-                                    VerticalAlignment="Center" 
-                                    HorizontalAlignment="Center"/>
-                    </Grid>
-                </Button>
-                <Grid Grid.Row="2">
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="Auto"/>
-                    </Grid.RowDefinitions>
-                    <Border BorderBrush="#666"
-                            BorderThickness="0 1 0 0"/>
-                    <Button x:Name="AddServerButton"
-                            Style="{StaticResource RoundButton}"
-                            Click="AddServerButton_Click">
-                        <Button.ToolTip>
-                            <userControls:Tooltip TooltipLabelText="Add server" TooltipContentText="Add a server and keep track of it."/>
-                        </Button.ToolTip>
-
-                        <Path Data="{StaticResource AddIcon}"
-                                      Fill="#f2c480"
-                                      Width="20"
-                                      Height="20"
-                                      Stretch="Uniform"/>
-                    </Button>
-
-                    <ItemsControl ItemsSource="{Binding SavedServers,
-                                    UpdateSourceTrigger=PropertyChanged}"
-                                  Background="Transparent" 
-                                  Grid.Row="1"
-                                  Padding="5"/>
-
-                </Grid>
-            </Grid>
-        </Border>
+        <ContentControl
+            Content="{Binding RightSidebarViewModel}"
+            Grid.Column="2"
+            Grid.Row="1"/>
         <Border Name="WindowBorder"
                 Grid.Row="0" 
                 Grid.RowSpan="3" 

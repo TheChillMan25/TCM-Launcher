@@ -1,0 +1,117 @@
+﻿<UserControl x:Class="TCM_Launcher.View.UserControls.ProfilesView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:TCM_Launcher.View.UserControls"
+             mc:Ignorable="d" 
+             d:DesignHeight="978" d:DesignWidth="1419">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition/>
+        </Grid.RowDefinitions>
+        <Button x:Name="AddProfileButton"
+                Style="{StaticResource SidebarListItem}"
+                IsEnabled="{Binding AddProfileEnabled,
+                    UpdateSourceTrigger=PropertyChanged}"
+                FontSize="24"
+                Width="Auto"
+                HorizontalAlignment="Left"
+                Click="AddProfileButton_Click">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition/>
+                </Grid.ColumnDefinitions>
+                <Path Data="{StaticResource AddIcon}"
+                      Height="15"
+                      Width="15"
+                      Margin="0 0 5 0"
+                      Stretch="Uniform">
+                    <Path.Style>
+                        <Style TargetType="Path">
+                            <Setter Property="Fill" Value="#f2c480"/>
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding IsMouseOver, 
+                                        RelativeSource={RelativeSource AncestorType=Button}}" 
+                                                 Value="True">
+                                    <Setter Property="Fill" Value="#333"/>
+                                </DataTrigger>
+                                <DataTrigger Binding="{Binding IsPressed, 
+                                        RelativeSource={RelativeSource AncestorType=Button}}" 
+                                                 Value="True">
+                                    <Setter Property="Stroke" Value="WhiteSmoke"/>
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Path.Style>
+                </Path>
+                <TextBlock Text="Add"
+                           Grid.Column="1"
+                           FontSize="20"/>
+            </Grid>
+        </Button>
+        <ItemsControl ItemsSource="{Binding Profiles}"
+                      Background="Transparent"
+                      Grid.Row="1"
+                      ScrollViewer.HorizontalScrollBarVisibility="Disabled">
+            <ItemsControl.ItemsPanel>
+                <ItemsPanelTemplate>
+                    <WrapPanel />
+                </ItemsPanelTemplate>
+            </ItemsControl.ItemsPanel>
+            <ItemsControl.ItemTemplate>
+                <DataTemplate>
+                    <Button Background="#272727"
+                            Style="{StaticResource ProfileCard}"
+                            IsEnabled="{Binding DataContext.CardsEnabled,
+                                RelativeSource={RelativeSource AncestorType=UserControl},
+                                UpdateSourceTrigger=PropertyChanged}"
+                            Width="160"
+                            Height="230"
+                            Command="{Binding DataContext.SelectProfileCommand, 
+                        RelativeSource={RelativeSource AncestorType=ItemsControl}}"
+                            CommandParameter="{Binding Profile}">
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="3*"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                            </Grid.RowDefinitions>
+                            <Border Padding="5 5 5 0">
+                                <Image Source="/Assets/def_prof_img.png"
+                                           Stretch="UniformToFill"/>
+                            </Border>
+                            <TextBlock Text="{Binding Profile.ProfileName,
+                                    FallbackValue=Profile name,
+                                    TargetNullValue=Profile name}"
+                                           Grid.Row="1"
+                                           Foreground="#f2c480"
+                                           FontSize="18"
+                                           Margin="5"
+                                           VerticalAlignment="Center"
+                                           HorizontalAlignment="Center"/>
+                            <TextBlock Text="{Binding Profile.MCVersion,
+                                    FallbackValue=1.20.1,
+                                    TargetNullValue=1.20.1}"
+                                           Grid.Row="2"
+                                           Foreground="WhiteSmoke"
+                                           FontSize="16"
+                                           Margin="5"
+                                           VerticalAlignment="Center"
+                                           HorizontalAlignment="Center"/>
+                        </Grid>
+                    </Button>
+                </DataTemplate>
+            </ItemsControl.ItemTemplate>
+        </ItemsControl>
+        <ItemsControl ItemsSource="{Binding Installs}"
+                      Grid.Row="1"
+                      HorizontalAlignment="Right"
+                      VerticalAlignment="Bottom"
+                      Panel.ZIndex="999"
+                      Margin="10">
+        </ItemsControl>
+    </Grid>
+</UserControl>

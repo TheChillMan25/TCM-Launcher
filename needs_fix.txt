@@ -1,3 +1,0 @@
-Visual fixes:
-
-Profile name length cap and text wrap
