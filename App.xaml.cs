@@ -108,6 +108,7 @@ namespace TCM_Launcher
             services.AddTransient<AppSettingsViewModel>();
             services.AddTransient<ImportModViewModel>();
             services.AddTransient<ProfileInstallIndicatorViewModel>();
+            services.AddTransient<PopupViewModel>();
 
             // UserControls //
             services.AddTransient<ServerCardViewModel>();
@@ -132,6 +133,7 @@ namespace TCM_Launcher
             services.AddTransient<AddServerView>();
             services.AddTransient<AddContentView>();
             services.AddTransient<ImportModView>();
+            services.AddTransient<PopupView>();
 
         }
     }
