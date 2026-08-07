@@ -17,6 +17,7 @@ using TCM_Launcher.ViewModel.UserControls;
 using TCM_Launcher.ViewModel.UserControls.ControlItems;
 using TCM_Launcher.ViewModel.UserControls.Sidebars;
 using TCM_Launcher.ViewModel.Windows;
+using TCM_Launcher.Core.Utils;
 
 namespace TCM_Launcher
 {
@@ -24,13 +25,30 @@ namespace TCM_Launcher
     {
         public static IServiceProvider ServiceProvider { get; private set; }
         private Forms.NotifyIcon notifyIcon;
+
+        public App()
+        {
+            this.DispatcherUnhandledException += (sender, e) =>
+            {
+                System.Windows.MessageBox.Show(
+                    $"Critical error. Check logs for details.",
+                    "Launcher Crash",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Error);
+                Logger.Error("There was a critical error at launch.", e.Exception);
+                e.Handled = true;
+            };
+        }
+
         protected override void OnStartup(StartupEventArgs e)
         {
             base.OnStartup(e);
 
+            var iconUri = new Uri("pack://application:,,,/Assets/TCM.ico", UriKind.Absolute);
+            var streamInfo = System.Windows.Application.GetResourceStream(iconUri);
             notifyIcon = new Forms.NotifyIcon
             {
-                Icon = new System.Drawing.Icon("Assets\\TCM.ico"),
+                Icon = new System.Drawing.Icon(streamInfo.Stream),
                 Text = "TCM Launcher",
                 Visible = true,
             };

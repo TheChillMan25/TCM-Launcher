@@ -22,19 +22,15 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Content Include="Assets\TCM.ico">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-  </ItemGroup>
-
-  <ItemGroup>
     <Resource Include="Assets\def_prof_img.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Resource>
     <Resource Include="Assets\mc_img.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Resource>
-    <Resource Include="Assets\TCM.ico" />
+    <Resource Include="Assets\TCM.ico">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Resource>
   </ItemGroup>
 
   <ItemGroup>
@@ -61,7 +57,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <SplashScreen Include="Assets\LoadImg.png" />
+    <SplashScreen Include="Assets\LoadImg.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </SplashScreen>
   </ItemGroup>
 
   <ItemGroup>
