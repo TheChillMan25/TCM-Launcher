@@ -1,0 +1,144 @@
+﻿<Window x:Class="TCM_Launcher.View.Windows.ProfileSettingsView"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:TCM_Launcher.View.Windows"
+        xmlns:svgc="http://sharpvectors.codeplex.com/svgc/"
+        xmlns:userControls="clr-namespace:TCM_Launcher.View.UserControls"
+        mc:Ignorable="d"
+        Title="{Binding Title}" Height="300" Width="550" ResizeMode="NoResize" WindowStyle="None" WindowStartupLocation="CenterOwner">
+    <Window.Resources>
+        <Style TargetType="TextBlock">
+            <Setter Property="Foreground" Value="WhiteSmoke"/>
+            <Setter Property="FontSize" Value="20"/>
+            <Setter Property="VerticalAlignment" Value="Center"/>
+            <Setter Property="Margin" Value="10 5"/>
+        </Style>
+        
+    </Window.Resources>
+    <WindowChrome.WindowChrome>
+        <WindowChrome GlassFrameThickness="0"
+                      CornerRadius="15" 
+                      CaptionHeight="0"/>
+    </WindowChrome.WindowChrome>
+    <Grid Background="#171717">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="50"/>
+            <RowDefinition Height="50"/>
+            <RowDefinition/>
+            <RowDefinition Height="60"/>
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition/>
+            <ColumnDefinition Width="2*"/>
+        </Grid.ColumnDefinitions>
+        <Border Grid.ColumnSpan="2"
+                Grid.RowSpan="5"
+                BorderBrush="#666" 
+                BorderThickness="1" 
+                CornerRadius="8"/>
+        <Label Style="{StaticResource WindowTitle}"
+               Grid.Row="0"
+               Grid.ColumnSpan="3"
+               Content="Settings"/>
+        <Button Name="CloseButton"    
+                Width="30"
+                Height="30"
+                Grid.Column="3"
+                HorizontalAlignment="Right"
+                Margin="0 0 5 0"
+                Style="{StaticResource RoundButton}" 
+                Click="CloseButton_Click">
+            <Path   Data="{StaticResource CloseIcon}"
+                    Fill="#f2c480"
+                    Width="15"
+                    Height="15"
+                    Stretch="Uniform"/>
+        </Button>
+        <TextBlock Text="Profile name"
+                Grid.Row="1"/>
+        <TextBlock Text="Memory"
+                Grid.Row="2"/>
+        <TextBlock Text="JVM Arguments" 
+                Grid.Row="3"
+                VerticalAlignment="Top"/>
+        <TextBox Style="{StaticResource DarkTextBox}" Name="ProfileNameInput"
+                 Grid.Row="1"
+                 Margin="5"
+                 VerticalContentAlignment="Center"
+                 FontSize="20"
+                 Text="{Binding GameProfile.ProfileName,
+            TargetNullValue='Profile name',
+            FallbackValue='Forge profile'}" 
+                 Grid.Column="1"
+                 VerticalAlignment="Center"
+                 MaxLength="30"/>
+        <Grid Grid.Column="1" Grid.Row="2" Margin="0 0 5 0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="2*"/>
+                <ColumnDefinition/>
+            </Grid.ColumnDefinitions>
+            <Slider Template="{StaticResource Slider}" Name="RamSlider" 
+                    Width="150" 
+                    VerticalAlignment="Center"
+                    HorizontalAlignment="Center"
+                    Minimum="2048" 
+                    Maximum="16384" 
+                    TickFrequency="512" 
+                    IsSnapToTickEnabled="True"
+                    Value="{Binding MaxRam,
+                Mode=TwoWay,
+                UpdateSourceTrigger=PropertyChanged,
+                FallbackValue=4092,
+                TargetNullValue=4092}" />
+            <TextBox Style="{StaticResource DarkTextBox}" Width="60"
+                     Grid.Column="1"
+                     Margin="5"
+                     FontSize="16"
+                     VerticalContentAlignment="Center"
+                     TextAlignment="Center"
+                     Text="{Binding MaxRam, 
+                Mode=TwoWay, 
+                UpdateSourceTrigger=PropertyChanged,
+                FallbackValue=4092,
+                TargetNullValue=4092}" />
+        </Grid>
+        <TextBox Style="{StaticResource DarkTextBox}" Name="JVMArgInput"
+                 Grid.Column="1"
+                 Grid.Row="3" 
+                 Margin="5"
+                 TextWrapping="Wrap"
+                 FontSize="16"
+                 Text="{Binding JVMArgs, 
+                UpdateSourceTrigger=PropertyChanged,
+                Mode=TwoWay,
+                FallbackValue='JVM args',
+                TargetNullValue='JVM args'}"/>
+        <Button Name="SaveButton" 
+                Grid.ColumnSpan="2"
+                Grid.Row="4"
+                HorizontalAlignment="Center"
+                Style="{StaticResource ButtonWithIcon}"
+                Margin="5"
+                Click="SaveButton_Click">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="20"/>
+                    <ColumnDefinition/>
+                </Grid.ColumnDefinitions>
+                <Path   Data="{StaticResource SaveIcon}"
+                        Fill="#333"
+                        Width="15"
+                        Height="15"
+                        Margin="0 0 5 0"
+                        Stretch="Uniform"/>
+                <TextBlock Text="Save"
+                           Foreground="#333"
+                           Grid.Column="1"
+                           VerticalAlignment="Center"/>
+            </Grid>
+        </Button>
+    </Grid>
+</Window>

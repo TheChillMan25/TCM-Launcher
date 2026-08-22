@@ -1,0 +1,77 @@
+﻿<Window x:Class="TCM_Launcher.View.PopUp.PopupView"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:TCM_Launcher.View.PopUp"
+        mc:Ignorable="d"
+        Title="Popup" Height="300" Width="500" WindowStyle="None" ResizeMode="NoResize" WindowStartupLocation="CenterOwner">
+    <WindowChrome.WindowChrome>
+        <WindowChrome GlassFrameThickness="0" CaptionHeight="0" CornerRadius="15"/>
+    </WindowChrome.WindowChrome>
+    <Grid Background="#171717">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="10"/>
+            <RowDefinition Height="60"/>
+            <RowDefinition/>
+            <RowDefinition Height="60"/>
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition/>
+            <ColumnDefinition Width="40"/>
+        </Grid.ColumnDefinitions>
+        <Border Grid.ColumnSpan="2" 
+                Grid.RowSpan="2" 
+                Background="#282828" 
+                BorderBrush="#333"
+                BorderThickness="2 0 2 0"/>
+        <Border Grid.RowSpan="4"
+                Grid.ColumnSpan="2" 
+                BorderBrush="#333" 
+                BorderThickness="2" 
+                CornerRadius="8"
+                Panel.ZIndex="-1"/>
+        <ProgressBar Name="TimerBar" 
+                     Value="{Binding RemainTime }"
+                     Grid.ColumnSpan="2"
+                     Height="10"
+                     Background="#333"
+                     Foreground="#f2c480"
+                     BorderThickness="0"
+                     Maximum="{Binding MaxRemainTime}"
+                     Minimum="0"/>
+        <Label Content="{Binding LabelText, FallbackValue=Popup label}" 
+               Grid.Row="1"
+               VerticalAlignment="Center"
+               Foreground="#f2c480"
+               FontFamily="Calibri" 
+               FontSize="26"
+               Margin="5 0 0 0"/>
+        <Button Name="CloseButton" Style="{StaticResource RoundButton}" Grid.Column="1" Grid.Row="1" Height="30" Width="30" VerticalAlignment="Center" HorizontalAlignment="Right" Margin="0 0 5 0" Click="CloseButton_Click">
+            <Path   Data="{StaticResource CloseIcon}"
+                    Fill="#f2c480"
+                    Width="15"
+                    Height="15"
+                    Stretch="Uniform"/>
+
+        </Button>
+        <TextBlock Grid.Row="2"
+                   Grid.ColumnSpan="2"
+                   Text="{Binding Text, FallbackValue=Popup text}"
+                   Foreground="WhiteSmoke" 
+                   FontFamily="Calibri" 
+                   FontSize="16" 
+                   Padding="5" 
+                   TextWrapping="Wrap"
+                   Margin="5"/>
+        <Button Name="ActionButton" 
+                Style="{StaticResource ButtonWithIcon}"
+                Content="{Binding ButtonText, UpdateSourceTrigger=PropertyChanged}"
+                Grid.ColumnSpan="2" 
+                Grid.Row="4"
+                Height="40" 
+                HorizontalAlignment="Center" 
+                Margin="5" 
+                Click="ActionButton_Click"/>
+    </Grid>
+</Window>

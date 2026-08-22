@@ -2,8 +2,72 @@
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:local="clr-namespace:TCM_Launcher"
-             StartupUri="MainWindow.xaml">
+             xmlns:vmUc="clr-namespace:TCM_Launcher.ViewModel.UserControls"
+             xmlns:vmUcS="clr-namespace:TCM_Launcher.ViewModel.UserControls.Sidebars"
+             xmlns:vmUcCI="clr-namespace:TCM_Launcher.ViewModel.UserControls.ControlItems"
+             xmlns:vmP="clr-namespace:TCM_Launcher.ViewModel.Popup"
+             xmlns:uc="clr-namespace:TCM_Launcher.View.UserControls"
+             xmlns:ucCI="clr-namespace:TCM_Launcher.View.UserControls.ControlItems"
+             xmlns:ucS="clr-namespace:TCM_Launcher.View.UserControls.Sidebars"
+             xmlns:p="clr-namespace:TCM_Launcher.View.PopUp">
     <Application.Resources>
-         
+        <ResourceDictionary>
+            
+            <!--Styles-->
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="Styles/SideBarStyles.xaml"/>
+                <ResourceDictionary Source="Styles/ButtonStyles.xaml"/>
+                <ResourceDictionary Source="Styles/InputStyles.xaml"/>
+                <ResourceDictionary Source="Styles/ContextMenuStyles.xaml"/>
+                <ResourceDictionary Source="Styles/Icons.xaml"/>
+                <ResourceDictionary Source="Styles/TooltipStyles.xaml"/>
+                <ResourceDictionary Source="Styles/TextStyles.xaml"/>
+            </ResourceDictionary.MergedDictionaries>
+
+            <!--UserControls-->
+            <DataTemplate DataType="{x:Type vmUc:ProfilesViewModel}">
+                <uc:ProfilesView />
+            </DataTemplate>
+            <DataTemplate DataType="{x:Type vmUc:ProfileDetailsViewModel}">
+                <uc:ProfileDetailsView />
+            </DataTemplate>
+            <DataTemplate DataType="{x:Type vmUc:AddContentViewModel}">
+                <uc:AddContentView />
+            </DataTemplate>
+            <DataTemplate DataType="{x:Type vmUc:SearchedModDetailsViewModel}">
+                <uc:SearchedModDetailsView />
+            </DataTemplate>
+            <DataTemplate DataType="{x:Type vmUc:AppSettingsViewModel}">
+                <uc:AppSettingsView />
+            </DataTemplate>
+
+            <!--ControlItems-->
+            <DataTemplate DataType="{x:Type vmUcCI:ServerCardViewModel}">
+                <ucCI:ServerCardView />
+            </DataTemplate>
+            <DataTemplate DataType="{x:Type vmUcCI:ModSearchResultCardViewModel}">
+                <ucCI:ModSearchResultCardView />
+            </DataTemplate>
+            <DataTemplate DataType="{x:Type vmUcCI:ModVersionCardViewModel}">
+                <ucCI:ModVersionCardView />
+            </DataTemplate>
+            <DataTemplate DataType="{x:Type vmUcCI:ProfileModViewModel}">
+                <ucCI:ProfileModView />
+            </DataTemplate>
+            <DataTemplate DataType="{x:Type vmUcCI:PinnedProfileViewModel}">
+                <ucCI:PinnedProfileView />
+            </DataTemplate>
+            <DataTemplate DataType="{x:Type vmUcCI:ProfileInstallIndicatorViewModel}">
+                <ucCI:ProfileInstallIndicatiorView/>
+            </DataTemplate>
+
+            <!--Sidebars-->
+            <DataTemplate DataType="{x:Type vmUcS:LeftSidebarViewModel}">
+                <ucS:LeftSidebarView />
+            </DataTemplate>
+            <DataTemplate DataType="{x:Type vmUcS:RightSidebarViewModel}">
+                <ucS:RightSidebarView />
+            </DataTemplate>
+        </ResourceDictionary>
     </Application.Resources>
 </Application>

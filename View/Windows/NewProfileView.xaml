@@ -1,0 +1,106 @@
+﻿<Window x:Class="TCM_Launcher.View.NewProfileView"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:TCM_Launcher.View"
+        xmlns:userControls="clr-namespace:TCM_Launcher.View.UserControls"
+        mc:Ignorable="d"
+        Title="NewProfileView" Height="400" Width="350" ResizeMode="NoResize" WindowStyle="None" ShowInTaskbar="False" WindowStartupLocation="CenterOwner" HorizontalAlignment="Center" VerticalAlignment="Center" 
+    xmlns:theme="clr-namespace:Microsoft.Windows.Themes;assembly=PresentationFramework.Aero2">
+    <WindowChrome.WindowChrome>
+        <WindowChrome GlassFrameThickness="0" CornerRadius="15" CaptionHeight="0"/>
+    </WindowChrome.WindowChrome>
+    <Window.Resources>
+        <Style TargetType="TextBlock">
+            <Setter Property="Foreground" Value="#f2c480"/>
+            <Setter Property="FontFamily" Value="Calibri"/>
+            <Setter Property="FontSize" Value="24"/>
+        </Style>
+    </Window.Resources>
+    <Grid Background="#171717">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="50"/>
+            <RowDefinition Height="3*"/>
+            <RowDefinition/>
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition/>
+            <ColumnDefinition/>
+            <ColumnDefinition/>
+            <ColumnDefinition/>
+        </Grid.ColumnDefinitions>
+        <Border Grid.ColumnSpan="4" 
+                Grid.RowSpan="3"
+                BorderBrush="#666"
+                BorderThickness="1"
+                CornerRadius="8"/>
+        <Label Grid.Row="0"
+               Grid.ColumnSpan="3"
+               Style="{StaticResource WindowTitle}"
+               Content="Create profile"/>
+        <Button Name="CloseButton"    
+                Width="30"
+                Height="30"
+                Grid.Column="3"
+                HorizontalAlignment="Right"
+                Margin="0 0 5 0"
+                Style="{StaticResource RoundButton}" Click="CloseButton_Click">
+            <Path   Data="{StaticResource CloseIcon}"
+                    Fill="#f2c480"
+                    Width="15"
+                    Height="15"
+                    Stretch="Uniform"/>
+        </Button>
+        <StackPanel Grid.Row="1"
+                    Grid.ColumnSpan="4" 
+                    Width="250" 
+                    VerticalAlignment="Center" 
+                    HorizontalAlignment="Center">
+            <TextBlock Text="Profile name"/>
+            <TextBox Style="{StaticResource DarkTextBox}" 
+                     Name="ProfileNameInput"
+                     Height="40"
+                     Margin="5"
+                     FontSize="18"
+                     VerticalContentAlignment="Center"
+                     Text="{Binding PlaceholderProfileName,
+                UpdateSourceTrigger=PropertyChanged}"
+                     MaxLength="30"/>
+            <TextBlock Text="Game version"/>
+            <ComboBox Name="VersionCombo"
+                      ItemsSource="{Binding Versions, 
+                UpdateSourceTrigger=PropertyChanged}"
+                      Height="40"
+                      Margin="5"
+                     FontSize="18"
+                      DisplayMemberPath="VersionName"
+                      SelectionChanged="VersionCombo_SelectionChanged" 
+                      SelectedIndex="0"/>
+            <TextBlock Text="Forge version"/>
+            <ComboBox Name="ForgeVersionCombo" 
+                      ItemsSource="{Binding ForgeVersions, 
+                UpdateSourceTrigger=PropertyChanged}"
+                      Height="40"
+                      Margin="5"
+                      FontSize="18"
+                      DisplayMemberPath="VersionName" 
+                      IsEnabled="{Binding HasForgeVersions,
+                UpdateSourceTrigger=PropertyChanged}"
+                      SelectedIndex="0"/>
+        </StackPanel>
+        <Button Name="CreateProfileButton" 
+                Grid.Row="2" 
+                Grid.ColumnSpan="4"
+                Padding="5 1"
+                Click="CreateProfileButton_Click" 
+                IsEnabled="{Binding CanCreate}" 
+                Style="{StaticResource ButtonWithIcon}"
+                VerticalAlignment="Center" 
+                HorizontalAlignment="Center">
+            <TextBlock Text="Create profile"
+                       Grid.Column="1"
+                       Foreground="#333"/>
+        </Button>
+    </Grid>
+</Window>

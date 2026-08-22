@@ -1,0 +1,120 @@
+﻿<UserControl x:Class="TCM_Launcher.View.UserControls.AppSettingsView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:TCM_Launcher.View.UserControls"
+             mc:Ignorable="d" 
+             d:DesignHeight="450" d:DesignWidth="800"
+             Loaded="OnLoaded">
+    <UserControl.Resources>
+        <Style TargetType="TextBlock">
+            <Setter Property="FontFamily" Value="Calibri"/>
+            <Setter Property="VerticalAlignment" Value="Center"/>
+            <Setter Property="Margin" Value="10 5"/>
+            <Setter Property="FontSize" Value="22"/>
+            <Setter Property="Foreground" Value="WhiteSmoke"/>
+        </Style>
+    </UserControl.Resources>
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition/>
+            <RowDefinition/>
+            <RowDefinition/>
+            <RowDefinition/>
+            <RowDefinition/>
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="Auto"/>
+            <ColumnDefinition/>
+        </Grid.ColumnDefinitions>
+        <TextBlock Text="Settings"
+                   FontSize="28"
+                   Margin="5"
+                   Foreground="#f2c480"/>
+        <TextBlock Text="Start with Windows"
+                   Grid.Row="1"/>
+        <TextBlock Text="Close button behaviour"
+                   Grid.Row="2"/>
+        <TextBlock Text="Launcher behaviour on game start"
+                   Grid.Row="3"/>
+        <TextBlock Text="Maximum paralell downloads"
+                   Grid.Row="4"/>
+
+        <CheckBox x:Name="StartWithWindowsCheckBox"
+                  Style="{DynamicResource DarkCheckbox}" 
+                  IsChecked="{Binding StartWithWindows,
+                    Mode=TwoWay,
+                    UpdateSourceTrigger=PropertyChanged}"
+                  Height="30"
+                  Width="30"
+                  HorizontalAlignment="Left"
+                  Grid.Row="1"
+                  Grid.Column="1"
+                  VerticalAlignment="Center"/>
+        <ComboBox x:Name="CloseButtonBehaviourCombo"
+                  ItemsSource="{Binding CloseButtonBehaviours}"
+                  SelectedItem="{Binding CloseButtonBehaviour,
+                    UpdateSourceTrigger=PropertyChanged,
+                    Mode=TwoWay}"
+                  HorizontalAlignment="Left"
+                  Width="150"
+                  Grid.Column="1"
+                  Grid.Row="2">
+            <ComboBox.ItemTemplate>
+                <ItemContainerTemplate>
+                    <TextBlock Text="{Binding}"
+                               FontSize="16"/>
+                </ItemContainerTemplate>
+            </ComboBox.ItemTemplate>
+        </ComboBox>
+        <ComboBox x:Name="OnGameStartCombo"
+                  ItemsSource="{Binding OnGameStartBehaviours}"
+                  SelectedItem="{Binding OnGameStart,
+                      UpdateSourceTrigger=PropertyChanged,
+                      Mode=TwoWay}"
+                  HorizontalAlignment="Left"
+                  Grid.Column="1"
+                  Width="150"
+                  Grid.Row="3">
+            <ComboBox.ItemTemplate>
+                <ItemContainerTemplate>
+                    <TextBlock Text="{Binding}"
+                               FontSize="16"/>
+                </ItemContainerTemplate>
+            </ComboBox.ItemTemplate>
+        </ComboBox>
+        <Grid Grid.Row="4"
+              Grid.Column="1">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition/>
+            </Grid.ColumnDefinitions>
+            <Slider x:Name="MaximumParalellDownloads"
+                    Template="{StaticResource Slider}"
+                    Width="200"
+                    Minimum="1" 
+                    Maximum="10"
+                    TickFrequency="1" 
+                    IsSnapToTickEnabled="True"
+                    Value="{Binding MaximumParalellDownloads,
+                        FallbackValue=0,
+                        TargetNullValue=0, 
+                        Mode=TwoWay, 
+                        UpdateSourceTrigger=PropertyChanged}"
+                    VerticalAlignment="Center"
+                    HorizontalAlignment="Left"/>
+            <TextBox Style="{StaticResource DarkTextBox}" Width="60"
+                     Grid.Column="1"
+                     Margin="10,0,0,0" 
+                     VerticalAlignment="Center"
+                     HorizontalAlignment="Left"
+                     Text="{Binding MaximumParalellDownloads, 
+                        FallbackValue=0, 
+                        TargetNullValue=0, 
+                        Mode=TwoWay, 
+                        UpdateSourceTrigger=PropertyChanged}" />
+        </Grid>
+    </Grid>
+</UserControl>

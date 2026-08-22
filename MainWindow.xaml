@@ -4,9 +4,116 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:TCM_Launcher"
+        xmlns:userControls="clr-namespace:TCM_Launcher.View.UserControls"
+        xmlns:sidebars="clr-namespace:TCM_Launcher.View.UserControls.Sidebars"
+        xmlns:converters="clr-namespace:TCM_Launcher.Core.Utils.Converters"
+        xmlns:fa="http://schemas.fontawesome.io/icons/"
         mc:Ignorable="d"
-        Title="MainWindow" Height="450" Width="800">
-    <Grid>
-
+        Title="TCM Launcher" 
+        MinHeight="700"
+        MinWidth="1020"
+        d:DesignHeight="1080" d:DesignWidth="1920"
+        WindowStartupLocation="CenterOwner"
+        WindowState="Maximized"
+        WindowStyle="None"
+        Loaded="OnLoaded">
+    <Window.Resources>
+        <BooleanToVisibilityConverter x:Key="BoolToVis"/>
+        <converters:InverseBooleanConverter x:Key="InverseBool"/>
+        <converters:InverseBooleanToVisibilityConverter x:Key="InverseBoolToVis"/>
+    </Window.Resources>
+    <WindowChrome.WindowChrome>
+        <WindowChrome GlassFrameThickness="0" 
+                      CornerRadius="15"
+                      CaptionHeight="0"/>
+    </WindowChrome.WindowChrome>
+    <Grid Background="#171717">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="250"/>
+            <ColumnDefinition/>
+            <ColumnDefinition Width="250"/>
+        </Grid.ColumnDefinitions>
+        <Grid Name="HeaderBar" 
+              Grid.ColumnSpan="3" 
+              MouseLeftButtonDown="HeaderBar_MouseLeftButtonDown"
+              Background="#141414"
+              Margin="10 5 10 0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition/>
+                <ColumnDefinition/>
+            </Grid.ColumnDefinitions>
+            <Label Content="TCM Launcher" 
+                   VerticalAlignment="Center"
+                   Foreground="#f2c480" 
+                   FontFamily="Calibri"
+                   FontSize="32"/>
+            <StackPanel Name="WindowControlButtons"
+                        Grid.Column="2"
+                        Orientation="Horizontal" 
+                        HorizontalAlignment="Right">
+                <Button x:Name="MinimizeButton"
+                    Width="30"
+                    Height="30"
+                    Style="{StaticResource RoundButton}" Click="MinimizeButton_Click">
+                    <Path   Data="{StaticResource MinimizeIcon}"
+                            Fill="#f2c480"
+                            Width="15"
+                            Height="15"
+                            Stretch="Uniform"/>
+                </Button>
+                <Button x:Name="MaximizeButton"
+                        Width="30"
+                        Height="30"
+                        Style="{StaticResource RoundButton}" Click="MaximizeButton_Click">
+                    <Path   Data="{StaticResource MaximizeIcon}"
+                            Fill="#f2c480"
+                            Width="15"
+                            Height="15"
+                            Stretch="Uniform"/>
+                </Button>
+                <Button Name="CloseButton"    
+                        Width="30"
+                        Height="30"
+                        Style="{StaticResource RoundButton}" Click="CloseButton_Click">
+                    <Path   Data="{StaticResource CloseIcon}"
+                        Fill="#f2c480"
+                        Width="15"
+                        Height="15"
+                        Stretch="Uniform"/>
+                </Button>
+            </StackPanel>
+        </Grid>
+        
+        <ContentControl
+            Content="{Binding LeftSidebarViewModel}"
+            Grid.Row="1"/>
+        <Border Name="MiddleContent"
+                Grid.Column="1" 
+                Grid.Row="1" >
+            <ContentControl Content="{Binding CurrentView, 
+                UpdateSourceTrigger=PropertyChanged}"/>
+        </Border>
+        <ContentControl
+            Content="{Binding RightSidebarViewModel}"
+            Grid.Column="2"
+            Grid.Row="1"/>
+        <Border Name="WindowBorder"
+                Grid.Row="0" 
+                Grid.RowSpan="3" 
+                Grid.Column="0"
+                Grid.ColumnSpan="3" 
+                BorderBrush="#444" 
+                BorderThickness="1" 
+                CornerRadius="8" 
+                IsHitTestVisible="False"/>
+        <Border x:Name="BottomSpacer"
+                Grid.ColumnSpan="3"
+                Grid.Row="2"
+                Height="55"/>
     </Grid>
 </Window>

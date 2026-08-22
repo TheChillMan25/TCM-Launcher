@@ -1,0 +1,184 @@
+﻿<Window x:Class="TCM_Launcher.View.Windows.ModDetailsView"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:TCM_Launcher.View.Windows"
+        xmlns:ucmisc="clr-namespace:TCM_Launcher.View.UserControls.Misc"
+        mc:Ignorable="d"
+        Title="Mod details" MinHeight="400" Width="450"
+        MaxHeight="500"
+        Background="Transparent"
+        WindowStyle="None"
+        WindowStartupLocation="CenterOwner">
+    <WindowChrome.WindowChrome>
+        <WindowChrome GlassFrameThickness="0" CaptionHeight="0" CornerRadius="15"/>
+    </WindowChrome.WindowChrome>
+    <Border Background="#171717"
+            BorderBrush="#666"
+            BorderThickness="1"
+            CornerRadius="8">
+        <Grid Margin="5">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+            <Grid Name="Header">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                <Label Content="Mod details"
+                       Style="{StaticResource WindowTitle}"/>
+                <Button x:Name="CloseButton"
+                        Style="{StaticResource RoundButton}"
+                        Height="30"
+                        Width="30"
+                        HorizontalAlignment="Right"
+                        Click="CloseButton_Click">
+                    <Path Data="{StaticResource CloseIcon}"
+                          Fill="#f2c480"/>
+                </Button>
+            </Grid>
+            <Grid Name="Form"
+                  Grid.Row="1">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition/>
+                </Grid.RowDefinitions>
+                <ucmisc:TextBoxPlaceholder Placeholder="Mod name"
+                                           Input="{Binding ModName, Mode=TwoWay}"                                         Margin="10"/>
+                <ucmisc:TextBoxPlaceholder Placeholder="Mod version"
+                                           Input="{Binding ModVersion, Mode=TwoWay}"
+                                           Margin="10"
+                                           Grid.Row="1"/>
+                <Grid Name="FileImportGroup"
+                      Grid.Row="3"
+                      Margin="10">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    <Button x:Name="FileButton"
+                            Style="{StaticResource RoundButton}"
+                            HorizontalAlignment="Center"
+                            Click="FileButton_Click">
+                        <Path   Data="{StaticResource ImportIcon}"
+                                Stroke="#f2c480"
+                                StrokeThickness="2"
+                                Width="20"
+                                Height="20"
+                                Stretch="Uniform"/>
+                    </Button>
+                    <TextBlock Text="{Binding FileName,
+                        FallbackValue='Filename',
+                        TargetNullValue='Filename'}"
+                               Foreground="WhiteSmoke"
+                               FontSize="18"
+                               TextWrapping="Wrap"
+                               FontFamily="Calibri"
+                               Margin="10"
+                               VerticalAlignment="Center"
+                               HorizontalAlignment="Center"
+                               Grid.Column="1"/>
+                    <Button x:Name="ClearFileButton"
+                            Style="{StaticResource RoundButton}"
+                            Height="30"
+                            Width="30"
+                            Grid.Column="2"
+                            Click="ClearFileButton_Click">
+                        <Path Data="{StaticResource DeleteIcon}"
+                              Stroke="#f2c480"
+                              StrokeThickness="1.5"
+                              Height="15"
+                              Width="15"
+                              Stretch="Uniform"/>
+                    </Button>
+                </Grid>
+                <Grid Name="EnviromentsGroup"
+                      Grid.Row="4">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition/>
+                    </Grid.RowDefinitions>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition/>
+                        <ColumnDefinition/>
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Text="Enviroments"
+                               Foreground="#f2c480"
+                               FontSize="24"
+                               FontFamily="Calibri"
+                               HorizontalAlignment="Center"
+                               Grid.ColumnSpan="2"/>
+                    <Grid Name="ClientSideGroup"
+                          Grid.Row="1"
+                          Margin="10">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition/>
+                        </Grid.RowDefinitions>
+                        <TextBlock Text="Client side"
+                                   HorizontalAlignment="Center"
+                                   VerticalAlignment="Center"
+                                   Foreground="#ccc"
+                                   FontFamily="Calibri"
+                                   FontSize="20"
+                                   Margin="10"/>
+                        <ComboBox x:Name="ClientSideCombo"
+                                  ItemsSource="{Binding Environments}"
+                                  SelectedItem="{Binding ClientSide}"
+                                  Grid.Row="1"/>
+                    </Grid>
+                    <Grid Name="ServerSideGroup"
+                          Grid.Row="1"
+                          Margin="10"
+                          Grid.Column="1">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition/>
+                        </Grid.RowDefinitions>
+                        <TextBlock Text="Server side"
+                                   HorizontalAlignment="Center"
+                                   VerticalAlignment="Center"
+                                   Foreground="#ccc"
+                                   FontFamily="Calibri"
+                                   FontSize="20"
+                                   Margin="10"/>
+                        <ComboBox x:Name="ServerSideCombo"
+                                  Grid.Row="1"
+                                  ItemsSource="{Binding Environments}"
+                                  SelectedItem="{Binding ServerSide}"/>
+                    </Grid>
+                </Grid>
+            </Grid>
+            <Button x:Name="SaveButton"
+                    Style="{StaticResource ButtonWithIcon}"
+                    HorizontalAlignment="Center"
+                    Grid.Row="2" Click="SaveButton_Click">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    <Path   Data="{StaticResource SaveIcon}"
+                            Fill="#333"
+                            Width="20"
+                            Height="20"
+                            Margin="0 0 5 0"
+                            Stretch="Uniform"/>
+                    <TextBlock Text="Save" 
+                                   Grid.Column="1"
+                                   VerticalAlignment="Center" 
+                                   HorizontalAlignment="Center"/>
+                </Grid>
+
+            </Button>
+        </Grid>
+    </Border>
+</Window>
