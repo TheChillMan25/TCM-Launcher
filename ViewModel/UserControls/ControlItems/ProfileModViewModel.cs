@@ -12,7 +12,8 @@ namespace TCM_Launcher.ViewModel.UserControls.ControlItems
         }
 
         public Func<string, Task>? OnModRemoveRequested { get; set; }
-        public Func<bool, ProfileModViewModel, Task>? OnImportFileRequested { get; set; }
+        public Func<ProfileModViewModel, Task>? OnModSettingsRequested { get; set; }
+        public Func<ProfileModInfo, bool, Task> OnToggleModRequested { get; set; }
 
         private ProfileModInfo mod;
 
@@ -54,14 +55,33 @@ namespace TCM_Launcher.ViewModel.UserControls.ControlItems
             }
         }
 
+        private bool modEnabled;
+
+        public bool ModEnabled
+        {
+            get { return modEnabled; }
+            set 
+            {
+                modEnabled = value; 
+                OnPropertyChange();
+            }
+        }
+
         public async Task RemoveModFromProfile()
         {
             OnModRemoveRequested?.Invoke(Mod.Id);
         }
 
-        public void ImportFile()
+        public void OpenModSettings()
         {
-            OnImportFileRequested?.Invoke(true, this);
+            OnModSettingsRequested?.Invoke(this);
+        }
+
+        public void ToggleMod(bool value)
+        {
+            Mod.IsEnabled = value;
+            ModEnabled = value;
+            OnToggleModRequested?.Invoke(Mod, Mod.IsEnabled);
         }
     }
 }

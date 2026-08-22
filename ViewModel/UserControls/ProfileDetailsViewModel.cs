@@ -2,6 +2,7 @@
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Windows;
+using System.Windows.Data;
 using TCM_Launcher.Core.Utils;
 using TCM_Launcher.Interfaces;
 using TCM_Launcher.Model.DB;
@@ -18,7 +19,7 @@ namespace TCM_Launcher.ViewModel.UserControls
         private readonly IGameProfileService gameProfileService;
         private readonly IProfileModService profileModService;
         private readonly ILauncherService launcherService;
-        public ProfileDetailsViewModel(IGameProfileService gameProfileService, ILauncherService launcherService, IProfileModService profileModService)
+        public ProfileDetailsViewModel(IGameProfileService gameProfileService, ILauncherService launcherService, IProfileModService profileModService, IBackendService backendService   )
         {
             this.gameProfileService = gameProfileService;
             this.launcherService = launcherService;
@@ -47,12 +48,12 @@ namespace TCM_Launcher.ViewModel.UserControls
         }
 
 
-        private ObservableCollection<ProfileModViewModel> allProfileMods = new();
-        private ObservableCollection<ProfileModViewModel> profileMods = new();
-        public ObservableCollection<ProfileModViewModel> ProfileMods
+        private List<ProfileModViewModel> allProfileMods = new();
+        private ObservableCollection<ProfileModViewModel> modsToShow = new();
+        public ObservableCollection<ProfileModViewModel> ModsToShow
         {
-            get { return profileMods; }
-            set { profileMods = value; OnPropertyChange(); }
+            get { return modsToShow; }
+            set { modsToShow = value; OnPropertyChange(); }
         }
 
         private string headerText;
@@ -143,7 +144,6 @@ namespace TCM_Launcher.ViewModel.UserControls
         }
 
         private List<string> modSortFilters = new List<string> { "All", "Client only", "Server only", "Exclude client only", "Exclude server only"};
-
         public List<string> ModSortFilters
         {
             get { return modSortFilters; }
@@ -151,32 +151,59 @@ namespace TCM_Launcher.ViewModel.UserControls
         }
 
         private string selectedFilter = "All";
-
         public string SelectedFilter
         {
             get { return selectedFilter; }
             set { selectedFilter = value; OnPropertyChange(); SortMods(); }
         }
 
+        private string modTextFilter;
+
+        public string ModTextFilter
+        {
+            get { return modTextFilter; }
+            set 
+            { 
+                modTextFilter = value;
+                if (!string.IsNullOrWhiteSpace(value)) ModsToShow = new(FilterModsByText(modTextFilter, allProfileMods));
+                else ModsToShow = new(allProfileMods);
+            }
+        }
+
+        private List<ProfileModViewModel> FilterModsByText(string filter, List<ProfileModViewModel> source)
+        {
+            filter = filter.ToLowerInvariant();
+            var list = source.Where(m => m.Mod.Name.ToLowerInvariant().Contains(filter)).ToList();
+            return list;
+        }
+
         public void SortMods()
         {
-            var req = (string var) => var == "required"; 
+            var isReq = (string var) => var == "required";
+            var list = allProfileMods;
             switch (SelectedFilter)
             {
                 case "Client only":
-                    ProfileMods = new(allProfileMods.Where(m => req(m.Mod.Client_Side) && !req(m.Mod.Server_Side)).ToList());
+                    list = allProfileMods.Where(m => isReq(m.Mod.Client_Side) && !isReq(m.Mod.Server_Side)).ToList();
+                    if (!string.IsNullOrWhiteSpace(ModTextFilter)) ModsToShow = new(FilterModsByText(ModTextFilter, list));
+                    else ModsToShow = new(list);
                     break;
                 case "Server only":
-                    ProfileMods = new(allProfileMods.Where(m => !req(m.Mod.Client_Side) && req(m.Mod.Server_Side)).ToList());
+                    list = allProfileMods.Where(m => !isReq(m.Mod.Client_Side) && isReq(m.Mod.Server_Side)).ToList();
+                    if (!string.IsNullOrWhiteSpace(ModTextFilter)) ModsToShow = new(FilterModsByText(ModTextFilter, list));
+                    else ModsToShow = new(list);
                     break;
                 case "Exclude client only":
-                    ProfileMods = new(allProfileMods.Where(m => !req(m.Mod.Client_Side)).ToList());
+                    list = allProfileMods.Where(m => isReq(m.Mod.Server_Side)).ToList();
                     break;
                 case "Exclude server only":
-                    ProfileMods = new(allProfileMods.Where(m => req(m.Mod.Client_Side)).ToList());
+                    list = new(allProfileMods.Where(m => isReq(m.Mod.Client_Side)).ToList());
+                    if (!string.IsNullOrWhiteSpace(ModTextFilter)) ModsToShow = new(FilterModsByText(ModTextFilter, list));
+                    else ModsToShow = new(list);
                     break;
                 default:
-                    ProfileMods = allProfileMods; 
+                    if (!string.IsNullOrWhiteSpace(ModTextFilter)) ModsToShow = new(FilterModsByText(ModTextFilter, list));
+                    else ModsToShow = new(list);
                     break;
             }
         }
@@ -195,15 +222,16 @@ namespace TCM_Launcher.ViewModel.UserControls
             else
             {
                 allProfileMods = new();
-                ProfileMods = new();
+                ModsToShow = new();
+                ModsCountText = "No mods";
             }
         }
 
         private async Task RemoveModFromProfile(string projectId)
         {
             var modId = await profileModService.RemoveModFromProfile(Profile.Id, projectId);
-            var mv = ProfileMods.FirstOrDefault(m => m.Mod.Id == modId);
-            if (mv != null) ProfileMods.Remove(mv);
+            var mv = ModsToShow.FirstOrDefault(m => m.Mod.Id == modId);
+            if (mv != null) ModsToShow.Remove(mv);
         }
 
         public async Task OpenProfileSettings()
@@ -305,7 +333,12 @@ namespace TCM_Launcher.ViewModel.UserControls
 
         public async Task ExportModpackAsync()
         {
-            await profileModService.ExportModpackAsync(Profile.Id, Profile.ProfileName);
+            var e = App.ServiceProvider.GetRequiredService<ExportModpackView>();
+            e.Owner = App.Current.MainWindow;
+            e.Owner.Opacity = 0.4;
+            e.Initialize(Profile.Id, Profile.ProfileName, allProfileMods);
+            e.ShowDialog();
+            e.Owner.Opacity = 1;
         }
         public async Task ImportModpackAsync()
         {
@@ -321,39 +354,78 @@ namespace TCM_Launcher.ViewModel.UserControls
                 _ = LoadProfileModsAsync();
             }
         }
-        public async Task ImportModAsync(bool missingJar = false, ProfileModViewModel model = null)
+        public async Task OpenModSettings(ProfileModViewModel model)
         {
-            ImportModView i = App.ServiceProvider.GetRequiredService<ImportModView>();
+            ModDetailsView i = App.ServiceProvider.GetRequiredService<ModDetailsView>();
+            i.Owner = App.Current.MainWindow;
+            i.Owner.Opacity = 0.4;
+
+            var iVm = i.viewModel;
+            iVm.Initialize(model.Mod, false);
+            
+            var saved = i.ShowDialog();
+            if (saved == true)
+            {
+                var existing = ModsToShow.FirstOrDefault(m => m.Mod.Id == model.Mod.Id);
+                if (existing != null)
+                {
+                    existing.Mod.Name = iVm.ModName;
+                    existing.Mod.Version = iVm.ModVersion;
+                    existing.Mod.Client_Side = iVm.ClientSide;
+                    existing.Mod.Server_Side = iVm.ServerSide;
+                    CollectionViewSource.GetDefaultView(ModsToShow)?.Refresh();
+                    await profileModService.UpdateModAsync(Profile.Id, model.Mod);
+                }
+            }
+            i.Owner.Opacity = 1;
+        }
+
+        /// <summary>
+        /// Opens the mod details window. After saving, imports the mod. Depending on the usecase it only copies the .jar file or imports a whole new mod into the profile.
+        /// </summary>
+        /// <returns></returns>
+        public async Task ImportModAsync()
+        {
+            ModDetailsView i = App.ServiceProvider.GetRequiredService<ModDetailsView>();
             i.Owner = App.Current.MainWindow;
             i.Owner.Opacity = 0.4;
             var iVm = i.viewModel;
-            if(model != null)
+
+            var saved = i.ShowDialog();
+            if (saved == true)
             {
-                iVm.ModName = model.Mod.Name;
-                iVm.ModVersion = model.Mod.Version;
-                iVm.ClientSide = model.Mod.Client_Side == "required";
-                iVm.ServerSide = model.Mod.Server_Side == "required";
-            }
-            var imported = i.ShowDialog();
-            if (imported == true)
-            {
-                var mInfo = await profileModService.ImportModAsync(Profile.Id, iVm.ModName, iVm.ModVersion, iVm.FileName, iVm.SourceFile, iVm.ClientSide, iVm.ServerSide, missingJar);
-                if(mInfo != null)
+                var mInfo = await profileModService.ImportModAsync(Profile.Id, iVm.ModName, iVm.ModVersion, iVm.FileName, iVm.SourceFile, iVm.ClientSide, iVm.ServerSide);
+
+                if (mInfo != null)
                 {
                     var modVm = App.ServiceProvider.GetRequiredService<ProfileModViewModel>();
                     modVm.Mod = mInfo;
                     modVm.OnModRemoveRequested = RemoveModFromProfile;
-                    modVm.OnImportFileRequested = ImportModAsync;
+                    modVm.OnModSettingsRequested = OpenModSettings;
+                    modVm.OnToggleModRequested = ToggleMod;
+                    modVm.ModEnabled = mInfo.IsEnabled;
                     modVm.MissingJar = false;
-                    ProfileMods.Add(modVm);
+                    ModsToShow.Add(modVm);
                 }
                 else
                 {
-                    var existing = ProfileMods.FirstOrDefault(m => m.Mod.Id == iVm.FileName);
+                    var existing = ModsToShow.FirstOrDefault(m => m.Mod.Id == iVm.FileName);
                     if (existing != null) existing.MissingJar = false;
                 }
             }
-            i.Owner.Opacity = 1;
+            i.Owner.Opacity = 1; 
+        }
+
+        private async Task ToggleMod(ProfileModInfo mod, bool enable)
+        {
+            try
+            {
+                await profileModService.ToggleModAsync(Profile.Id, mod, enable);
+            }
+            catch (Exception ex)
+            {
+                Logger.Error("There was an exception when toggling mod.", ex);
+            }
         }
 
         public void UpdateProfileMods(List<ProfileModInfo> mods)
@@ -362,7 +434,7 @@ namespace TCM_Launcher.ViewModel.UserControls
             var existingFiles = Directory.Exists(modsFolder) ?
                 Directory.GetFiles(modsFolder).Select(Path.GetFileName).ToHashSet(StringComparer.OrdinalIgnoreCase)
                 : new HashSet<string?>(StringComparer.OrdinalIgnoreCase);
-            var existingVmMap = ProfileMods.ToDictionary(vm => vm.Mod.Id);
+            var existingVmMap = ModsToShow.ToDictionary(vm => vm.Mod.Id);
             var allUpdatedViewModels = mods.AsParallel().Select(modInfo =>
             {
                 if (existingVmMap.TryGetValue(modInfo.Id, out var existingVm))
@@ -377,13 +449,15 @@ namespace TCM_Launcher.ViewModel.UserControls
                     bool missingJar = !existingFiles.Contains(modInfo.FileName);
                     vm.MissingJar = missingJar && vm.Mod.Source == ModSource.Imported;
                     vm.OnModRemoveRequested = RemoveModFromProfile;
-                    vm.OnImportFileRequested = ImportModAsync;
+                    vm.OnModSettingsRequested = OpenModSettings;
+                    vm.OnToggleModRequested = ToggleMod;
+                    vm.ModEnabled = modInfo.IsEnabled;
                     return vm;
                 }
             }).OrderBy(vm => vm.Mod.Name).ToList();
             allProfileMods = new(allUpdatedViewModels);
-            ProfileMods = new(allUpdatedViewModels);
-            ModsCountText = $"{ProfileMods.Count} mods";
+            ModsToShow = new(allUpdatedViewModels);
+            ModsCountText = $"{ModsToShow.Count} mods";
         }
     }
 }

@@ -19,8 +19,15 @@ namespace TCM_Launcher.Model.Mods
 
     public class ProfileModpackManifest
     {
-        public string ProfileId { get; set; }
+        public string ProfileName { get; set; }
+        public ModpackDependency Dependencies { get; set; }
         public DateTime LastUpdated { get; set; }
-        public List<ProfileModInfo> Mods { get; set; }
+        public List<ProfileModInfo> Mods { get; set; } = new List<ProfileModInfo>();
+    }
+
+    public class ModpackDependency
+    {
+        public string MinecraftVersion { get; set; }
+        public string ForgeVersion { get; set; }
     }
 }

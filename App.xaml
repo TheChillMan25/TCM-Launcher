@@ -12,6 +12,8 @@
              xmlns:p="clr-namespace:TCM_Launcher.View.PopUp">
     <Application.Resources>
         <ResourceDictionary>
+            
+            <!--Styles-->
             <ResourceDictionary.MergedDictionaries>
                 <ResourceDictionary Source="Styles/SideBarStyles.xaml"/>
                 <ResourceDictionary Source="Styles/ButtonStyles.xaml"/>
@@ -19,8 +21,10 @@
                 <ResourceDictionary Source="Styles/ContextMenuStyles.xaml"/>
                 <ResourceDictionary Source="Styles/Icons.xaml"/>
                 <ResourceDictionary Source="Styles/TooltipStyles.xaml"/>
+                <ResourceDictionary Source="Styles/TextStyles.xaml"/>
             </ResourceDictionary.MergedDictionaries>
 
+            <!--UserControls-->
             <DataTemplate DataType="{x:Type vmUc:ProfilesViewModel}">
                 <uc:ProfilesView />
             </DataTemplate>
@@ -30,13 +34,14 @@
             <DataTemplate DataType="{x:Type vmUc:AddContentViewModel}">
                 <uc:AddContentView />
             </DataTemplate>
-            <DataTemplate DataType="{x:Type vmUc:ModDetailsViewModel}">
-                <uc:ModDetailsView />
+            <DataTemplate DataType="{x:Type vmUc:SearchedModDetailsViewModel}">
+                <uc:SearchedModDetailsView />
             </DataTemplate>
             <DataTemplate DataType="{x:Type vmUc:AppSettingsViewModel}">
                 <uc:AppSettingsView />
             </DataTemplate>
 
+            <!--ControlItems-->
             <DataTemplate DataType="{x:Type vmUcCI:ServerCardViewModel}">
                 <ucCI:ServerCardView />
             </DataTemplate>
@@ -55,11 +60,11 @@
             <DataTemplate DataType="{x:Type vmUcCI:ProfileInstallIndicatorViewModel}">
                 <ucCI:ProfileInstallIndicatiorView/>
             </DataTemplate>
-            
+
+            <!--Sidebars-->
             <DataTemplate DataType="{x:Type vmUcS:LeftSidebarViewModel}">
                 <ucS:LeftSidebarView />
             </DataTemplate>
-            
             <DataTemplate DataType="{x:Type vmUcS:RightSidebarViewModel}">
                 <ucS:RightSidebarView />
             </DataTemplate>

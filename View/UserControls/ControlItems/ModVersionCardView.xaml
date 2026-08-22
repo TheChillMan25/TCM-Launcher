@@ -42,6 +42,7 @@
             <TextBlock Text="{Binding Version.Name,
                 FallbackValue=VersionName}"
                        Grid.Column="1"
+                       TextWrapping="Wrap"
                        Foreground="WhiteSmoke"
                        FontSize="16"/>
             <Button x:Name="DownloadButton"

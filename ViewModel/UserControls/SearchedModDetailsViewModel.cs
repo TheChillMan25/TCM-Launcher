@@ -9,12 +9,12 @@ using TCML_Class_library;
 
 namespace TCM_Launcher.ViewModel.UserControls
 {
-    public class ModDetailsViewModel : ViewModelBase
+    public class SearchedModDetailsViewModel : ViewModelBase
     {
 
 		private IDownloadService downloadService;
         private IProfileModService profileModService;
-        public ModDetailsViewModel(IDownloadService downloadService, IProfileModService profileModService)
+        public SearchedModDetailsViewModel(IDownloadService downloadService, IProfileModService profileModService)
         {
             this.downloadService = downloadService;
 			this.profileModService = profileModService;

@@ -52,22 +52,24 @@
                         Orientation="Horizontal"
                 VerticalAlignment="Center"
                 HorizontalAlignment="Right">
-                <Button x:Name="ImportFileButton"
-                        Visibility="{Binding MissingJar,
-                    UpdateSourceTrigger=PropertyChanged,
-                    Converter={StaticResource BoolToVis},
-                    FallbackValue=Visible,
-                    TargetNullValue=Visible}"
+                <CheckBox x:Name="EnnableModCheckBox"
+                          Style="{StaticResource DarkCheckbox}"
+                          IsChecked="{Binding ModEnabled,
+                            Mode=TwoWay,
+                            UpdateSourceTrigger=PropertyChanged}"
+                          Width="30"
+                          Height="30"
+                          Click="EnnableModCheckBox_Click"/>
+                <Button x:Name="ModSettingsButton"
                         Height="35"
                         Width="35"
-                        Style="{StaticResource RoundButton}" Click="ImportFileButton_Click">
-                    <Button.ToolTip>
-                        <misc:CustomTooltip TooltipLabelText="Import file" 
-                                            TooltipContentText="Import missing jar file for this mod."/>
-                    </Button.ToolTip>
-                    <Path Data="{StaticResource ImportIcon}"
+                        Style="{StaticResource RoundButton}" Click="ModSettingsButton_Click">
+                    <Path Data="{StaticResource SettingsIcon}"
                           Stroke="#f2c480"
                           StrokeThickness="2"
+                          Height="20"
+                          Width="20"
+                          Stretch="Uniform"
                   />
                 </Button>
                 <Button x:Name="RemoveButton"
@@ -77,6 +79,9 @@
                     <Path Data="{StaticResource DeleteIcon}"
                           Stroke="#f2c480"
                           StrokeThickness="2"
+                          Height="20"
+                          Width="20"
+                          Stretch="Uniform"
                       />
                 </Button>
             </StackPanel>

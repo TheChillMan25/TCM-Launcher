@@ -1,14 +1,14 @@
 ﻿using System.Windows;
+using System.Windows.Forms;
 using System.Windows.Threading;
 using TCM_Launcher.Interfaces;
 using TCM_Launcher.MVVM;
-using TCM_Launcher.Services;
 
 namespace TCM_Launcher.ViewModel.Popup
 {
     public enum PopupAction
     {
-        CRASH, UPDATE
+        CRASH, UPDATE, IMPORT
     }
 
     public class PopupViewModel : ViewModelBase
@@ -94,6 +94,9 @@ namespace TCM_Launcher.ViewModel.Popup
                 case PopupAction.CRASH:
                     ButtonText = "Open crash folder";
                     break;
+                case PopupAction.IMPORT:
+                    ButtonText = "Import";
+                    break;
             }
             RemainTime = rTime;
             MaxRemainTime = rTime;
@@ -136,7 +139,8 @@ namespace TCM_Launcher.ViewModel.Popup
                     OpenCRASH();
                     break;
                 case PopupAction.UPDATE:
-                    Update();
+                case PopupAction.IMPORT:
+                    caller.DialogResult = true;
                     break;
             }
         }
@@ -144,12 +148,6 @@ namespace TCM_Launcher.ViewModel.Popup
 		public void OpenCRASH()
 		{
 			gameProfileService.OpenProfileFolder(profileId, "crash-reports");
-        }
-
-        public void Update()
-        {
-            caller.DialogResult = true;
-            caller.Close(); 
         }
     }
 }

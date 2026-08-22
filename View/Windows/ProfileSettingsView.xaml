@@ -9,7 +9,7 @@
         mc:Ignorable="d"
         Title="{Binding Title}" Height="300" Width="550" ResizeMode="NoResize" WindowStyle="None" WindowStartupLocation="CenterOwner">
     <Window.Resources>
-        <Style TargetType="Label">
+        <Style TargetType="TextBlock">
             <Setter Property="Foreground" Value="WhiteSmoke"/>
             <Setter Property="FontSize" Value="20"/>
             <Setter Property="VerticalAlignment" Value="Center"/>
@@ -39,13 +39,10 @@
                 BorderBrush="#666" 
                 BorderThickness="1" 
                 CornerRadius="8"/>
-        <Label Grid.Row="0"
+        <Label Style="{StaticResource WindowTitle}"
+               Grid.Row="0"
                Grid.ColumnSpan="3"
-               VerticalAlignment="Center"
-               FontSize="28" 
-               Content="Settings"
-               Margin="5 0 0 0"
-               Foreground="#f2c480"/>
+               Content="Settings"/>
         <Button Name="CloseButton"    
                 Width="30"
                 Height="30"
@@ -60,11 +57,11 @@
                     Height="15"
                     Stretch="Uniform"/>
         </Button>
-        <Label  Content="Profile name"
+        <TextBlock Text="Profile name"
                 Grid.Row="1"/>
-        <Label  Content="Memory"
+        <TextBlock Text="Memory"
                 Grid.Row="2"/>
-        <Label  Content="JVM Arguments" 
+        <TextBlock Text="JVM Arguments" 
                 Grid.Row="3"
                 VerticalAlignment="Top"/>
         <TextBox Style="{StaticResource DarkTextBox}" Name="ProfileNameInput"
@@ -138,6 +135,7 @@
                         Margin="0 0 5 0"
                         Stretch="Uniform"/>
                 <TextBlock Text="Save"
+                           Foreground="#333"
                            Grid.Column="1"
                            VerticalAlignment="Center"/>
             </Grid>

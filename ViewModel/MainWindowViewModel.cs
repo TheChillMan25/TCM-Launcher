@@ -1,6 +1,5 @@
 ﻿using CmlLib.Core.Auth;
 using CmlLib.Core.Auth.Microsoft;
-using System.Reflection;
 using System.Windows;
 using TCM_Launcher.Core.Utils;
 using TCM_Launcher.Interfaces;
@@ -19,25 +18,24 @@ namespace TCM_Launcher.ViewModel
         private readonly IBackendService backendService;
         private readonly IVersionService versionService;
         private readonly IAppSettingsService appSettingsService;
-        private readonly IAppMetaDataService appMetaDataService;
 
         private readonly ProfilesViewModel profilesViewModel;
         private ProfileDetailsViewModel profileDetailsViewModel;
         private readonly AddContentViewModel addContentViewModel;
-        private readonly ModDetailsViewModel modDetailsViewModel;
+        private readonly SearchedModDetailsViewModel modDetailsViewModel;
         private readonly AppSettingsViewModel appSettingsViewModel;
 
         public LeftSidebarViewModel LeftSidebarViewModel { get; }
         public RightSidebarViewModel RightSidebarViewModel { get; }
         public MainWindowViewModel(
-            IBackendService backendService, IVersionService versionService, IAppSettingsService appSettingsService, IAppMetaDataService appMetaDataService,
-            ProfileDetailsViewModel profileDetailsViewModel, AddContentViewModel addContentViewModel, ModDetailsViewModel modDetailsViewModel,
+            IBackendService backendService, IVersionService versionService, IAppSettingsService appSettingsService,
+            ProfileDetailsViewModel profileDetailsViewModel, AddContentViewModel addContentViewModel, SearchedModDetailsViewModel modDetailsViewModel,
             ProfilesViewModel profilesViewModel, LeftSidebarViewModel leftSidebarViewModel, RightSidebarViewModel rightSidebarViewModel, AppSettingsViewModel appSettingsViewModel)
         {
+            RegisterFileAssociation();
             this.backendService = backendService;
             this.versionService = versionService;
             this.appSettingsService = appSettingsService;
-            this.appMetaDataService = appMetaDataService;
 
             this.profilesViewModel = profilesViewModel;
             this.profilesViewModel.OnSelectProfileRequested = ShowProfileDetails;
@@ -217,6 +215,23 @@ namespace TCM_Launcher.ViewModel
         {
             var behaviour = appSettingsService.AppSettings.CloseButtonBehaviour;
             appSettingsService.LauncherWindowBehaviour(behaviour, true);
+        }
+
+        private static void RegisterFileAssociation()
+        {
+            try
+            {
+                string extension = ".tcmp";
+                string progId = "TCMLauncher.Modpack";
+                string exePath = Environment.ProcessPath ?? "";
+
+                using var key = Microsoft.Win32.Registry.CurrentUser.CreateSubKey($@"Software\Classes\{extension}");
+                key.SetValue("", progId);
+
+                using var progKey = Microsoft.Win32.Registry.CurrentUser.CreateSubKey($@"Software\Classes\{progId}\shell\open\command");
+                progKey.SetValue("", $"\"{exePath}\" \"%1\"");
+            }
+            catch { }
         }
     }
 }

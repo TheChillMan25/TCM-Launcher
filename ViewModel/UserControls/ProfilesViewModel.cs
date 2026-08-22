@@ -17,15 +17,17 @@ namespace TCM_Launcher.ViewModel.UserControls
         private readonly IProfileSettingsService profileSettingsService;
         private readonly ILauncherService launcherService;
         private readonly IVersionService versionService;
+        private readonly IProfileModService profileModService;
         public ICommand SelectProfileCommand { get; }
 
         public ProfilesViewModel(IGameProfileService gameProfileService, IProfileSettingsService profileSettingsService, 
-            ILauncherService launcherService, IVersionService versionService)
+            ILauncherService launcherService, IVersionService versionService, IProfileModService profileModService)
         {
             this.gameProfileService = gameProfileService;
             this.profileSettingsService = profileSettingsService;
             this.launcherService = launcherService;
             this.versionService = versionService;
+            this.profileModService = profileModService;
 
             this.SelectProfileCommand = new RelayCommand<GameProfile>(SelectProfile);
         }
@@ -160,6 +162,7 @@ namespace TCM_Launcher.ViewModel.UserControls
                     var vm = App.ServiceProvider.GetRequiredService<ProfileDetailsViewModel>();
                     vm.Profile = p;
                     Profiles.Add(vm);
+                    await profileModService.CreateProfileManifest(p.Id, p.ProfileName, p.MCVersion, p.ForgeVersion);
                     return true;
                 }
                 return false;

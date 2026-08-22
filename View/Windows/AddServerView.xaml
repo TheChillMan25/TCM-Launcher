@@ -57,7 +57,7 @@
             HorizontalAlignment="Right"
             Height="30"
             Style="{StaticResource RoundButton}" Click="CloseButton_Click">
-            <Path   Data="{StaticResource CloseIcon}"
+            <Path Data="{StaticResource CloseIcon}"
                 Fill="#f2c480"
                 Width="15"
                 Height="15"
@@ -66,9 +66,7 @@
         <Label Content="{Binding WindowTitle,
             FallbackValue='Add server',
             TargetNullValue='Add server'}"
-           FontFamily="Calibri"
-           FontSize="28"
-           Foreground="#f2c480"/>
+               Style="{StaticResource WindowTitle}"/>
         <TextBlock Text="Server name"
                Grid.Row="1"/>
         <TextBlock Text="Server IP/Domain"

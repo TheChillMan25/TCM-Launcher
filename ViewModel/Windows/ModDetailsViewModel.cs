@@ -1,36 +1,29 @@
 ﻿using System.Windows.Forms;
 using TCM_Launcher.Core.Utils;
-using TCM_Launcher.Interfaces;
 using TCM_Launcher.Model.Mods;
 using TCM_Launcher.MVVM;
 
 namespace TCM_Launcher.ViewModel.Windows
 {
-    public class ImportModViewModel : ViewModelBase
+    public class ModDetailsViewModel : ViewModelBase
     {
-        private readonly IProfileModService profileModService;
-        public ImportModViewModel(IProfileModService profileModService)
-        {
-            this.profileModService = profileModService;
-        }
-
+        public ProfileModInfo ModDetails { get; set; }
 
         private string modName;
-
         public string ModName
         {
             get { return modName; }
             set { modName = value; OnPropertyChange(); }
         }
-        private string modVersion;
 
+        private string modVersion;
         public string ModVersion
         {
             get { return modVersion; }
             set { modVersion = value; OnPropertyChange(); }
         }
-        private string fileName;
 
+        private string fileName;
         public string FileName
         {
             get { return fileName; }
@@ -44,17 +37,20 @@ namespace TCM_Launcher.ViewModel.Windows
             set { sourceFile = value; OnPropertyChange(); }
         }
 
-        private bool clientSide;
+        public List<string> Environments { get; set; } = new List<string>
+        {
+            "required", "optional", "unsupported"
+        };
 
-        public bool ClientSide
+        private string clientSide = "required";
+        public string ClientSide
         {
             get { return clientSide; }
             set { clientSide = value; OnPropertyChange(); }
         }
 
-        private bool serverSide;
-
-        public bool ServerSide
+        private string serverSide = "required";
+        public string ServerSide
         {
             get { return serverSide; }
             set { serverSide = value; OnPropertyChange(); }
@@ -84,14 +80,14 @@ namespace TCM_Launcher.ViewModel.Windows
             }
         }
 
-        public bool ImportMod()
+        public bool Save()
         {
             if(string.IsNullOrEmpty(ModName) || string.IsNullOrWhiteSpace(ModName))
             {
                 Constants.MessageBoxError("Set mod name.");
                 return false;
             }
-            if(ModName.Length > 20)
+            if(ModName.Length > 50)
             {
                 Constants.MessageBoxError("Mod name is too long.");
                 return false;
@@ -101,7 +97,7 @@ namespace TCM_Launcher.ViewModel.Windows
                 Constants.MessageBoxError("Set mod version.");
                 return false;
             }
-            if(ModVersion.Length > 20)
+            if(ModVersion.Length > 50)
             {
                 Constants.MessageBoxError("Mod version is too long.");
                 return false;
@@ -111,7 +107,22 @@ namespace TCM_Launcher.ViewModel.Windows
                 Constants.MessageBoxError("Select a .jar file for the mod.");
                 return false;
             }
+            if(ModDetails != null && ModDetails.FileName != FileName)
+            {
+                Constants.MessageBoxError("This .jar file doesn't belong to this mod. Select the correct .jar file.");
+                return false;
+            }
             return true;
+        }
+
+        public void Initialize(ProfileModInfo details, bool missingJar = true)
+        {
+            ModDetails = details;
+            ModName = details.Name;
+            ModVersion = details.Version;
+            ClientSide = details.Client_Side;
+            ServerSide = details.Server_Side;
+            FileName = missingJar ? "" : details.FileName;
         }
     }
 }

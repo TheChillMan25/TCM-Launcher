@@ -1,8 +1,11 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using System.IO;
+using System.IO.Pipes;
+using System.Text;
 using System.Windows;
-using Forms = System.Windows.Forms;
 using TCM_Launcher.Core.DBContext;
+using TCM_Launcher.Core.Utils;
 using TCM_Launcher.Interfaces;
 using TCM_Launcher.Services;
 using TCM_Launcher.View;
@@ -17,7 +20,7 @@ using TCM_Launcher.ViewModel.UserControls;
 using TCM_Launcher.ViewModel.UserControls.ControlItems;
 using TCM_Launcher.ViewModel.UserControls.Sidebars;
 using TCM_Launcher.ViewModel.Windows;
-using TCM_Launcher.Core.Utils;
+using Forms = System.Windows.Forms;
 
 namespace TCM_Launcher
 {
@@ -25,6 +28,11 @@ namespace TCM_Launcher
     {
         public static IServiceProvider ServiceProvider { get; private set; }
         private Forms.NotifyIcon notifyIcon;
+
+        private const string MutexName = "TCM_Launcher_SingleInstance_Mutex";
+        private const string PipeName = "TCM_Launcher_SingleInstance_Pipe";
+        private static Mutex? mutex;
+        private CancellationTokenSource? pipeCts;
 
         public App()
         {
@@ -40,8 +48,23 @@ namespace TCM_Launcher
             };
         }
 
-        protected override void OnStartup(StartupEventArgs e)
+        protected override async void OnStartup(StartupEventArgs e)
         {
+            mutex = new Mutex(true, MutexName, out bool isFirstInstance);
+
+            if (!isFirstInstance)
+            {
+                if (e.Args.Length > 0 && File.Exists(e.Args[0]))
+                {
+                    SendFilePathToRunningInstance(e.Args[0]);
+                }
+                Shutdown();
+                return;
+            }
+
+            pipeCts = new CancellationTokenSource();
+            StartNamedPipeServer(pipeCts.Token);
+
             base.OnStartup(e);
 
             var iconUri = new Uri("pack://application:,,,/Assets/TCM.ico", UriKind.Absolute);
@@ -68,12 +91,57 @@ namespace TCM_Launcher
 
             ServiceProvider = serviceCollection.BuildServiceProvider();
 
-            using var db = new LauncherDBContext();
-
-            db.Database.Migrate();
+            using (var db = new LauncherDBContext())
+            {
+                db.Database.Migrate();
+            }
 
             var mainWindow = ServiceProvider.GetRequiredService<MainWindow>();
             mainWindow.Show();
+
+            if (e.Args.Length > 0 && File.Exists(e.Args[0]) && Path.GetExtension(e.Args[0]).Equals(".tcmp", StringComparison.OrdinalIgnoreCase))
+            {
+                await HandleModpackImportAsync(e.Args[0]);
+            }
+        }
+
+        private async Task HandleModpackImportAsync(string filePath)
+        {
+            var profileModService = ServiceProvider.GetRequiredService<IProfileModService>();
+
+            var profile = await profileModService.ImportModpackDirectlyAsync(filePath);
+            if (profile != null)
+            {
+                var profilesView = ServiceProvider.GetRequiredService<ProfilesViewModel>();
+                var installVm = ServiceProvider.GetRequiredService<ProfileInstallIndicatorViewModel>();
+
+                var progress = new Progress<double>(progress => installVm.Progress = progress);
+                var status = new Progress<string>(status => installVm.Status = status);
+                var visible = new Progress<bool>(visible => installVm.Visible = visible);
+
+                installVm.ProfileName = profile.ProfileName;
+                installVm.ProfileId = profile.Id;
+                installVm.OnRemoveRequested = () =>
+                {
+                    var existing = profilesView.Installs.FirstOrDefault(vm => vm.ProfileId == installVm.ProfileId);
+                    if (existing != null) profilesView.Installs.Remove(existing);
+                };
+                profilesView.Installs.Add(installVm);
+
+                var launcherService = ServiceProvider.GetRequiredService<ILauncherService>();
+
+                var fileName = await launcherService.CreateProfileAsync(profile.Id, profile.MCVersion, profile.ForgeVersion, progress, status, visible);
+                if (fileName != null)
+                {
+                    var gameProfileService = ServiceProvider.GetRequiredService<IGameProfileService>();
+                    profile.Installed = true;
+                    profile.FileName = fileName;
+                    await gameProfileService.UpdateProfileAsync(profile.Id, profile);
+                    var vm = App.ServiceProvider.GetRequiredService<ProfileDetailsViewModel>();
+                    vm.Profile = profile;
+                    profilesView.Profiles.Add(vm);
+                }
+            }
         }
 
         public void ShowMainWindow()
@@ -88,8 +156,53 @@ namespace TCM_Launcher
 
         protected override void OnExit(ExitEventArgs e)
         {
+            pipeCts?.Cancel();
+            mutex?.ReleaseMutex();
+            mutex?.Dispose();
             notifyIcon?.Dispose();
             base.OnExit(e);
+        }
+
+        private static void SendFilePathToRunningInstance(string filePath)
+        {
+            try
+            {
+                using var client = new NamedPipeClientStream(".", PipeName, PipeDirection.Out);
+                client.Connect(1000);
+                using var writer = new StreamWriter(client, Encoding.UTF8);
+                writer.WriteLine(filePath);
+                writer.Flush();
+            }
+            catch { }
+        }
+
+        private void StartNamedPipeServer(CancellationToken token)
+        {
+            Task.Run(async () =>
+            {
+                while (!token.IsCancellationRequested)
+                {
+                    try
+                    {
+                        using var server = new NamedPipeServerStream(PipeName, PipeDirection.In, 1, PipeTransmissionMode.Byte, PipeOptions.Asynchronous);
+                        await server.WaitForConnectionAsync(token);
+
+                        using var reader = new StreamReader(server, Encoding.UTF8);
+                        string? filePath = await reader.ReadLineAsync();
+
+                        if (!string.IsNullOrWhiteSpace(filePath) && File.Exists(filePath))
+                        {
+                            await Dispatcher.InvokeAsync(async () =>
+                            {
+                                ShowMainWindow();
+                                await HandleModpackImportAsync(filePath);
+                            });
+                        }
+                    }
+                    catch (OperationCanceledException) { break; }
+                    catch { }
+                }
+            }, token);
         }
 
         private void ConfigureServices(ServiceCollection services)
@@ -115,27 +228,28 @@ namespace TCM_Launcher
             services.AddTransient<AddServerViewModel>();
             services.AddTransient<AddContentViewModel>();
             services.AddTransient<ModSearchResultCardViewModel>();
-            services.AddTransient<ModDetailsViewModel>();
+            services.AddTransient<ViewModel.UserControls.SearchedModDetailsViewModel>();
             services.AddTransient<ModVersionCardViewModel>();
             services.AddTransient<ProfileModViewModel>();
-            services.AddTransient<ProfilesViewModel>();
+            services.AddSingleton<ProfilesViewModel>();
             services.AddTransient<LeftSidebarViewModel>();
             services.AddTransient<RightSidebarViewModel>();
             services.AddTransient<PinnedProfileViewModel>();
             services.AddTransient<PopupViewModel>();
             services.AddTransient<AppSettingsViewModel>();
-            services.AddTransient<ImportModViewModel>();
+            services.AddTransient<ViewModel.Windows.ModDetailsViewModel>();
             services.AddTransient<ProfileInstallIndicatorViewModel>();
             services.AddTransient<PopupViewModel>();
+            services.AddTransient<ExportModpackViewModel>();
 
             // UserControls //
             services.AddTransient<ServerCardViewModel>();
             services.AddTransient<ProfileDetailsViewModel>();
             services.AddTransient<ModSearchResultCardView>();
-            services.AddTransient<ModDetailsView>();
+            services.AddTransient<View.UserControls.SearchedModDetailsView>();
             services.AddTransient<ModVersionCardView>();
             services.AddTransient<ProfileModView>();
-            services.AddTransient<ProfilesViewModel>();
+            services.AddTransient<ProfilesView>();
             services.AddTransient<LeftSidebarView>();
             services.AddTransient<RightSidebarView>();
             services.AddTransient<PinnedProfileView>();
@@ -150,8 +264,9 @@ namespace TCM_Launcher
             services.AddTransient<NewProfileView>();
             services.AddTransient<AddServerView>();
             services.AddTransient<AddContentView>();
-            services.AddTransient<ImportModView>();
+            services.AddTransient<View.Windows.ModDetailsView>();
             services.AddTransient<PopupView>();
+            services.AddTransient<ExportModpackView>();
 
         }
     }

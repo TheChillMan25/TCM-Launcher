@@ -7,10 +7,10 @@ using TCM_Launcher.ViewModel.UserControls;
 
 namespace TCM_Launcher.View.UserControls
 {
-    public partial class ModDetailsView : UserControl
+    public partial class SearchedModDetailsView : UserControl
     {
-        private ModDetailsViewModel viewModel => DataContext as ModDetailsViewModel;
-        public ModDetailsView()
+        private SearchedModDetailsViewModel viewModel => DataContext as SearchedModDetailsViewModel;
+        public SearchedModDetailsView()
         {
             InitializeComponent();
         }

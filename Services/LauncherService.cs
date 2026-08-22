@@ -35,12 +35,12 @@ namespace TCM_Launcher.Services
             this.appSettingsService = appSettingsService;
         }
 
-        public async Task<string> CreateProfileAsync(string pName, string mcVersion, string fVersion, IProgress<double>? progress = null, IProgress<string>? status = null, IProgress<bool>? progressVisible = null)
+        public async Task<string> CreateProfileAsync(string pId, string mcVersion, string fVersion, IProgress<double>? progress = null, IProgress<string>? status = null, IProgress<bool>? progressVisible = null)
         {
             try
             {
                 progressVisible?.Report(true);
-                MinecraftPath path = CreateProfilePath(pName);
+                MinecraftPath path = CreateProfilePath(pId);
                 var launcher = new MinecraftLauncher(path);
                 launcher.ByteProgressChanged += (sender, args) =>
                 {
@@ -54,7 +54,7 @@ namespace TCM_Launcher.Services
             }
             catch (Exception ex)
             {
-                Logger.Error($"There was an exception during creating profile with data: ProfileName={pName}, MCVersion={mcVersion}, ForgeVersion={fVersion}", ex);
+                Logger.Error($"There was an exception during creating profile with data: ProfileName={pId}, MCVersion={mcVersion}, ForgeVersion={fVersion}", ex);
                 throw;
             }
         }
@@ -176,8 +176,6 @@ namespace TCM_Launcher.Services
                     p.Owner = Application.Current.MainWindow;
                     p.Show();
                 }
-                //string modsFolder = Path.Combine(Constants.ProfilesPath, profile.Id, "mods");
-                //await profileModService.ToggleQuickJoinServerMods(profile.Id, modsFolder, true);
             }
             catch (Exception ex)
             {

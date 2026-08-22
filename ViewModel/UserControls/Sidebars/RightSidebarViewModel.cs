@@ -172,10 +172,13 @@ namespace TCM_Launcher.ViewModel.UserControls.Sidebars
 
         public void ChangePlayOnServer(string profileId, bool value = true)
         {
-            var s = Servers.FirstOrDefault(s => s.Server.BindedProfileId == profileId);
-            if (s != null)
+            var servers = Servers.Where(s => s.Server.BindedProfileId == profileId);
+            if (servers != null)
             {
-                s.PlayButtonIsEnabled = value;
+                foreach (var s in servers)
+                {
+                    s.PlayButtonIsEnabled = value;
+                }
             }
         }
 
@@ -208,10 +211,10 @@ namespace TCM_Launcher.ViewModel.UserControls.Sidebars
 
         public void DeleteProfile(string profileId)
         {
-            var existing = Servers.FirstOrDefault(s => s.Server.BindedProfileId == profileId);
-            if(existing != null)
+            var existings = Servers.Where(s => s.Server.BindedProfileId == profileId).ToList();
+            foreach (var server in existings)
             {
-                existing.UnbindProfile();
+                server.UnbindProfile();
             }
         }
     }

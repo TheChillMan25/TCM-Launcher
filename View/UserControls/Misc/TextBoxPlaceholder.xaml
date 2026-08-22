@@ -38,6 +38,8 @@
                      Foreground="WhiteSmoke"
                      VerticalAlignment="Center"
                      Background="Transparent"
+                     CaretBrush="WhiteSmoke"
+                     SelectionBrush="#f2c480"
                      BorderThickness="0"
                      Height="40"
                      VerticalContentAlignment="Center"

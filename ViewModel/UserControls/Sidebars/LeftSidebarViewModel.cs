@@ -107,7 +107,9 @@ namespace TCM_Launcher.ViewModel.UserControls.Sidebars
             PopupView p = App.ServiceProvider.GetRequiredService<PopupView>();
             p.Initialize("Update available", "There is an update available. Click the button to download it.", PopupAction.UPDATE);
             p.Owner = Application.Current.MainWindow;
+            p.Owner.Opacity = 0.4;
             var update = p.ShowDialog();
+            p.Owner.Opacity = 1;
             if (update == true)
             {
                 AvailableUpdate.IsUpdating = true;

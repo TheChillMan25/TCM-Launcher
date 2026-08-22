@@ -8,10 +8,12 @@ namespace TCM_Launcher.ViewModel.Windows
     {
 		private readonly IGameProfileService gameProfileService;
 		private readonly IProfileSettingsService profileSettingsService;
-        public ProfileSettingsViewModel(IGameProfileService gameProfileService, IProfileSettingsService profileSettingsService)
+		private readonly IProfileModService profileModService;
+        public ProfileSettingsViewModel(IGameProfileService gameProfileService, IProfileSettingsService profileSettingsService, IProfileModService profileModService)
         {
 			this.gameProfileService = gameProfileService;
 			this.profileSettingsService = profileSettingsService;
+			this.profileModService = profileModService;
         }
 
         private GameProfile gameProfile;
@@ -84,7 +86,8 @@ namespace TCM_Launcher.ViewModel.Windows
 
 		public async Task SaveSettingsAsync(string pName, int ram, string jvmArgs)
 		{
-			GameProfile.ProfileName = pName;
+			
+            GameProfile.ProfileName = pName;
 			await gameProfileService.UpdateProfileAsync(GameProfile.Id, GameProfile);
 			await profileSettingsService.SetProfileSettingsAsync(new ProfileSettings
 			{
@@ -92,7 +95,13 @@ namespace TCM_Launcher.ViewModel.Windows
 				Ram = ram,
 				JVMArgs = jvmArgs
 			});
-		}
+            var manifest = await profileModService.LoadManifestAsync(GameProfile.Id);
+            if (manifest != null && pName != manifest.ProfileName)
+            {
+                manifest.ProfileName = pName;
+                await profileModService.SaveManifestAsync(GameProfile.Id, manifest);
+            }
+        }
 
 		public async Task LoadSettingsAsync()
         {

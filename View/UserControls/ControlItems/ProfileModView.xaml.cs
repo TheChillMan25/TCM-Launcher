@@ -17,9 +17,14 @@ namespace TCM_Launcher.View.UserControls.ControlItems
             await viewModel.RemoveModFromProfile();
         }
 
-        private void ImportFileButton_Click(object sender, RoutedEventArgs e)
+        private void ModSettingsButton_Click(object sender, RoutedEventArgs e)
         {
-            viewModel.ImportFile();
+            viewModel.OpenModSettings();
+        }
+
+        private void EnnableModCheckBox_Click(object sender, RoutedEventArgs e)
+        {
+            viewModel.ToggleMod(!viewModel.Mod.IsEnabled);
         }
     }
 }

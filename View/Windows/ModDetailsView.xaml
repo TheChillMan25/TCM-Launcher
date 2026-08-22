@@ -1,4 +1,4 @@
-﻿<Window x:Class="TCM_Launcher.View.Windows.ImportModView"
+﻿<Window x:Class="TCM_Launcher.View.Windows.ModDetailsView"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
@@ -6,7 +6,8 @@
         xmlns:local="clr-namespace:TCM_Launcher.View.Windows"
         xmlns:ucmisc="clr-namespace:TCM_Launcher.View.UserControls.Misc"
         mc:Ignorable="d"
-        Title="Import mod" Height="450" Width="450"
+        Title="Mod details" MinHeight="400" Width="450"
+        MaxHeight="500"
         Background="Transparent"
         WindowStyle="None"
         WindowStartupLocation="CenterOwner">
@@ -21,18 +22,15 @@
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="Auto"/>
-                <RowDefinition/>
+                <RowDefinition Height="Auto"/>
             </Grid.RowDefinitions>
             <Grid Name="Header">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition/>
                     <ColumnDefinition Width="Auto"/>
                 </Grid.ColumnDefinitions>
-                <TextBlock Text="Import mod"
-                   Foreground="#f2c480"
-                   FontFamily="Calibri"
-                   FontSize="28"
-                   VerticalAlignment="Center"/>
+                <Label Content="Mod details"
+                       Style="{StaticResource WindowTitle}"/>
                 <Button x:Name="CloseButton"
                         Style="{StaticResource RoundButton}"
                         Height="30"
@@ -125,21 +123,17 @@
                             <RowDefinition Height="Auto"/>
                             <RowDefinition/>
                         </Grid.RowDefinitions>
-                        <TextBlock Text="Client side (required)"
+                        <TextBlock Text="Client side"
                                    HorizontalAlignment="Center"
                                    VerticalAlignment="Center"
                                    Foreground="#ccc"
                                    FontFamily="Calibri"
                                    FontSize="20"
                                    Margin="10"/>
-                        <CheckBox x:Name="ClientSideCombo"
-                                  Grid.Row="1"
-                                  IsChecked="{Binding ClientSide, 
-                                    Mode=TwoWay,
-                                    UpdateSourceTrigger=PropertyChanged}"
-                                  Style="{StaticResource DarkCheckbox}"
-                                  Width="30"
-                                  Height="30"/>
+                        <ComboBox x:Name="ClientSideCombo"
+                                  ItemsSource="{Binding Environments}"
+                                  SelectedItem="{Binding ClientSide}"
+                                  Grid.Row="1"/>
                     </Grid>
                     <Grid Name="ServerSideGroup"
                           Grid.Row="1"
@@ -149,41 +143,36 @@
                             <RowDefinition Height="Auto"/>
                             <RowDefinition/>
                         </Grid.RowDefinitions>
-                        <TextBlock Text="Server side (required)"
+                        <TextBlock Text="Server side"
                                    HorizontalAlignment="Center"
                                    VerticalAlignment="Center"
                                    Foreground="#ccc"
                                    FontFamily="Calibri"
                                    FontSize="20"
                                    Margin="10"/>
-                        <CheckBox x:Name="ServerSideCombo"
+                        <ComboBox x:Name="ServerSideCombo"
                                   Grid.Row="1"
-                                  Height="30"
-                                  Width="30"
-                                  IsChecked="{Binding ServerSide,
-                                    Mode=TwoWay,
-                                    UpdateSourceTrigger=PropertyChanged}"
-                                  Style="{StaticResource DarkCheckbox}"/>
+                                  ItemsSource="{Binding Environments}"
+                                  SelectedItem="{Binding ServerSide}"/>
                     </Grid>
                 </Grid>
             </Grid>
-            <Button x:Name="ImportModButton"
+            <Button x:Name="SaveButton"
                     Style="{StaticResource ButtonWithIcon}"
                     HorizontalAlignment="Center"
-                    Grid.Row="2" Click="ImportModButton_Click">
+                    Grid.Row="2" Click="SaveButton_Click">
                 <Grid>
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition/>
                         <ColumnDefinition Width="Auto"/>
                     </Grid.ColumnDefinitions>
-                    <Path   Data="{StaticResource ImportIcon}"
-                            Stroke="#333"
-                            StrokeThickness="2"
+                    <Path   Data="{StaticResource SaveIcon}"
+                            Fill="#333"
                             Width="20"
                             Height="20"
                             Margin="0 0 5 0"
                             Stretch="Uniform"/>
-                    <TextBlock Text="Import mod" 
+                    <TextBlock Text="Save" 
                                    Grid.Column="1"
                                    VerticalAlignment="Center" 
                                    HorizontalAlignment="Center"/>

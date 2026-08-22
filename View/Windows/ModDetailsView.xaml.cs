@@ -1,13 +1,12 @@
 ﻿using System.Windows;
-using TCM_Launcher.Model.Mods;
 using TCM_Launcher.ViewModel.Windows;
 
 namespace TCM_Launcher.View.Windows
 {
-    public partial class ImportModView : Window
+    public partial class ModDetailsView : Window
     {
-        public ImportModViewModel viewModel;
-        public ImportModView(ImportModViewModel viewModel)
+        public ModDetailsViewModel viewModel;
+        public ModDetailsView(ModDetailsViewModel viewModel)
         {
             InitializeComponent();
             this.viewModel = viewModel;
@@ -24,23 +23,22 @@ namespace TCM_Launcher.View.Windows
             viewModel.ImportFile();
         }
 
-        private async void ImportModButton_Click(object sender, RoutedEventArgs e)
+        private async void SaveButton_Click(object sender, RoutedEventArgs e)
         {
             FileButton.IsEnabled = false;
-            ImportModButton.IsEnabled = false;
-            bool imported = viewModel.ImportMod();
+            SaveButton.IsEnabled = false;
+            bool imported = viewModel.Save();
             FileButton.IsEnabled = true;
-            ImportModButton.IsEnabled = true;
+            SaveButton.IsEnabled = true;
             if (imported)
             {
                 DialogResult = true;
+                Close();
             }
             else
             {
-                DialogResult = false;
                 return;
             }
-            Close();
         }
 
         private void ClearFileButton_Click(object sender, RoutedEventArgs e)
