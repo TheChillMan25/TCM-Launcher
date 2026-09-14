@@ -8,10 +8,9 @@ using TCM_Launcher.Core.Utils;
 using TCM_Launcher.Interfaces;
 using TCM_Launcher.Model.DB;
 using TCM_Launcher.Model.Mods;
-using TCM_Launcher.View.PopUp;
-using TCM_Launcher.View.Windows;
-using TCM_Launcher.ViewModel.Popup;
-using TCM_Launcher.ViewModel.Windows;
+using TCM_Launcher.ViewModel.UserControls;
+using TCM_Launcher.ViewModel.UserControls.ControlItems;
+using TCM_Launcher.ViewModel.UserControls.Panels;
 using TCML_Class_library;
 
 namespace TCM_Launcher.Services
@@ -23,15 +22,24 @@ namespace TCM_Launcher.Services
         private readonly IAppSettingsService appSettingsService;
         private readonly IGameProfileService gameProfileService;
         private readonly IProfileSettingsService profileSettingsService;
-        public ProfileModService(IDownloadService downloadService, IBackendService backendService, IAppSettingsService appSettingsService,
-            IGameProfileService gameProfileService, IProfileSettingsService profileSettingsService)
+        private readonly IOverlayService overlayService;
+        private readonly IDownloadedModpacksService downloadedModpacksService;
+        private readonly Lazy<ILauncherService> launcherService;
+        public ProfileModService(IDownloadService downloadService, IBackendService backendService, IAppSettingsService appSettingsService, IDownloadedModpacksService downloadedModpacksService,
+            IGameProfileService gameProfileService, IProfileSettingsService profileSettingsService, IOverlayService overlayService, IServiceProvider serviceProvider)
         {
             this.downloadService = downloadService;
-            this.backendService = backendService;
             this.appSettingsService = appSettingsService;
             this.gameProfileService = gameProfileService;
             this.profileSettingsService = profileSettingsService;
+            this.overlayService = overlayService;
+            this.downloadedModpacksService = downloadedModpacksService;
+
+            this.backendService = backendService;
+            this.backendService.OnModpackDownloadedFromStorage = ImportModpackDirectlyAsync;
+            this.launcherService = new Lazy<ILauncherService>(() => serviceProvider.GetRequiredService<ILauncherService>());
         }
+        public event Action<string>? OnUpdatedModpack;
 
         public async Task<List<ProfileModInfo>> AddModWithDependenciesAsync(string profileId, string mcVersion, ModDetails modDetails, ModVersion selectedVersion)
         {
@@ -55,34 +63,28 @@ namespace TCM_Launcher.Services
                     var primaryFile = currentVersion.Files.FirstOrDefault();
                     if (primaryFile != null)
                     {
-                        var existingMod = manifest.Mods.FirstOrDefault(m => m.Id == currentDetails.Id);
+                        var index = manifest.Mods.FindIndex(m => m.Id == currentDetails.Id);
 
-                        if(existingMod != null)
+                        var mod = new ProfileModInfo
                         {
-                            existingMod.Version = currentVersion.VersionNumber;
-                            existingMod.FileName = primaryFile.FileName;
-                            existingMod.DownloadUrl = primaryFile.Url;
-                            existingMod.Name = currentDetails.Title;
-                            existingMod.Source = selectedVersion.Source;
-                            existingMod.IconUrl = currentDetails.IconUrl;
-                            existingMod.Author = currentDetails.Author;
-                            existingMod.IsEnabled = true;
+                            Id = currentDetails.Id,
+                            Name = currentDetails.Title,
+                            FileName = primaryFile.FileName,
+                            DownloadUrl = primaryFile.Url,
+                            Source = selectedVersion.Source,
+                            Version = currentVersion.VersionNumber,
+                            IconUrl = currentDetails.IconUrl,
+                            Author = currentDetails.Author,
+                            Client_Side = currentDetails.Client_Side,
+                            Server_Side = currentDetails.Server_Side,
+                        };
+                        if (index != -1)
+                        {
+                            manifest.Mods[index] = mod;
                         }
                         else
                         {
-                            manifest.Mods.Add(new ProfileModInfo
-                            {
-                                Id = currentDetails.Id,
-                                Name = currentDetails.Title,
-                                FileName = primaryFile.FileName,
-                                DownloadUrl = primaryFile.Url,
-                                Source = selectedVersion.Source,
-                                Version = currentVersion.VersionNumber,
-                                IconUrl = currentDetails.IconUrl,
-                                Author = currentDetails.Author,
-                                Client_Side = currentDetails.Client_Side,
-                                Server_Side = currentDetails.Server_Side,
-                            });
+                            manifest.Mods.Add(mod);
                         }
                     }
 
@@ -130,7 +132,7 @@ namespace TCM_Launcher.Services
             }
         }
 
-        public async Task ExportModpackAsync(string profileId, string profileName, bool exportModJARs = true, List<ProfileModInfo>? mods = null, bool exportOnlyImportedFiles = false)
+        public async Task<string?> ExportModpackAsync(string profileId, string profileName, bool exportModJARs = true, List<ProfileModInfo>? mods = null, bool exportOnlyImportedFiles = false)
         {
             string exportName = string.Join("_", profileName.Split(Path.GetInvalidFileNameChars()));
             try
@@ -196,18 +198,20 @@ namespace TCM_Launcher.Services
                             }
                         }
                     });
-
                     Process.Start(new ProcessStartInfo
                     {
                         FileName = "explorer.exe",
                         Arguments = $"/select,\"{dest}\"",
                         UseShellExecute = true,
                     });
+                    return dest;
                 }
+                return string.Empty;
             }
             catch (Exception ex)
             {
                 Logger.Error("There was an exception when exporting modpack.", ex);
+                return null;
             }
         }
 
@@ -342,19 +346,15 @@ namespace TCM_Launcher.Services
                 {
                     foreach (var missingMod in missingImportedModNames)
                     {
-                        ModDetailsView i = App.ServiceProvider.GetRequiredService<ModDetailsView>();
-                        i.Owner = App.Current.MainWindow;
-                        i.Owner.Opacity = 0.4;
-                        ModDetailsViewModel ivm = i.viewModel;
-                        ivm.Initialize(missingMod);;
-                        var imported = i.ShowDialog();
-                        if(imported == true)
+                        var details = await overlayService.ShowModImportPanel(missingMod);
+                        if (details != null)
                         {
-                            var res = await ImportModAsync(profileId, ivm.ModName, ivm.ModVersion, ivm.FileName, ivm.SourceFile, ivm.ClientSide, ivm.ServerSide, true);
+                            string sourceFile = details.Value.filePath;
+                            var modInfo = details.Value.modInfo;
+                            var res = await ImportModAsync(profileId, modInfo.Name, modInfo.Version, modInfo.FileName, sourceFile, modInfo.Client_Side, modInfo.Server_Side, true);
 
                             if (res != null) existingFiles?.Add(missingMod.FileName);
                         }
-                        i.Owner.Opacity = 1;
                     }
                 }
             }
@@ -383,7 +383,7 @@ namespace TCM_Launcher.Services
             }
         }
 
-        public async Task CreateProfileManifest(string profileId, string profileName, string mcVersion, string forgeVersion)
+        public async Task CreateProfileManifest(string profileId, string profileName, string mcVersion, string forgeVersion, string modpackId)
         {
             string destPath = Path.Combine(Constants.ProfilesPath, profileId, Constants.ProfileManifest);
             try
@@ -395,7 +395,8 @@ namespace TCM_Launcher.Services
                     {
                         MinecraftVersion = mcVersion,
                         ForgeVersion = forgeVersion
-                    }
+                    },
+                    ModpackId = modpackId
                 };
 
                 string json = JsonSerializer.Serialize(manifest);
@@ -528,20 +529,20 @@ namespace TCM_Launcher.Services
             }
         }
 
-        public async Task<GameProfile?> ImportModpackDirectlyAsync(string filePath)
+        public async Task<GameProfile?> ImportModpackDirectlyAsync(string filePath, bool importFromStorage = false, FirestoreModpack? modpack = null, bool update = false, GameProfile? profileToUpdate = null)
         {
-            PopupView p = App.ServiceProvider.GetRequiredService<PopupView>();
-            p.Initialize("Import profile", "You are trying to import a profile. Would you like to continue?", PopupAction.IMPORT);
-            p.Owner = App.Current.MainWindow;
-            p.Owner.Opacity = 0.4;
-            var res = p.ShowDialog();
-            p.Owner.Opacity = 1;
-            if (res != true) return null;
+            bool? res = false;
+            if (!importFromStorage)
+            {
+                res = await overlayService.ShowPopupPanelAsync("Import profile", "You are trying to import a profile. Would you like to continue?", PopupAction.IMPORT);
+            }
+            if (res == false && !importFromStorage) return null;
             try
             {
-                if (!File.Exists(filePath))
+                bool fileExists = File.Exists(filePath);
+                if (!fileExists)
                 {
-                    MessageBox.Show("The source file doesn't exist.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    Constants.MessageBoxError("The source file doesn't exist.");
                     return null;
                 }
 
@@ -562,14 +563,70 @@ namespace TCM_Launcher.Services
                     MessageBox.Show("Invalid modpack.");
                     return null;
                 }
-                var createdProfile = await gameProfileService.AddProfileAsync(manifest.ProfileName, manifest.Dependencies.MinecraftVersion, manifest.Dependencies.ForgeVersion);
-                var settings = await profileSettingsService.SetProfileSettingsAsync(new ProfileSettings
+                GameProfile? p = null;
+                if (!update)
                 {
-                    GameProfileId = createdProfile.Id,
-                    Ram = Constants.DefaultRam
-                });
-                await ImportModpackAsync(createdProfile.Id, filePath);
-                return createdProfile;
+                    p = await gameProfileService.AddProfileAsync(manifest.ProfileName, manifest.Dependencies.MinecraftVersion, manifest.Dependencies.ForgeVersion, manifest.ModpackId);
+                    if (p != null)
+                    {
+                        var settings = await profileSettingsService.SetProfileSettingsAsync(new ProfileSettings
+                        {
+                            GameProfileId = p.Id,
+                            Ram = Constants.DefaultRam
+                        });
+                    }
+                    else return null;
+                }
+                else p = await gameProfileService.GetProfileAsync(profileToUpdate.Id);
+                await ImportModpackAsync(p.Id, filePath);
+                if (p != null && !update)
+                {
+                    var profilesView = App.ServiceProvider.GetRequiredService<ProfilesViewModel>();
+                    var installVm = App.ServiceProvider.GetRequiredService<ProfileInstallIndicatorViewModel>();
+
+                    var progress = new Progress<double>(progress => installVm.Progress = progress);
+                    var status = new Progress<string>(status => installVm.Status = status);
+                    var visible = new Progress<bool>(visible => installVm.Visible = visible);
+
+                    installVm.ProfileName = p.ProfileName;
+                    installVm.ProfileId = p.Id;
+                    installVm.OnRemoveRequested = () =>
+                    {
+                        var existing = profilesView.Installs.FirstOrDefault(vm => vm.ProfileId == installVm.ProfileId);
+                        if (existing != null) profilesView.Installs.Remove(existing);
+                    };
+                    profilesView.Installs.Add(installVm);
+
+                    var fileName = await launcherService.Value.CreateProfileAsync(p.Id, p.MCVersion, p.ForgeVersion, progress, status, visible);
+                    if (fileName != null)
+                    {
+                        p.Installed = true;
+                        p.FileName = fileName;
+                        await gameProfileService.UpdateProfileAsync(p);
+                        var vm = App.ServiceProvider.GetRequiredService<ProfileDetailsViewModel>();
+                        vm.Profile = p;
+                        profilesView.Profiles.Add(vm);
+                    }
+                }
+                if (importFromStorage)
+                {
+                    if (modpack != null)
+                    {
+                        if (!update)
+                        {
+                            await downloadedModpacksService.AddModpackAsync(modpack);
+                            await gameProfileService.UpdateProfileAsync(new GameProfile { Id = p.Id, ModpackId = modpack.Id });
+                        }
+                        else
+                        {
+                            await gameProfileService.UpdateProfileAsync(new GameProfile { Id = p.Id, PackReleaseNumber = modpack.ReleaseNumber });
+                            OnUpdatedModpack?.Invoke(modpack.Id);
+                        }
+                    }
+                    var sourceDir = Path.GetDirectoryName(filePath);
+                    if(Directory.Exists(sourceDir)) Directory.Delete(sourceDir, true);
+                }
+                return p;
             }
             catch (Exception ex)
             {

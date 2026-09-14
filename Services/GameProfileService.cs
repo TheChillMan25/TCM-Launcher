@@ -11,7 +11,7 @@ namespace TCM_Launcher.Services
 {
     public class GameProfileService : IGameProfileService
     {
-        public async Task<GameProfile> AddProfileAsync(string name, string mcVersion, string fVersion, string? fileName = null)
+        public async Task<GameProfile> AddProfileAsync(string name, string mcVersion, string fVersion, string? modpackId = null)
         {
             try
             {
@@ -21,7 +21,8 @@ namespace TCM_Launcher.Services
                     ProfileName = name,
                     MCVersion = mcVersion,
                     ForgeVersion = fVersion,
-                    FileName = fileName,
+                    PackReleaseNumber = 1,
+                    PlayTime = 0
                 };
 
                 db.GameProfiles.Add(newProfile);
@@ -30,7 +31,7 @@ namespace TCM_Launcher.Services
             }
             catch(Exception ex)
             {
-                Logger.Error($"There was an exception thrown during adding profile to DB: ProfileName={name}, MCVersion={mcVersion}, ForgeVersion={fVersion}, FileName={fileName}", ex);
+                Logger.Error($"There was an exception thrown during adding profile to DB: ProfileName={name}, MCVersion={mcVersion}, ForgeVersion={fVersion}, ModpackId={modpackId}", ex);
                 MessageBox.Show("An error occured during profile creation.", "ERROR", MessageBoxButton.OK, MessageBoxImage.Error);
                 return null;
             }
@@ -69,20 +70,6 @@ namespace TCM_Launcher.Services
 
         }
 
-        public async Task<List<GameProfile>> GetPinnedProfilesAsync()
-        {
-            try
-            {
-                using var db = new LauncherDBContext();
-                return db.GameProfiles.Where(p => p.Pinned == true).ToList() ?? new List<GameProfile>();
-            }
-            catch(Exception ex)
-            {
-                Logger.Error("There was an exception when fetching pinned profiles.", ex);
-                return new List<GameProfile>();
-            }
-        }
-
         public async Task<GameProfile?> GetProfileAsync(string profileId)
         {
             try
@@ -98,13 +85,15 @@ namespace TCM_Launcher.Services
             }
         }
 
-        public async Task<GameProfile?> UpdateProfileAsync(string profileId, GameProfile updateData)
+        
+
+        public async Task<GameProfile?> UpdateProfileAsync(GameProfile updateData)
         {
             try
             {
                 using var db = new LauncherDBContext();
 
-                var profile = await db.GameProfiles.FirstOrDefaultAsync(p => p.Id == profileId);
+                var profile = await db.GameProfiles.FirstOrDefaultAsync(p => p.Id == updateData.Id);
 
                 if (profile != null)
                 {
@@ -113,7 +102,9 @@ namespace TCM_Launcher.Services
                     profile.ForgeVersion = CheckUpdateData(updateData.ForgeVersion, profile.ForgeVersion);
                     profile.FileName = CheckUpdateData(updateData.FileName, profile.FileName);
                     profile.Installed = CheckUpdateData(updateData.Installed, profile.Installed);
-                    profile.Pinned = CheckUpdateData(updateData.Pinned, profile.Pinned);
+                    profile.ModpackId = CheckUpdateData(updateData.ModpackId, profile.ModpackId);
+                    profile.PlayTime = CheckUpdateData(updateData.PlayTime, profile.PlayTime);
+                    profile.PackReleaseNumber = CheckUpdateData(updateData.PackReleaseNumber, profile.PackReleaseNumber);
 
                     await db.SaveChangesAsync();
                 }
@@ -122,7 +113,7 @@ namespace TCM_Launcher.Services
             }
             catch (Exception ex)
             {
-                Logger.Error($"There was an exception thrown during updating profile: {profileId}, Data: ProfileName={updateData.ProfileName}, MCVersion={updateData.MCVersion}, ForgeVersion={updateData.ForgeVersion}, FileName={updateData.FileName}, Installed={updateData.Installed}", ex);
+                Logger.Error($"There was an exception thrown during updating profile: {updateData.Id}, Data: ProfileName={updateData.ProfileName}, MCVersion={updateData.MCVersion}, ForgeVersion={updateData.ForgeVersion}, FileName={updateData.FileName}, Installed={updateData.Installed}", ex);
                 MessageBox.Show("An error occured during updation the profle.", "ERROR", MessageBoxButton.OK, MessageBoxImage.Error);
                 return null;
             }
@@ -132,33 +123,6 @@ namespace TCM_Launcher.Services
         {
             if (updateData != null && !EqualityComparer<T>.Default.Equals(updateData, oldData)) return updateData;
             return oldData;
-        }
-
-        public async Task<GameProfile> UpdateLastPlayedProfileAsync(string profileId)
-        {
-            GameProfile? profile = null;
-            GameProfile? oldProfile = null;
-            try
-            {
-                using var db = new LauncherDBContext();
-
-                profile = await db.GameProfiles.FirstOrDefaultAsync(p => p.Id == profileId);
-                oldProfile = await db.GameProfiles.FirstOrDefaultAsync(p => p.LastPlayed == true);
-
-                if (oldProfile != null) oldProfile.LastPlayed = false;
-                if (profile != null) profile.LastPlayed = true;
-
-                await db.SaveChangesAsync();
-                return profile;
-            }
-            catch (Exception ex)
-            {
-                string oldId = oldProfile != null ? oldProfile.Id : "NULL (Old not found)";
-                string foundId = profile != null ? profile.Id : "NULL (New not found)";
-                Logger.Error($"There was an exception thrown during updating last played profile with id: {profileId}\nData: New id={foundId}, Old id={oldId}", ex);
-                MessageBox.Show("An error occured updating lastly played profile information.", "ERROR", MessageBoxButton.OK, MessageBoxImage.Error);
-                return null;
-            }
         }
 
         public async Task<bool> DeleteProfileAsync(string profileId)

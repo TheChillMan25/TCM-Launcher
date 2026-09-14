@@ -26,5 +26,15 @@ namespace TCM_Launcher.View.UserControls.Sidebars
         {
             viewModel.ShowAppSettings();
         }
+
+        private async void AddServerButton_Click(object sender, System.Windows.RoutedEventArgs e)
+        {
+            await viewModel.OpenAddServerWindowAsync();
+        }
+
+        private void BugReportButton_Click(object sender, System.Windows.RoutedEventArgs e)
+        {
+            viewModel.Bugreport();
+        }
     }
 }

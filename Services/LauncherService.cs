@@ -8,8 +8,7 @@ using System.Windows;
 using TCM_Launcher.Core.Utils;
 using TCM_Launcher.Interfaces;
 using TCM_Launcher.Model.DB;
-using TCM_Launcher.View.PopUp;
-using TCM_Launcher.ViewModel.Popup;
+using TCM_Launcher.ViewModel.UserControls.Panels;
 using static TCM_Launcher.Core.Utils.Constants;
 
 namespace TCM_Launcher.Services
@@ -19,20 +18,23 @@ namespace TCM_Launcher.Services
         private readonly IProfileSettingsService profileSettingsService;
         private readonly IMicrosoftService microsoftService;
         private readonly IGameProfileService gameProfileService;
-        private readonly IProfileModService profileModService;
+        private readonly Lazy<IProfileModService> profileModService;
         private readonly IAppSettingsService appSettingsService;
+        private readonly IOverlayService overlayService;
 
         public LauncherService(IProfileSettingsService profileSettingsService, 
             IMicrosoftService microsoftService, 
             IGameProfileService gameProfileService, 
-            IProfileModService profileModService,
-            IAppSettingsService appSettingsService)
+            IServiceProvider serviceProvider,
+            IAppSettingsService appSettingsService,
+            IOverlayService overlayService)
         {
             this.profileSettingsService = profileSettingsService;
             this.gameProfileService = gameProfileService;
             this.microsoftService = microsoftService;
-            this.profileModService = profileModService;
+            this.profileModService = new Lazy<IProfileModService>(()=>serviceProvider.GetRequiredService<IProfileModService>());
             this.appSettingsService = appSettingsService;
+            this.overlayService = overlayService;
         }
 
         public async Task<string> CreateProfileAsync(string pId, string mcVersion, string fVersion, IProgress<double>? progress = null, IProgress<string>? status = null, IProgress<bool>? progressVisible = null)
@@ -106,7 +108,7 @@ namespace TCM_Launcher.Services
                     Session = microsoftService.MSession == null ? MSession.CreateOfflineSession("Gamer123") : microsoftService.MSession,
                     ExtraJvmArguments = jvmArgs,
                 };
-                if(serverAddress != null)
+                if (serverAddress != null)
                 {
                     string ip = serverAddress;
                     ushort port = 25565;
@@ -120,8 +122,8 @@ namespace TCM_Launcher.Services
 
                     launchOptions.ServerIp = ip;
                     launchOptions.ServerPort = port;
-                }  
-                bool syncSuccess = await profileModService.SyncProfileModsAsync(profile.Id, progress, status, serverAddress);
+                }
+                bool syncSuccess = await profileModService.Value.SyncProfileModsAsync(profile.Id, progress, status, serverAddress);
                 if (!syncSuccess)
                 {
                     progressVisible?.Report(false);
@@ -137,8 +139,6 @@ namespace TCM_Launcher.Services
                         Logger.Log(log, "MINECRAFT");
                     }
                 };
-                
-                await gameProfileService.UpdateLastPlayedProfileAsync(profile.Id);
                 Logger.Log($"Started game profile with id: {profile.Id} ({profile.FileName})");
                 progress?.Report(100);
                 progressVisible?.Report(false);
@@ -171,10 +171,7 @@ namespace TCM_Launcher.Services
                         }
                     }
                     Logger.Log($"Game with id {profile.Id} crashed. {crashReportInfo}");
-                    var p = App.ServiceProvider.GetRequiredService<PopupView>();
-                    p.Initialize($"The game crashed (Code: {exitCode})", crashReportInfo, PopupAction.CRASH, 5000d, profile.Id);
-                    p.Owner = Application.Current.MainWindow;
-                    p.Show();
+                    await overlayService.ShowPopupPanelAsync($"The game crashed (Code: {exitCode})", crashReportInfo, PopupAction.CRASH, 5000d, profile.Id);
                 }
             }
             catch (Exception ex)

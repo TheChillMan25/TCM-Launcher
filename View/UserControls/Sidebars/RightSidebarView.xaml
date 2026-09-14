@@ -5,8 +5,7 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:TCM_Launcher.View.UserControls.Sidebars"
              mc:Ignorable="d" 
-             d:DesignHeight="800" d:DesignWidth="250"
-             Loaded="OnLoaded">
+             d:DesignHeight="800" d:DesignWidth="250">
     <UserControl.Resources>
         <BooleanToVisibilityConverter x:Key="BoolToVis"/>
     </UserControl.Resources>
@@ -15,6 +14,7 @@
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition/>
+            <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="30"/>
         </Grid.RowDefinitions>
@@ -45,7 +45,7 @@
                       Stretch="Uniform"/>
             </Button>
         </Grid>
-        <Grid Name="ServersContainer"
+        <Grid Name="FriendsContainer"
               Grid.Row="1">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/>
@@ -57,20 +57,20 @@
                     <ColumnDefinition/>
                     <ColumnDefinition Width="40"/>
                 </Grid.ColumnDefinitions>
-                <TextBlock Text="Quick join"
+                <TextBlock Text="Friends"
                            Grid.Column="1"
                            FontFamily="Calibri"
                            FontSize="26"
                            Foreground="#f2c480"
                            VerticalAlignment="Center"
                            HorizontalAlignment="Center"/>
-                <Button x:Name="AddServerButton"
+                <Button x:Name="AddFriendButton"
                         Grid.Column="2"
                         Style="{StaticResource RoundButton}"
                         Height="25"
                         Width="25"
                         VerticalAlignment="Top" 
-                        Click="AddServerButton_Click">
+                        Click="AddFriendButton_Click">
                     <Path Data="{StaticResource AddIcon}"
                           Fill="#999"
                           Width="15"
@@ -79,19 +79,25 @@
                 </Button>
             </Grid>
             <ScrollViewer VerticalScrollBarVisibility="Auto"
+                          HorizontalScrollBarVisibility="Disabled"
                           Grid.Row="1">
-                <ItemsControl ItemsSource="{Binding Servers}"/>
+                <ItemsControl ItemsSource="{Binding Friends}"/>
             </ScrollViewer>
         </Grid>
-        <Button x:Name="BugReportButton"
+        <Button x:Name="NotificationsButton"
                 Style="{StaticResource SidebarListItem}"
-                Grid.Row="2" Click="BugReportButton_Click">
+                Grid.Row="2" 
+                Click="NotificationsButton_Click"
+                IsEnabled="{Binding HasNotifications,
+            FallbackValue=True,
+            TargetNullValue=True,
+            UpdateSourceTrigger=PropertyChanged}">
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="Auto"/>
                     <ColumnDefinition/>
                 </Grid.ColumnDefinitions>
-                <Path Data="{StaticResource WriteIcon}"
+                <Path Data="{StaticResource NotificationIcon}"
                       Height="30"
                       Width="30"
                       Stretch="Uniform"
@@ -115,7 +121,44 @@
                         </Style>
                     </Path.Style>
                 </Path>
-                <TextBlock Text="Bug report"
+                <TextBlock Text="Notifications"
+                               Grid.Column="1"/>
+            </Grid>
+        </Button>
+        <Button x:Name="ModpacksButton"
+                Style="{StaticResource SidebarListItem}"
+                Grid.Row="3" 
+                Click="ModpacksButton_Click">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition/>
+                </Grid.ColumnDefinitions>
+                <Path Data="{StaticResource BoxIcon}"
+                      Height="30"
+                      Width="30"
+                      Stretch="Uniform"
+                      Margin="0 0 10 0">
+                    <Path.Style>
+                        <Style TargetType="Path">
+                            <Setter Property="Fill" Value="#f2c480"/>
+
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding IsMouseOver, 
+                                        RelativeSource={RelativeSource AncestorType=Button}}" 
+                                                 Value="True">
+                                    <Setter Property="Fill" Value="#333"/>
+                                </DataTrigger>
+                                <DataTrigger Binding="{Binding IsPressed, 
+                                        RelativeSource={RelativeSource AncestorType=Button}}" 
+                                                 Value="True">
+                                    <Setter Property="Fill" Value="WhiteSmoke"/>
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Path.Style>
+                </Path>
+                <TextBlock Text="Modpacks"
                                Grid.Column="1"/>
             </Grid>
         </Button>

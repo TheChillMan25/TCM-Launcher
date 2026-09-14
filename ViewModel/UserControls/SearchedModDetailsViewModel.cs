@@ -3,7 +3,7 @@ using System.Collections.ObjectModel;
 using System.Windows.Forms;
 using TCM_Launcher.Interfaces;
 using TCM_Launcher.Model.Mods;
-using TCM_Launcher.MVVM;
+using TCM_Launcher.MVVM.ViewModel;
 using TCM_Launcher.ViewModel.UserControls.ControlItems;
 using TCML_Class_library;
 

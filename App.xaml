@@ -4,12 +4,12 @@
              xmlns:local="clr-namespace:TCM_Launcher"
              xmlns:vmUc="clr-namespace:TCM_Launcher.ViewModel.UserControls"
              xmlns:vmUcS="clr-namespace:TCM_Launcher.ViewModel.UserControls.Sidebars"
+             xmlns:vmUcP="clr-namespace:TCM_Launcher.ViewModel.UserControls.Panels"
              xmlns:vmUcCI="clr-namespace:TCM_Launcher.ViewModel.UserControls.ControlItems"
-             xmlns:vmP="clr-namespace:TCM_Launcher.ViewModel.Popup"
              xmlns:uc="clr-namespace:TCM_Launcher.View.UserControls"
              xmlns:ucCI="clr-namespace:TCM_Launcher.View.UserControls.ControlItems"
              xmlns:ucS="clr-namespace:TCM_Launcher.View.UserControls.Sidebars"
-             xmlns:p="clr-namespace:TCM_Launcher.View.PopUp">
+             xmlns:ucP="clr-namespace:TCM_Launcher.View.UserControls.Panels">
     <Application.Resources>
         <ResourceDictionary>
             
@@ -60,6 +60,18 @@
             <DataTemplate DataType="{x:Type vmUcCI:ProfileInstallIndicatorViewModel}">
                 <ucCI:ProfileInstallIndicatiorView/>
             </DataTemplate>
+            <DataTemplate DataType="{x:Type vmUcCI:FriendSearchItemViewModel}">
+                <ucCI:FriendSearchItemView/>
+            </DataTemplate>
+            <DataTemplate DataType="{x:Type vmUcCI:NotificationViewModel}">
+                <ucCI:NotificationView/>
+            </DataTemplate>
+            <DataTemplate DataType="{x:Type vmUcCI:FriendViewModel}">
+                <ucCI:FriendView/>
+            </DataTemplate>
+            <DataTemplate DataType="{x:Type vmUcCI:ModpackViewModel}">
+                <ucCI:ModpackView/>
+            </DataTemplate>
 
             <!--Sidebars-->
             <DataTemplate DataType="{x:Type vmUcS:LeftSidebarViewModel}">
@@ -67,6 +79,38 @@
             </DataTemplate>
             <DataTemplate DataType="{x:Type vmUcS:RightSidebarViewModel}">
                 <ucS:RightSidebarView />
+            </DataTemplate>
+            
+            <!--Floating panels-->
+            <DataTemplate DataType="{x:Type vmUcP:SearchFriendsViewModel}">
+                <ucP:AddFriendView/>
+            </DataTemplate>
+            <DataTemplate DataType="{x:Type vmUcP:AddServerViewModel}">
+                <ucP:AddServerView/>
+            </DataTemplate>
+            <DataTemplate DataType="{x:Type vmUcP:ExportModpackViewModel}">
+                <ucP:ExportModpackView/>
+            </DataTemplate>
+            <DataTemplate DataType="{x:Type vmUcP:ModDetailsViewModel}">
+                <ucP:ModDetailsView/>
+            </DataTemplate>
+            <DataTemplate DataType="{x:Type vmUcP:NewProfileViewModel}">
+                <ucP:NewProfileView/>
+            </DataTemplate>
+            <DataTemplate DataType="{x:Type vmUcP:NotificationsViewModel}">
+                <ucP:NotificationsView/>
+            </DataTemplate>
+            <DataTemplate DataType="{x:Type vmUcP:ProfileSettingsViewModel}">
+                <ucP:ProfileSettingsView/>
+            </DataTemplate>
+            <DataTemplate DataType="{x:Type vmUcP:ModpacksViewModel}">
+                <ucP:ModpacksView/>
+            </DataTemplate>
+            <DataTemplate DataType="{x:Type vmUcP:PopupViewModel}">
+                <ucP:PopupView/>
+            </DataTemplate>
+            <DataTemplate DataType="{x:Type vmUcP:LoadingScreenViewModel}">
+            <ucP:LoadingScreenView/>
             </DataTemplate>
         </ResourceDictionary>
     </Application.Resources>

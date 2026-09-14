@@ -1,33 +1,33 @@
 ﻿using CmlLib.Core.Auth;
 using Microsoft.Extensions.DependencyInjection;
 using System.Collections.ObjectModel;
-using System.Diagnostics;
-using System.IO;
-using System.Windows;
 using System.Windows.Media;
 using TCM_Launcher.Core.Utils;
 using TCM_Launcher.Interfaces;
-using TCM_Launcher.Model.DB;
-using TCM_Launcher.MVVM;
-using TCM_Launcher.View.Windows;
+using TCM_Launcher.Model;
+using TCM_Launcher.MVVM.ViewModel;
+using TCM_Launcher.Services;
 using TCM_Launcher.ViewModel.UserControls.ControlItems;
+using TCM_Launcher.ViewModel.UserControls.Panels;
+using TCML_Class_library;
 
 namespace TCM_Launcher.ViewModel.UserControls.Sidebars
 {
     public class RightSidebarViewModel : ViewModelBase
     {
         private readonly IMicrosoftService microsoftService;
-        private readonly IServerService serverService;
-        public RightSidebarViewModel(IMicrosoftService microsoftService, IServerService serverService)
+        private readonly IFirebaseService firebaseService;
+        private readonly IBackendService backendService;
+        private readonly IOverlayService overlayService;
+        public RightSidebarViewModel(IMicrosoftService microsoftService, IFirebaseService firebaseService, IBackendService backendService, IOverlayService overlayService)
         {
             this.microsoftService = microsoftService;
-            this.serverService = serverService;
+            this.firebaseService = firebaseService;
+            this.backendService = backendService;
+            this.overlayService = overlayService;
         }
 
-        public Func<string, Server, Task> OnQuickJoinRequested { get; set; }
-
         private string username;
-
         public string Username
         {
             get { return username; }
@@ -50,23 +50,35 @@ namespace TCM_Launcher.ViewModel.UserControls.Sidebars
             }
         }
 
-        private ObservableCollection<ServerCardViewModel> servers = new ObservableCollection<ServerCardViewModel>();
-        public ObservableCollection<ServerCardViewModel> Servers
+        private ObservableCollection<FriendViewModel> friends;
+        public ObservableCollection<FriendViewModel> Friends
         {
-            get { return servers; }
-            set
-            {
-                servers = value;
-                OnPropertyChange();
-            }
+            get { return friends; }
+            set { friends = value; OnPropertyChange(); }
         }
 
+        private ObservableCollection<FirebaseNotification> notifications = new();
+        public ObservableCollection<FirebaseNotification> Notifications
+        {
+            get { return notifications; }
+            set { notifications = value; }
+        }
+
+        public bool HasNotifications => Notifications.Count > 0;
 
         private Geometry buttonIcon;
         public Geometry ButtonIcon
         {
             get { return buttonIcon; }
             set { buttonIcon = value; OnPropertyChange(); }
+        }
+
+        private ObservableCollection<FirestoreModpack> modpacks = new();
+
+        public ObservableCollection<FirestoreModpack> Modpacks
+        {
+            get { return modpacks; }
+            set { modpacks = value; OnPropertyChange(); }
         }
 
         private void UpdateIcon()
@@ -85,7 +97,7 @@ namespace TCM_Launcher.ViewModel.UserControls.Sidebars
             if (MSession != null && !string.IsNullOrEmpty(MSession.Username))
             {
                 Username = MSession.Username;
-            }
+            }else Username = offlineUsername;
         }
         public async Task MicrosoftLogoutAsync()
         {
@@ -110,112 +122,90 @@ namespace TCM_Launcher.ViewModel.UserControls.Sidebars
                     await MicrosoftLoginAsync();
                 }
             }
-            catch
-            {
-
-            }
-        }
-        public async Task OnLoaded()
-        {
-            await MicrosoftLoginAsync(true);
-            if (MSession == null) Username = offlineUsername;
-            var servers = await serverService.GetSavedServersAsync();
-            var vmList = servers.Select(s =>
-            {
-                var cardVM = App.ServiceProvider.GetRequiredService<ServerCardViewModel>();
-                cardVM.Server = s;
-                cardVM.OnDeleteRequested = DeleteServer;
-                cardVM.OnUpdateRequested = UpdateServer;
-                cardVM.OnQuickJoinRequested = QuickJoin;
-                return cardVM;
-            }).ToList();
-            Servers = new ObservableCollection<ServerCardViewModel>(vmList);
-        }
-
-        public async Task OpenAddServerWindowAsync()
-        {
-            var s = App.ServiceProvider.GetRequiredService<AddServerView>();
-            await s.InitializeDataAsync();
-            s.Owner = Application.Current.MainWindow;
-            s.Owner.Opacity = 0.4;
-            bool create = s.ShowDialog() ?? false;
-            if (s.CreatedServer != null)
-            {
-                var cardVM = App.ServiceProvider.GetRequiredService<ServerCardViewModel>();
-                cardVM.Server = s.CreatedServer;
-                cardVM.OnDeleteRequested = DeleteServer;
-                cardVM.OnUpdateRequested = UpdateServer;
-                cardVM.OnQuickJoinRequested = QuickJoin;
-                Servers.Add(cardVM);
-            }
-            s.Owner.Opacity = 1;
-        }
-
-        private void QuickJoin(string profileId, Server server)
-        {
-            OnQuickJoinRequested?.Invoke(profileId, server);
-        }
-
-        public void DeleteServer(Server s)
-        {
-            var vmToRemove = Servers.FirstOrDefault(vm => vm.Server.Id == s.Id);
-            if (vmToRemove != null) Servers.Remove(vmToRemove);
-        }
-        public void UpdateServer(Server s)
-        {
-            var sVM = Servers.FirstOrDefault(ser => ser.Server.Id == s.Id);
-            if (sVM != null)
-            {
-                sVM.Server = s;
-            }
-        }
-
-        public void ChangePlayOnServer(string profileId, bool value = true)
-        {
-            var servers = Servers.Where(s => s.Server.BindedProfileId == profileId);
-            if (servers != null)
-            {
-                foreach (var s in servers)
-                {
-                    s.PlayButtonIsEnabled = value;
-                }
-            }
-        }
-
-
-        public void Bugreport()
-        {
-            try
-            {
-                Process.Start(new ProcessStartInfo
-                {
-                    FileName = Constants.BugReportFormURL,
-                    UseShellExecute = true
-                });
-                if (Directory.Exists(Path.Combine(Constants.LauncherFolder, "logs")))
-                {
-                    Process.Start(new ProcessStartInfo
-                    {
-                        FileName = "explorer.exe",
-                        UseShellExecute = true,
-                        Arguments = Path.Combine(Constants.LauncherFolder, "logs")
-                    });
-                }
-            }
             catch (Exception ex)
             {
-                Logger.Error("There was an exception during bugreport", ex);
-                MessageBox.Show("An error occured during bugreport.", "ERROR", MessageBoxButton.OK, MessageBoxImage.Error);
+                Logger.Error("There was an exception.", ex);
             }
         }
 
-        public void DeleteProfile(string profileId)
+        public async Task InitializeListener()
         {
-            var existings = Servers.Where(s => s.Server.BindedProfileId == profileId).ToList();
-            foreach (var server in existings)
-            {
-                server.UnbindProfile();
-            }
+            await firebaseService.ListenToRequestsAsync(
+                microsoftService.MSession.UUID,
+                onAdded: request =>
+                {
+                    App.Current?.Dispatcher.Invoke(() =>
+                    {
+                        Notifications.Add(new FirebaseNotification
+                        {
+                            Id = request.Id,
+                            Sender = request.Sender,
+                            SenderName = request.SenderName,
+                            CreatedAt = request.CreatedAt,
+                            Type = request.RequestType,
+                        });
+                        OnPropertyChange(nameof(HasNotifications));
+                    });
+                },
+                onRemoved: request =>
+                {
+                    App.Current?.Dispatcher.Invoke(() =>
+                    {
+                        var existing = Notifications.FirstOrDefault(n => n.Id == request);
+                        if (existing != null)
+                        {
+                            Notifications.Remove(existing);
+                            OnPropertyChange(nameof(HasNotifications));
+                        }
+                    });
+                }
+            );
+            await firebaseService.ListenToFriendsList(
+                microsoftService.MSession.UUID,
+                onChange: change =>
+                {
+                    App.Current?.Dispatcher.Invoke(() =>
+                    {
+                        var friendsList = change.Select(f =>
+                        {
+                            var vm = App.ServiceProvider.GetRequiredService<FriendViewModel>();
+                            vm.UUID = f.UUID;
+                            vm.Username = f.Username;
+                            vm.OnRemoveFriendRequested = RemoveFriendAsync;
+                            return vm;
+                        }).ToList();
+                        Friends = new(friendsList);
+                    });
+                });
+            await firebaseService.ListenToModpacksAsync(
+                microsoftService.MSession.UUID,
+                onChange: change =>
+                {
+                    App.Current.Dispatcher.InvokeAsync(() =>
+                    {
+                        Modpacks = new(change);
+                    });
+                });
+        }
+
+        private async Task RemoveFriendAsync(string uuid)
+        {
+            await backendService.RemoveFriendAsync(uuid);
+        }
+
+        public void ShowFriendSearch()
+        {
+            overlayService.ShowFriendSearch();
+        }
+
+        public void ShowNotifications()
+        {
+            overlayService.ShowNotificaionsPanel(Notifications);
+        }
+
+        public async Task ShowModpacksAsync()
+        {
+            await overlayService.ShowModpacksPanelAsync();
         }
     }
 }

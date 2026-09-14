@@ -1,5 +1,6 @@
 ﻿using CmlLib.Core.Auth;
 using CmlLib.Core.Auth.Microsoft;
+using Microsoft.Extensions.DependencyInjection;
 using System.IO;
 using System.Net.Http;
 using System.Security.Cryptography;
@@ -10,7 +11,6 @@ namespace TCM_Launcher.Services
 {
     public class MicrosoftService : IMicrosoftService
     {
-
         private JELoginHandler LoginHandler;
 
         public MSession MSession { get; set; }
@@ -73,6 +73,8 @@ namespace TCM_Launcher.Services
                 {
                     File.Delete(Constants.AccountsJSONPath);
                 }
+                var firebaseService = App.ServiceProvider.GetRequiredService<FirebaseService>();
+                firebaseService?.StopListeningAsync();
                 MSession = null;
                 return true;
             }

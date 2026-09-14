@@ -6,6 +6,7 @@ using TCM_Launcher.Core.Utils;
 using TCM_Launcher.Interfaces;
 using TCM_Launcher.Model.DB;
 using TCM_Launcher.MVVM;
+using TCM_Launcher.MVVM.ViewModel;
 using TCM_Launcher.View;
 using TCM_Launcher.ViewModel.UserControls.ControlItems;
 
@@ -18,19 +19,24 @@ namespace TCM_Launcher.ViewModel.UserControls
         private readonly ILauncherService launcherService;
         private readonly IVersionService versionService;
         private readonly IProfileModService profileModService;
+        private readonly IOverlayService overlayService;
+        private readonly IFirebaseService firebaseService;
         public ICommand SelectProfileCommand { get; }
 
         public ProfilesViewModel(IGameProfileService gameProfileService, IProfileSettingsService profileSettingsService, 
-            ILauncherService launcherService, IVersionService versionService, IProfileModService profileModService)
+            ILauncherService launcherService, IVersionService versionService, IProfileModService profileModService, IOverlayService overlayService, IFirebaseService firebaseService)
         {
             this.gameProfileService = gameProfileService;
             this.profileSettingsService = profileSettingsService;
             this.launcherService = launcherService;
             this.versionService = versionService;
             this.profileModService = profileModService;
+            this.overlayService = overlayService;
 
             this.SelectProfileCommand = new RelayCommand<GameProfile>(SelectProfile);
+            this.firebaseService = firebaseService;
         }
+
         private bool isInitialized = false;
 
         public Func<GameProfile, Task> OnSelectProfileRequested { get; set; }
@@ -107,25 +113,21 @@ namespace TCM_Launcher.ViewModel.UserControls
 
         public async Task OpenNewProfileWindow()
         {
-            var npw = App.ServiceProvider.GetRequiredService<NewProfileView>();
-            npw.Owner = Application.Current.MainWindow;
-            Application.Current.MainWindow.Opacity = 0.4;
-            bool created = npw.ShowDialog() ?? false;
-            Application.Current.MainWindow.Opacity = 1;
-            if (created)
+            GameProfile result = await overlayService.ShowNewProfilePanelAsync();
+            if (result != null)
             {
                 bool isInternet = await NetworkUtil.IsInternetAvailableAsync();
                 if (!isInternet)
                 {
                     Logger.Error("No internet. Couldn't check versions.");
-                    MessageBox.Show("Cannot download files. Connect to internet", "ERROR", MessageBoxButton.OK, MessageBoxImage.Error);
+                    Constants.MessageBoxError("Cannot download files. Connect to internet.");
                     return;
                 }
-                await CreateProfile(npw.NewProfileData);
+                await CreateProfileAsync(result);
             }
         }
 
-        private async Task<bool> CreateProfile(GameProfile data)
+        private async Task<bool> CreateProfileAsync(GameProfile data)
         {
             try
             {
@@ -158,11 +160,11 @@ namespace TCM_Launcher.ViewModel.UserControls
                 {
                     p.FileName = fileNameTask.Result;
                     p.Installed = true;
-                    await gameProfileService.UpdateProfileAsync(p.Id, p);
+                    await gameProfileService.UpdateProfileAsync(p);
                     var vm = App.ServiceProvider.GetRequiredService<ProfileDetailsViewModel>();
                     vm.Profile = p;
                     Profiles.Add(vm);
-                    await profileModService.CreateProfileManifest(p.Id, p.ProfileName, p.MCVersion, p.ForgeVersion);
+                    await profileModService.CreateProfileManifest(p.Id, p.ProfileName, p.MCVersion, p.ModpackId, p.ForgeVersion);
                     return true;
                 }
                 return false;

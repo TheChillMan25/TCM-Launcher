@@ -3,7 +3,7 @@ using System.Collections.ObjectModel;
 using TCM_Launcher.Core.Utils;
 using TCM_Launcher.Interfaces;
 using TCM_Launcher.Model.DB;
-using TCM_Launcher.MVVM;
+using TCM_Launcher.MVVM.ViewModel;
 using TCM_Launcher.ViewModel.UserControls.ControlItems;
 using TCML_Class_library;
 

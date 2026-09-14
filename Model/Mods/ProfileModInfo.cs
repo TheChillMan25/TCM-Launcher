@@ -23,6 +23,7 @@ namespace TCM_Launcher.Model.Mods
         public ModpackDependency Dependencies { get; set; }
         public DateTime LastUpdated { get; set; }
         public List<ProfileModInfo> Mods { get; set; } = new List<ProfileModInfo>();
+        public string? ModpackId { get; set; }
     }
 
     public class ModpackDependency

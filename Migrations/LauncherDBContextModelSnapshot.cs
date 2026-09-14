@@ -17,6 +17,42 @@ namespace TCM_Launcher.Migrations
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "10.0.10");
 
+            modelBuilder.Entity("TCML_Class_library.FirestoreModpack", b =>
+                {
+                    b.Property<string>("Id")
+                        .HasColumnType("TEXT");
+
+                    b.Property<long>("FileSize")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("OwnerName")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("OwnerUUID")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<uint>("ReleaseNumber")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("StoragePath")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Version")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("DownloadedModpacks");
+                });
+
             modelBuilder.Entity("TCM_Launcher.Model.DB.AppMetaData", b =>
                 {
                     b.Property<string>("Key")
@@ -31,7 +67,7 @@ namespace TCM_Launcher.Migrations
 
                     b.HasKey("Key");
 
-                    b.ToTable("AppMetaData", (string)null);
+                    b.ToTable("AppMetaData");
                 });
 
             modelBuilder.Entity("TCM_Launcher.Model.DB.AppSettings", b =>
@@ -43,7 +79,7 @@ namespace TCM_Launcher.Migrations
                     b.Property<int>("CloseButtonBehaviour")
                         .HasColumnType("INTEGER");
 
-                    b.Property<uint>("MaximumParalellDownloads")
+                    b.Property<int>("MaximumParalellDownloads")
                         .HasColumnType("INTEGER");
 
                     b.Property<int>("OnGameStart")
@@ -54,7 +90,7 @@ namespace TCM_Launcher.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("AppSettings", (string)null);
+                    b.ToTable("AppSettings");
                 });
 
             modelBuilder.Entity("TCM_Launcher.Model.DB.GameProfile", b =>
@@ -71,21 +107,26 @@ namespace TCM_Launcher.Migrations
                     b.Property<bool?>("Installed")
                         .HasColumnType("INTEGER");
 
-                    b.Property<bool?>("LastPlayed")
-                        .HasColumnType("INTEGER");
-
                     b.Property<string>("MCVersion")
                         .HasColumnType("TEXT");
 
-                    b.Property<bool?>("Pinned")
+                    b.Property<string>("ModpackId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<uint?>("PackReleaseNumber")
                         .HasColumnType("INTEGER");
+
+                    b.Property<double?>("PlayTime")
+                        .HasColumnType("REAL");
 
                     b.Property<string>("ProfileName")
                         .HasColumnType("TEXT");
 
                     b.HasKey("Id");
 
-                    b.ToTable("GameProfiles", (string)null);
+                    b.HasIndex("ModpackId");
+
+                    b.ToTable("GameProfiles");
                 });
 
             modelBuilder.Entity("TCM_Launcher.Model.DB.ProfileSettings", b =>
@@ -108,7 +149,7 @@ namespace TCM_Launcher.Migrations
 
                     b.HasIndex("GameProfileId");
 
-                    b.ToTable("ProfileSettings", (string)null);
+                    b.ToTable("ProfileSettings");
                 });
 
             modelBuilder.Entity("TCM_Launcher.Model.DB.Server", b =>
@@ -135,7 +176,7 @@ namespace TCM_Launcher.Migrations
 
                     b.HasIndex("BindedProfileId");
 
-                    b.ToTable("SavedServers", (string)null);
+                    b.ToTable("SavedServers");
                 });
 
             modelBuilder.Entity("TCM_Launcher.Model.DB.Versions.ForgeVersion", b =>
@@ -152,7 +193,7 @@ namespace TCM_Launcher.Migrations
 
                     b.HasKey("VersionName");
 
-                    b.ToTable("ForgeVersions", (string)null);
+                    b.ToTable("ForgeVersions");
                 });
 
             modelBuilder.Entity("TCM_Launcher.Model.DB.Versions.VanillaVersion", b =>
@@ -166,7 +207,16 @@ namespace TCM_Launcher.Migrations
 
                     b.HasKey("VersionName");
 
-                    b.ToTable("VanillaVersions", (string)null);
+                    b.ToTable("VanillaVersions");
+                });
+
+            modelBuilder.Entity("TCM_Launcher.Model.DB.GameProfile", b =>
+                {
+                    b.HasOne("TCML_Class_library.FirestoreModpack", "Modpack")
+                        .WithMany()
+                        .HasForeignKey("ModpackId");
+
+                    b.Navigation("Modpack");
                 });
 
             modelBuilder.Entity("TCM_Launcher.Model.DB.ProfileSettings", b =>

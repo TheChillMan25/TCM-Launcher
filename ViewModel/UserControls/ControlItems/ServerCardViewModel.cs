@@ -4,9 +4,7 @@ using System.Windows;
 using System.Windows.Media;
 using TCM_Launcher.Interfaces;
 using TCM_Launcher.Model.DB;
-using TCM_Launcher.MVVM;
-using TCM_Launcher.Services;
-using TCM_Launcher.View.Windows;
+using TCM_Launcher.MVVM.ViewModel;
 
 namespace TCM_Launcher.ViewModel.UserControls.ControlItems
 {
@@ -15,11 +13,13 @@ namespace TCM_Launcher.ViewModel.UserControls.ControlItems
 		private readonly IServerService serverService;
 		private readonly IGameProfileService gameProfileService;
 		private readonly ILauncherService launcherService;
-        public ServerCardViewModel(IServerService serverService, IGameProfileService gameProfileService, ILauncherService launcherService)
+		private readonly IOverlayService overlayService;
+        public ServerCardViewModel(IServerService serverService, IGameProfileService gameProfileService, ILauncherService launcherService, IOverlayService overlayService)
         {
             this.serverService = serverService;
             this.gameProfileService = gameProfileService;
             this.launcherService = launcherService;
+            this.overlayService = overlayService;
         }
 
         public Action<Server>? OnDeleteRequested { get; set; }
@@ -80,19 +80,12 @@ namespace TCM_Launcher.ViewModel.UserControls.ControlItems
 
 		public async Task EditServer()
 		{
-			var s = App.ServiceProvider.GetRequiredService<AddServerView>();
-			s.Initialize(Server.Id, Server.Name, Server.Address, Server.MCVersion, Server.BindedProfileId);
-			s.Owner = Application.Current.MainWindow;
-            s.Owner.Opacity = 0.4;
-			s.viewModel.WindowTitle = "Edit server";
-            await s.InitializeDataAsync();
-			bool edit = s.ShowDialog() ?? false;
-			if (edit && s.CreatedServer != null)
+			var result = await overlayService.ShowServerPanelAsync(Server);
+			if (result != null)
 			{
-                Server = s.CreatedServer;
+                Server = result;
 				OnUpdateRequested?.Invoke(Server);
             }
-            s.Owner.Opacity = 1.0;
         }
 
 		public async Task QuickLaunchAsync()

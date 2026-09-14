@@ -1,12 +1,14 @@
 ﻿using CmlLib.Core.Auth;
 using CmlLib.Core.Auth.Microsoft;
+using Microsoft.Extensions.DependencyInjection;
 using System.Windows;
 using TCM_Launcher.Core.Utils;
 using TCM_Launcher.Interfaces;
 using TCM_Launcher.Model.DB;
 using TCM_Launcher.Model.Mods;
-using TCM_Launcher.MVVM;
+using TCM_Launcher.MVVM.ViewModel;
 using TCM_Launcher.ViewModel.UserControls;
+using TCM_Launcher.ViewModel.UserControls.Panels;
 using TCM_Launcher.ViewModel.UserControls.Sidebars;
 using TCML_Class_library;
 using static TCM_Launcher.Core.Utils.Constants;
@@ -18,6 +20,7 @@ namespace TCM_Launcher.ViewModel
         private readonly IBackendService backendService;
         private readonly IVersionService versionService;
         private readonly IAppSettingsService appSettingsService;
+        private readonly IOverlayService overlayService;
 
         private readonly ProfilesViewModel profilesViewModel;
         private ProfileDetailsViewModel profileDetailsViewModel;
@@ -28,7 +31,7 @@ namespace TCM_Launcher.ViewModel
         public LeftSidebarViewModel LeftSidebarViewModel { get; }
         public RightSidebarViewModel RightSidebarViewModel { get; }
         public MainWindowViewModel(
-            IBackendService backendService, IVersionService versionService, IAppSettingsService appSettingsService,
+            IBackendService backendService, IVersionService versionService, IAppSettingsService appSettingsService, IOverlayService overlayService,
             ProfileDetailsViewModel profileDetailsViewModel, AddContentViewModel addContentViewModel, SearchedModDetailsViewModel modDetailsViewModel,
             ProfilesViewModel profilesViewModel, LeftSidebarViewModel leftSidebarViewModel, RightSidebarViewModel rightSidebarViewModel, AppSettingsViewModel appSettingsViewModel)
         {
@@ -36,6 +39,17 @@ namespace TCM_Launcher.ViewModel
             this.backendService = backendService;
             this.versionService = versionService;
             this.appSettingsService = appSettingsService;
+            this.overlayService = overlayService;
+            this.overlayService.ShowOverlayRequested += (vm) =>
+            {
+                ShowPanel(vm);
+                IsOverlayVisible = true;
+            };
+            this.overlayService.CloseOverlayRequested += () =>
+            {
+                IsOverlayVisible = false;
+                CurrentOverlay = null;
+            };
 
             this.profilesViewModel = profilesViewModel;
             this.profilesViewModel.OnSelectProfileRequested = ShowProfileDetails;
@@ -45,8 +59,6 @@ namespace TCM_Launcher.ViewModel
             this.profileDetailsViewModel.OnDeleteRequested = DeleteProfile;
             this.profileDetailsViewModel.ShowContentBorwserRequested = ShowAddContent;
             this.profileDetailsViewModel.OnLaunch = OnLaunch;
-            this.profileDetailsViewModel.OnPinRequested = PinProfile;
-            this.profileDetailsViewModel.OnProfileNameUpdated = UpdateProfileName;
 
             this.addContentViewModel = addContentViewModel;
             this.addContentViewModel.OnCloseRequested = ShowProfileDetails;
@@ -59,18 +71,17 @@ namespace TCM_Launcher.ViewModel
             this.LeftSidebarViewModel = leftSidebarViewModel;
             this.LeftSidebarViewModel.OnHomeRequested = Show;
             this.LeftSidebarViewModel.OnAppSettingsRequested = Show;
-            this.LeftSidebarViewModel.OnQuickPlayRequested = QuickStartAsync;
-            this.LeftSidebarViewModel.OnUnPinRequested = UnPinProfile;
+            this.LeftSidebarViewModel.OnQuickJoinRequested = QuickStartAsync;
 
             this.RightSidebarViewModel = rightSidebarViewModel;
-            this.RightSidebarViewModel.OnQuickJoinRequested = QuickStartAsync;
+
             this.appSettingsViewModel = appSettingsViewModel;
 
             this.appSettingsViewModel = appSettingsViewModel;
         }
 
+        private bool initialized = false;
         private ViewModelBase currentView;
-
         public ViewModelBase CurrentView
         {
             get { return currentView; }
@@ -108,7 +119,30 @@ namespace TCM_Launcher.ViewModel
         }
         public bool LoggedIntoMSAccount => MSession != null;
 
+        private ViewModelBase? currentOverlay;
+
+        public ViewModelBase? CurrentOverlay
+        {
+            get { return currentOverlay; }
+            set { currentOverlay = value; OnPropertyChange(); }
+        }
+
+        private bool isOverlayVisible;
+
+        public bool IsOverlayVisible
+        {
+            get { return isOverlayVisible; }
+            set { isOverlayVisible = value; OnPropertyChange(); }
+        }
+
+
+
         //------------------------------------//
+
+        private void ShowPanel(ViewModelBase model)
+        {
+            CurrentOverlay = model;
+        }
 
         public async Task QuickStartAsync(string profileId, Server server = null)
         {
@@ -125,14 +159,12 @@ namespace TCM_Launcher.ViewModel
 
         public void OnLaunch(string profileId, bool launch)
         {
-            LeftSidebarViewModel.ChangePlayOnPinnedProfile(profileId, !launch);
-            RightSidebarViewModel.ChangePlayOnServer(profileId, !launch);
+            LeftSidebarViewModel.ChangePlayOnServer(profileId, !launch);
         }
         public void DeleteProfile(string id)
         {
             profilesViewModel.DeleteProfile(id);
-            LeftSidebarViewModel.DeleteProfile(id);
-            RightSidebarViewModel.DeleteProfile(id);
+            LeftSidebarViewModel.DeleteProfileFromServers(id);
             CurrentView = profilesViewModel;
         }
 
@@ -141,30 +173,11 @@ namespace TCM_Launcher.ViewModel
             profileDetailsViewModel.UpdateProfileMods(mods);
         }
 
-        private void UpdateProfileName(string profileId, string name)
-        {
-            LeftSidebarViewModel.UpdateProfileName(profileId, name);
-        }
-        private async Task UnPinProfile(GameProfile profile)
-        {
-            var vm = profilesViewModel.Profiles.FirstOrDefault(p => p.Profile.Id == profile.Id);
-            if (vm != null)
-            {
-                if (profileDetailsViewModel.Profile != null && 
-                    profileDetailsViewModel.Profile.Id == vm.Profile.Id) await profileDetailsViewModel.PinProfile();
-                else await vm.PinProfile();
-            }
-        }
-
-        private void PinProfile(GameProfile p)
-        {
-            LeftSidebarViewModel.PinProfile(p);
-        }
-
         private void Show(ContentToShow content)
         {
             if (content == ContentToShow.Settings) CurrentView = appSettingsViewModel;
             else CurrentView = profilesViewModel;
+            profileDetailsViewModel.Unsub();
         }
         private async Task ShowProfileDetails(GameProfile? p = null)
         {
@@ -207,8 +220,42 @@ namespace TCM_Launcher.ViewModel
 
         public async Task OnLoadedAsync()
         {
-            versionService.StartVersionCheck();
-            appSettingsService.StartLoadingSettings();
+            await InitializeLauncherAsync();
+        }
+
+        private async Task InitializeLauncherAsync()
+        {
+            if(initialized) return;
+            try
+            {
+                var vm = App.ServiceProvider.GetRequiredService<LoadingScreenViewModel>();
+
+                overlayService.ShowLauncherLoadingPanel(vm);
+
+                IProgress<(double progress, string status)> progress = new Progress<(double progress, string status)>(update =>
+                {
+                    vm.Progress = update.progress;
+                    vm.Status = update.status;
+                });
+
+                progress.Report((10, "Starting initialization"));
+                versionService.StartVersionCheck();
+                appSettingsService.StartLoadingSettings();
+                progress.Report((30, "Checking profiles and versions"));
+                await profilesViewModel.Initialize();
+                progress.Report((60, "Communicating with Microsoft servers"));
+                await RightSidebarViewModel.MicrosoftLoginAsync(true);
+                progress.Report((90, "Connecting to backend services"));
+                await RightSidebarViewModel.InitializeListener();
+                progress.Report((100, "Initialization successful"));
+                await Task.Delay(250);
+                vm.OnPanelCloseRequested?.Invoke();
+                initialized = true;
+            }
+            catch (Exception ex)
+            {
+                Logger.Error("There was an exception while initializing the launcher.", ex);
+            }
         }
 
         public  void CloseButtonClick()

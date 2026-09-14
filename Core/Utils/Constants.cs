@@ -27,5 +27,12 @@ namespace TCM_Launcher.Core.Utils
         {
             MessageBox.Show(message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
         }
+
+        public static bool IsWindowOpen<T>(string name = "") where T : Window
+        {
+            return string.IsNullOrEmpty(name) ? 
+                App.Current.Windows.OfType<T>().Any(w => w.IsVisible) :
+                App.Current.Windows.OfType<T>().Any(w => w.IsVisible && w.Name.Equals(name));
+        }
     }
 }

@@ -8,18 +8,15 @@ using TCM_Launcher.Core.DBContext;
 using TCM_Launcher.Core.Utils;
 using TCM_Launcher.Interfaces;
 using TCM_Launcher.Services;
-using TCM_Launcher.View;
-using TCM_Launcher.View.PopUp;
 using TCM_Launcher.View.UserControls;
 using TCM_Launcher.View.UserControls.ControlItems;
+using TCM_Launcher.View.UserControls.Panels;
 using TCM_Launcher.View.UserControls.Sidebars;
-using TCM_Launcher.View.Windows;
 using TCM_Launcher.ViewModel;
-using TCM_Launcher.ViewModel.Popup;
 using TCM_Launcher.ViewModel.UserControls;
 using TCM_Launcher.ViewModel.UserControls.ControlItems;
+using TCM_Launcher.ViewModel.UserControls.Panels;
 using TCM_Launcher.ViewModel.UserControls.Sidebars;
-using TCM_Launcher.ViewModel.Windows;
 using Forms = System.Windows.Forms;
 
 namespace TCM_Launcher
@@ -38,12 +35,12 @@ namespace TCM_Launcher
         {
             this.DispatcherUnhandledException += (sender, e) =>
             {
+                Logger.Error("There was a critical error at launch.", e.Exception);
                 System.Windows.MessageBox.Show(
                     $"Critical error. Check logs for details.",
                     "Launcher Crash",
                     MessageBoxButton.OK,
                     MessageBoxImage.Error);
-                Logger.Error("There was a critical error at launch.", e.Exception);
                 e.Handled = true;
             };
         }
@@ -109,39 +106,7 @@ namespace TCM_Launcher
         {
             var profileModService = ServiceProvider.GetRequiredService<IProfileModService>();
 
-            var profile = await profileModService.ImportModpackDirectlyAsync(filePath);
-            if (profile != null)
-            {
-                var profilesView = ServiceProvider.GetRequiredService<ProfilesViewModel>();
-                var installVm = ServiceProvider.GetRequiredService<ProfileInstallIndicatorViewModel>();
-
-                var progress = new Progress<double>(progress => installVm.Progress = progress);
-                var status = new Progress<string>(status => installVm.Status = status);
-                var visible = new Progress<bool>(visible => installVm.Visible = visible);
-
-                installVm.ProfileName = profile.ProfileName;
-                installVm.ProfileId = profile.Id;
-                installVm.OnRemoveRequested = () =>
-                {
-                    var existing = profilesView.Installs.FirstOrDefault(vm => vm.ProfileId == installVm.ProfileId);
-                    if (existing != null) profilesView.Installs.Remove(existing);
-                };
-                profilesView.Installs.Add(installVm);
-
-                var launcherService = ServiceProvider.GetRequiredService<ILauncherService>();
-
-                var fileName = await launcherService.CreateProfileAsync(profile.Id, profile.MCVersion, profile.ForgeVersion, progress, status, visible);
-                if (fileName != null)
-                {
-                    var gameProfileService = ServiceProvider.GetRequiredService<IGameProfileService>();
-                    profile.Installed = true;
-                    profile.FileName = fileName;
-                    await gameProfileService.UpdateProfileAsync(profile.Id, profile);
-                    var vm = App.ServiceProvider.GetRequiredService<ProfileDetailsViewModel>();
-                    vm.Profile = profile;
-                    profilesView.Profiles.Add(vm);
-                }
-            }
+            await profileModService.ImportModpackDirectlyAsync(filePath);
         }
 
         public void ShowMainWindow()
@@ -156,10 +121,13 @@ namespace TCM_Launcher
 
         protected override void OnExit(ExitEventArgs e)
         {
+
             pipeCts?.Cancel();
             mutex?.ReleaseMutex();
             mutex?.Dispose();
             notifyIcon?.Dispose();
+            var firebaseService = ServiceProvider.GetRequiredService<IFirebaseService>();
+            firebaseService?.StopListeningAsync();
             base.OnExit(e);
         }
 
@@ -218,7 +186,9 @@ namespace TCM_Launcher
             services.AddSingleton<IDownloadService, DownloadService>();
             services.AddSingleton<IProfileModService, ProfileModService>();
             services.AddSingleton<IAppSettingsService, AppSettingsService>();
-            services.AddSingleton<IAppMetaDataService, AppMetaDataService>();
+            services.AddSingleton<IDownloadedModpacksService, DownloadedModpacksService>();
+            services.AddSingleton<IFirebaseService, FirebaseService>();
+            services.AddSingleton<IOverlayService, OverlayService>();
 
             // ViewModels //
             services.AddTransient<MainWindowViewModel>();
@@ -228,7 +198,7 @@ namespace TCM_Launcher
             services.AddTransient<AddServerViewModel>();
             services.AddTransient<AddContentViewModel>();
             services.AddTransient<ModSearchResultCardViewModel>();
-            services.AddTransient<ViewModel.UserControls.SearchedModDetailsViewModel>();
+            services.AddTransient<SearchedModDetailsViewModel>();
             services.AddTransient<ModVersionCardViewModel>();
             services.AddTransient<ProfileModViewModel>();
             services.AddSingleton<ProfilesViewModel>();
@@ -237,36 +207,50 @@ namespace TCM_Launcher
             services.AddTransient<PinnedProfileViewModel>();
             services.AddTransient<PopupViewModel>();
             services.AddTransient<AppSettingsViewModel>();
-            services.AddTransient<ViewModel.Windows.ModDetailsViewModel>();
+            services.AddTransient<ModDetailsViewModel>();
             services.AddTransient<ProfileInstallIndicatorViewModel>();
             services.AddTransient<PopupViewModel>();
             services.AddTransient<ExportModpackViewModel>();
+            services.AddTransient<SearchFriendsViewModel>();
+            services.AddTransient<FriendSearchItemViewModel>();
+            services.AddTransient<NotificationsViewModel>();
+            services.AddTransient<FriendViewModel>();
+            services.AddSingleton<ModpacksViewModel>();
+            services.AddTransient<ModpackViewModel>();
+            services.AddTransient<LoadingScreenViewModel>();
 
             // UserControls //
             services.AddTransient<ServerCardViewModel>();
             services.AddTransient<ProfileDetailsViewModel>();
             services.AddTransient<ModSearchResultCardView>();
-            services.AddTransient<View.UserControls.SearchedModDetailsView>();
+            services.AddTransient<SearchedModDetailsView>();
             services.AddTransient<ModVersionCardView>();
             services.AddTransient<ProfileModView>();
             services.AddTransient<ProfilesView>();
             services.AddTransient<LeftSidebarView>();
             services.AddTransient<RightSidebarView>();
             services.AddTransient<PinnedProfileView>();
-            services.AddTransient<PopupView>();
             services.AddTransient<AppSettingsViewModel>();
             services.AddTransient<ProfileInstallIndicatiorView>();
-
-            // Windows //
-            services.AddTransient<MainWindow>();
+            services.AddTransient<FriendSearchItemView>();
+            services.AddTransient<NotificationViewModel>();
+            services.AddTransient<FriendView>();
             services.AddTransient<NewProfileView>();
             services.AddTransient<ProfileSettingsView>();
             services.AddTransient<NewProfileView>();
             services.AddTransient<AddServerView>();
             services.AddTransient<AddContentView>();
-            services.AddTransient<View.Windows.ModDetailsView>();
+            services.AddTransient<ModDetailsView>();
             services.AddTransient<PopupView>();
             services.AddTransient<ExportModpackView>();
+            services.AddTransient<AddFriendView>();
+            services.AddTransient<NotificationsView>();
+            services.AddSingleton<ModpacksView>();
+            services.AddTransient<ModpackView>();
+            services.AddTransient<LoadingScreenView>();
+
+            // Windows //
+            services.AddTransient<MainWindow>();
 
         }
     }
