@@ -1,5 +1,6 @@
 using Google.Api.Gax;
 using Google.Cloud.Firestore;
+using Grpc.Core;
 using System.Net.Http;
 using System.Net.Http.Json;
 using TCM_Launcher.Core.Utils;
