@@ -22,6 +22,7 @@
             <RowDefinition />
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
         <Button x:Name="HomeButton"
                     Style="{StaticResource SidebarListItem}" Click="HomeButton_Click">
@@ -96,34 +97,42 @@
                            Grid.Column="1"/>
             </Grid>
         </Button>
-        <Grid Grid.Row="2">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="Auto"/>
-                <ColumnDefinition/>
-            </Grid.ColumnDefinitions>
+        <Grid Name="ServersContainer"
+              Grid.Row="2">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/>
                 <RowDefinition/>
             </Grid.RowDefinitions>
-            <Path Data="{StaticResource GamepadIcon}"
-                  Height="30"
-                  Width="30"
-                  Fill="#f2c480"
-                  Stretch="Uniform"
-                  Margin="15 0 10 0">
-            </Path>
-            <TextBlock Text="Pinned profiles"
-                       Grid.Column="1"
-                       VerticalAlignment="Center"
-                       FontSize="28"
-                       FontFamily="Calibri"
-                       Foreground="#f2c480"/>
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="40"/>
+                    <ColumnDefinition/>
+                    <ColumnDefinition Width="40"/>
+                </Grid.ColumnDefinitions>
+                <TextBlock Text="Quick join"
+                           Grid.Column="1"
+                           FontFamily="Calibri"
+                           FontSize="26"
+                           Foreground="#f2c480"
+                           VerticalAlignment="Center"
+                           HorizontalAlignment="Center"/>
+                <Button x:Name="AddServerButton"
+                        Grid.Column="2"
+                        Style="{StaticResource RoundButton}"
+                        Height="25"
+                        Width="25"
+                        VerticalAlignment="Top" 
+                        Click="AddServerButton_Click">
+                    <Path Data="{StaticResource AddIcon}"
+                          Fill="#999"
+                          Width="15"
+                          Height="15"
+                          Stretch="Uniform"/>
+                </Button>
+            </Grid>
             <ScrollViewer VerticalScrollBarVisibility="Auto"
-                         Grid.Row="1"
-                         Grid.ColumnSpan="2">
-                <ItemsControl ItemsSource="{Binding Profiles}"
-                     Background="Transparent"
-                     BorderThickness="0"/>
+                          Grid.Row="1">
+                <ItemsControl ItemsSource="{Binding Servers}"/>
             </ScrollViewer>
         </Grid>
         <Button x:Name="UpdateButton"
@@ -181,10 +190,47 @@
                                Grid.Column="1"/>
             </Grid>
         </Button>
+        <Button x:Name="BugReportButton"
+                Style="{StaticResource SidebarListItem}"
+                Grid.Row="4" Click="BugReportButton_Click">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition/>
+                </Grid.ColumnDefinitions>
+                <Path Data="{StaticResource WriteIcon}"
+                      Height="30"
+                      Width="30"
+                      Stretch="Uniform"
+                      Margin="0 0 10 0">
+                    <Path.Style>
+                        <Style TargetType="Path">
+                            <Setter Property="Fill" Value="#f2c480"/>
+
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding IsMouseOver, 
+                                        RelativeSource={RelativeSource AncestorType=Button}}" 
+                                                 Value="True">
+                                    <Setter Property="Fill" Value="#333"/>
+                                </DataTrigger>
+                                <DataTrigger Binding="{Binding IsPressed, 
+                                        RelativeSource={RelativeSource AncestorType=Button}}" 
+                                                 Value="True">
+                                    <Setter Property="Fill" Value="WhiteSmoke"/>
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Path.Style>
+                </Path>
+                <TextBlock Text="Bug report"
+                               Grid.Column="1"/>
+            </Grid>
+        </Button>
+
         <TextBlock Text="{Binding AppVersion,
             FallbackValue=vX.X.X,
             TargetNullValue=vX.X.X}"
-                   Grid.Row="4"
+                   Grid.Row="5"
                    FontFamily="Calibri"
                    FontSize="20"
                    Foreground="#777"

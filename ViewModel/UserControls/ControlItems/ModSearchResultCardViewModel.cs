@@ -1,4 +1,4 @@
-﻿using TCM_Launcher.MVVM;
+﻿using TCM_Launcher.MVVM.ViewModel;
 using TCML_Class_library;
 
 namespace TCM_Launcher.ViewModel.UserControls.ControlItems

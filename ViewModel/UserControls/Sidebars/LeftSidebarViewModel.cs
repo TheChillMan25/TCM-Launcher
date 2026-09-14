@@ -2,33 +2,38 @@
 using Onova;
 using Onova.Services;
 using System.Collections.ObjectModel;
+using System.Diagnostics;
+using System.IO;
 using System.Reflection;
 using System.Windows;
 using TCM_Launcher.Core.Utils;
 using TCM_Launcher.Interfaces;
 using TCM_Launcher.Model;
 using TCM_Launcher.Model.DB;
-using TCM_Launcher.MVVM;
-using TCM_Launcher.View.PopUp;
-using TCM_Launcher.ViewModel.Popup;
+using TCM_Launcher.MVVM.ViewModel;
 using TCM_Launcher.ViewModel.UserControls.ControlItems;
+using TCM_Launcher.ViewModel.UserControls.Panels;
 using static TCM_Launcher.Core.Utils.Constants;
 
 namespace TCM_Launcher.ViewModel.UserControls.Sidebars
 {
     public class LeftSidebarViewModel : ViewModelBase
     {
-        private readonly IGameProfileService gameProfileService;
-        private readonly IAppMetaDataService appMetaDataService;
-        public LeftSidebarViewModel(IGameProfileService gameProfileService, IAppMetaDataService appMetaDataService)
+        private readonly IServerService serverService;
+        private readonly IBackendService backendService;
+        private readonly IMicrosoftService microsoftService;
+        private readonly IOverlayService overlayService;
+        public LeftSidebarViewModel(IServerService serverService, IBackendService backendService, IMicrosoftService microsoftService, IOverlayService overlayService)
         {
-            this.gameProfileService = gameProfileService;
-            this.appMetaDataService = appMetaDataService;
+            this.serverService = serverService;
+            this.backendService = backendService;
+            this.microsoftService = microsoftService;
+            this.overlayService = overlayService;
         }
 
+        public Func<string, Server, Task> OnQuickJoinRequested { get; set; }
         public Action<ContentToShow>? OnHomeRequested { get; set; }
         public Action<ContentToShow>? OnAppSettingsRequested { get; set; }
-        public Func<string, Server, Task>? OnQuickPlayRequested { get; set; }
 
         private UpdateData availableUpdate = new UpdateData();
         public UpdateData AvailableUpdate
@@ -41,14 +46,16 @@ namespace TCM_Launcher.ViewModel.UserControls.Sidebars
             }
         }
 
-        private ObservableCollection<PinnedProfileViewModel> profiles = new ObservableCollection<PinnedProfileViewModel>();
-        public ObservableCollection<PinnedProfileViewModel> Profiles
+        private ObservableCollection<ServerCardViewModel> servers = new ObservableCollection<ServerCardViewModel>();
+        public ObservableCollection<ServerCardViewModel> Servers
         {
-            get { return profiles; }
-            set { profiles = value; OnPropertyChange(); }
+            get { return servers; }
+            set
+            {
+                servers = value;
+                OnPropertyChange();
+            }
         }
-
-        public Func<GameProfile, Task>? OnUnPinRequested { get; set; }
 
         public string AppVersion 
         {
@@ -62,7 +69,7 @@ namespace TCM_Launcher.ViewModel.UserControls.Sidebars
 
         public async Task InitializeAsync()
         {
-            var loadProfilesTask = LoadPinnedProfilesAsync();
+            var loadProfilesTask = LoadServersAsync();
             var checkUpdatesTask = CheckForUpdatesAsync();
 
             await Task.WhenAll(loadProfilesTask, checkUpdatesTask);
@@ -104,33 +111,29 @@ namespace TCM_Launcher.ViewModel.UserControls.Sidebars
         }
         public async Task Update()
         {
-            PopupView p = App.ServiceProvider.GetRequiredService<PopupView>();
-            p.Initialize("Update available", "There is an update available. Click the button to download it.", PopupAction.UPDATE);
-            p.Owner = Application.Current.MainWindow;
-            p.Owner.Opacity = 0.4;
-            var update = p.ShowDialog();
-            p.Owner.Opacity = 1;
+
+            var update = await overlayService.ShowPopupPanelAsync("Update available", "There is an update available. Click the button to download it.", PopupAction.UPDATE);
             if (update == true)
             {
                 AvailableUpdate.IsUpdating = true;
-                //await appMetaDataService.AddMetaData("app_version", AvailableUpdate.Version.ToString());
                 await AvailableUpdate.Manager.PrepareUpdateAsync(AvailableUpdate.Version);
                 AvailableUpdate.Manager.LaunchUpdater(AvailableUpdate.Version);
                 Application.Current.Shutdown();
             }
         }
-        public async Task LoadPinnedProfilesAsync()
+        public async Task LoadServersAsync()
         {
-            var p = await gameProfileService.GetPinnedProfilesAsync();
-            var vmList = p.Select(p =>
+            var servers = await serverService.GetSavedServersAsync();
+            var vmList = servers.Select(s =>
             {
-                var vm = App.ServiceProvider.GetRequiredService<PinnedProfileViewModel>();
-                vm.Profile = p;
-                vm.OnQuickPlayRequested = QuickPlay;
-                vm.OnUnPinRequested = RemovePinnedProfile;
-                return vm;
+                var cardVM = App.ServiceProvider.GetRequiredService<ServerCardViewModel>();
+                cardVM.Server = s;
+                cardVM.OnDeleteRequested = DeleteServer;
+                cardVM.OnUpdateRequested = UpdateServer;
+                cardVM.OnQuickJoinRequested = QuickJoin;
+                return cardVM;
             }).ToList();
-            Profiles = new ObservableCollection<PinnedProfileViewModel>(vmList);
+            Servers = new ObservableCollection<ServerCardViewModel>(vmList);
         }
 
         public void ShowHome()
@@ -138,69 +141,87 @@ namespace TCM_Launcher.ViewModel.UserControls.Sidebars
             OnHomeRequested?.Invoke(ContentToShow.Home);
         }
 
-        public void PinProfile(GameProfile profile)
-        {
-            try
-            {
-                var epCM = Profiles.FirstOrDefault(p => p.Profile.Id == profile.Id);
-                if (epCM == null || epCM.Profile.Pinned == false)
-                {
-                    var vm = App.ServiceProvider.GetRequiredService<PinnedProfileViewModel>();
-                    vm.Profile = profile;
-                    vm.OnQuickPlayRequested = QuickPlay;
-                    vm.OnUnPinRequested = RemovePinnedProfile;
-                    Profiles.Add(vm);
-                }
-                else if(epCM.Profile.Pinned == true)
-                {
-                    Profiles.Remove(epCM);
-                }
-            }
-            catch(Exception ex)
-            {
-                Logger.Error("There was an exception when pinning profile.", ex);
-            }
-        }
-
-        private void QuickPlay(string profileId)
-        {
-            OnQuickPlayRequested?.Invoke(profileId, null);
-        }
-
-        private void RemovePinnedProfile(GameProfile profile)
-        {
-            OnUnPinRequested?.Invoke(profile);
-        }
-
-        public void ChangePlayOnPinnedProfile(string profileId, bool value = true)
-        {
-            var p = Profiles.FirstOrDefault(p => p.Profile.Id == profileId);
-            if(p != null)
-            {
-                p.PlayEnabled = value;
-            }
-        }
-
         public void ShowAppSettings()
         {
             OnAppSettingsRequested?.Invoke(ContentToShow.Settings);
         }
 
-        public void DeleteProfile(string profileId)
+        public void Bugreport()
         {
-            var existing = Profiles.FirstOrDefault(p =>p.Profile.Id == profileId);
-            if (existing != null)
+            try
             {
-                Profiles.Remove(existing);
+                Process.Start(new ProcessStartInfo
+                {
+                    FileName = Constants.BugReportFormURL,
+                    UseShellExecute = true
+                });
+                if (Directory.Exists(Path.Combine(Constants.LauncherFolder, "logs")))
+                {
+                    Process.Start(new ProcessStartInfo
+                    {
+                        FileName = "explorer.exe",
+                        UseShellExecute = true,
+                        Arguments = Path.Combine(Constants.LauncherFolder, "logs")
+                    });
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.Error("There was an exception during bugreport", ex);
+                MessageBox.Show("An error occured during bugreport.", "ERROR", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
 
-        public void UpdateProfileName(string profileId, string name)
+
+        public async Task OpenAddServerWindowAsync()
         {
-            var existing = Profiles.FirstOrDefault(p => p.Profile.Id == profileId);
-            if(existing != null)
+            var result = await overlayService.ShowServerPanelAsync();
+            if (result != null)
             {
-                existing.UpdateProfileName(name);
+                var cardVM = App.ServiceProvider.GetRequiredService<ServerCardViewModel>();
+                cardVM.Server = result;
+                cardVM.OnDeleteRequested = DeleteServer;
+                cardVM.OnUpdateRequested = UpdateServer;
+                cardVM.OnQuickJoinRequested = QuickJoin;
+                Servers.Add(cardVM);
+            }
+        }
+
+        public void DeleteServer(Server s)
+        {
+            var vmToRemove = Servers.FirstOrDefault(vm => vm.Server.Id == s.Id);
+            if (vmToRemove != null) Servers.Remove(vmToRemove);
+        }
+        public void UpdateServer(Server s)
+        {
+            var sVM = Servers.FirstOrDefault(ser => ser.Server.Id == s.Id);
+            if (sVM != null)
+            {
+                sVM.Server = s;
+            }
+        }
+
+        public void ChangePlayOnServer(string profileId, bool value = true)
+        {
+            var servers = Servers.Where(s => s.Server.BindedProfileId == profileId);
+            if (servers != null)
+            {
+                foreach (var s in servers)
+                {
+                    s.PlayButtonIsEnabled = value;
+                }
+            }
+        }
+
+        private void QuickJoin(string profileId, Server server)
+        {
+            OnQuickJoinRequested?.Invoke(profileId, server);
+        }public void DeleteProfileFromServers(string profileId)
+        {
+            var existings = Servers.Where(s => s.Server.BindedProfileId == profileId).ToList();
+            foreach (var server in existings)
+            {
+                server.UnbindProfile();
             }
         }
     }

@@ -18,19 +18,19 @@ namespace TCM_Launcher.View.UserControls.Sidebars
             UserSessionButton.IsEnabled = true;
         }
 
-        private async void OnLoaded(object sender, System.Windows.RoutedEventArgs e)
+        private async void AddFriendButton_Click(object sender, System.Windows.RoutedEventArgs e)
         {
-            await viewModel.OnLoaded();
+            viewModel.ShowFriendSearch();
         }
 
-        private async void AddServerButton_Click(object sender, System.Windows.RoutedEventArgs e)
+        private void NotificationsButton_Click(object sender, System.Windows.RoutedEventArgs e)
         {
-            await viewModel.OpenAddServerWindowAsync();
+            viewModel.ShowNotifications();
         }
 
-        private void BugReportButton_Click(object sender, System.Windows.RoutedEventArgs e)
+        private async void ModpacksButton_Click(object sender, System.Windows.RoutedEventArgs e)
         {
-            viewModel.Bugreport();
+            await viewModel.ShowModpacksAsync();
         }
     }
 }

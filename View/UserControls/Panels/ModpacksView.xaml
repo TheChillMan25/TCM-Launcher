@@ -1,0 +1,138 @@
+﻿<UserControl x:Class="TCM_Launcher.View.UserControls.Panels.ModpacksView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:TCM_Launcher.View.UserControls.Panels"
+             xmlns:misc="clr-namespace:TCM_Launcher.View.UserControls.Misc"
+             Width="500"
+             Height="500"
+             VerticalAlignment="Center"
+             HorizontalAlignment="Center">
+    <UserControl.Resources>
+        <BooleanToVisibilityConverter x:Key="BoolToVisConverter"/>
+    </UserControl.Resources>
+    <Border Background="#171717"
+            BorderBrush="#666"
+            BorderThickness="1"
+            CornerRadius="8">
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition/>
+            </Grid.RowDefinitions>
+            <Grid Name="Header">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                <Label Content="Modpacks"
+                   Style="{StaticResource WindowTitle}"/>
+                <Button x:Name="CloseButton"
+                        Grid.Column="1"
+                        Style="{StaticResource RoundButton}"
+                        Width="30"
+                        Height="30"
+                        Click="CloseButton_Click">
+                    <Path Data="{StaticResource CloseIcon}"
+                          Fill="#f2c480"
+                          Width="15"
+                          Height="15"
+                          Stretch="Uniform"/>
+                </Button>
+            </Grid>
+            <ListBox ItemsSource="{Binding Modpacks}"
+                     Grid.Row="1"
+                     Background="Transparent"
+                     BorderThickness="0"
+                     Margin="10"
+                     ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                     ScrollViewer.VerticalScrollBarVisibility="Auto"
+                     VirtualizingPanel.IsVirtualizing="True"
+                     VirtualizingPanel.VirtualizationMode="Recycling"
+                     ScrollViewer.CanContentScroll="True">
+                <ListBox.ItemContainerStyle>
+                    <Style TargetType="ListBoxItem">
+                        <Setter Property="Focusable" Value="False"/>
+                        <Setter Property="IsSelected" Value="False"/>
+                        <Setter Property="Template">
+                            <Setter.Value>
+                                <ControlTemplate TargetType="ListBoxItem">
+                                    <ContentPresenter/>
+                                </ControlTemplate>
+                            </Setter.Value>
+                        </Setter>
+                    </Style>
+                </ListBox.ItemContainerStyle>
+            </ListBox>
+            <Border Name="ShareWithFriendsPanel"
+                    Visibility="{Binding SharePanelVisible,
+                FallbackValue=Hidden,
+                TargetNullValue=Hidden,
+                UpdateSourceTrigger=PropertyChanged,
+                Converter={StaticResource BoolToVisConverter}}"
+                    Grid.RowSpan="5"
+                    Background="#77000000">
+                <Border Background="#222"
+                        BorderBrush="#666"
+                        BorderThickness="1"
+                        CornerRadius="8"
+                        VerticalAlignment="Center"
+                        HorizontalAlignment="Center"
+                        Padding="10">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="250"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+                        <Grid Name="SharePanelHeader">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <Label Content="Share with friends"
+                                   Style="{StaticResource WindowTitle}"/>
+                                        <Button x:Name="CloseSharePanelButton"
+                                    Style="{StaticResource RoundButton}"
+                                    Width="30"
+                                    Height="30"
+                                    Grid.Column="1"
+                                    Click="CloseSharePanelButton_Click">
+                                <Path Data="{StaticResource CloseIcon}"
+                                      Fill="#f2c480"
+                                      Width="15"
+                                      Height="15"
+                                      Stretch="Uniform"/>
+                            </Button>
+                        </Grid>
+                        <ScrollViewer Grid.Row="1">
+                            <ItemsControl ItemsSource="{Binding SelectableFriends}">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <StackPanel Orientation="Horizontal">
+                                            <CheckBox Style="{StaticResource DarkCheckbox}"
+                                                      IsChecked="{Binding IsSelected}"
+                                                      Width="30"
+                                                      Height="30"/>
+                                            <TextBlock Text="{Binding User.Username}"
+                                                       Margin="10"
+                                                       Foreground="WhiteSmoke"
+                                                       FontSize="18"/>
+                                        </StackPanel>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </ScrollViewer>
+                        <Button x:Name="ShareModpackButton"
+                                Style="{StaticResource ButtonWithIcon}"
+                                Content="Share"
+                                Grid.Row="2"
+                                HorizontalAlignment="Center"
+                                Click="ShareModpackButton_Click"/>
+                    </Grid>
+                </Border>
+            </Border>
+        </Grid>
+    </Border>
+</UserControl>

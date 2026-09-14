@@ -1,0 +1,58 @@
+﻿<UserControl x:Class="TCM_Launcher.View.UserControls.Panels.AddFriendView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:local="clr-namespace:TCM_Launcher.View.UserControls"
+             xmlns:misc="clr-namespace:TCM_Launcher.View.UserControls.Misc"
+             Height="400"
+             Width="500"
+             Background="Transparent"
+             VerticalAlignment="Center"
+             HorizontalAlignment="Center">
+    <Border Background="#171717"
+            BorderBrush="#666"
+            BorderThickness="1" 
+            CornerRadius="9">
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition/>
+            </Grid.RowDefinitions>
+            <Label Content="Add friend"
+                   Style="{StaticResource WindowTitle}"/>
+            <Button x:Name="CloseButton"
+                    Style="{StaticResource RoundButton}"
+                    Height="30"
+                    Width="30"
+                    Grid.Column="1" Click="CloseButton_Click">
+                <Path Data="{StaticResource CloseIcon}"
+                      Fill="#f2c480"
+                      Width="15"
+                      Height="15"
+                      Stretch="Uniform"/>
+            </Button>
+            <Grid Grid.Row="1"
+                  Grid.ColumnSpan="2">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition/>
+                </Grid.RowDefinitions>
+                <misc:TextBoxPlaceholder Placeholder="Search by Microsoft username"
+                                         Input="{Binding FriendSearchText,
+                    UpdateSourceTrigger=PropertyChanged,
+                    Mode=TwoWay}"
+                                         Margin=" 10"/>
+                <ScrollViewer HorizontalScrollBarVisibility="Disabled"
+                              VerticalScrollBarVisibility="Auto"
+                              Grid.Row="1">
+                    <ItemsControl ItemsSource="{Binding FriendSearchResult}"/>
+                </ScrollViewer>
+            </Grid>
+        </Grid>
+    </Border>
+</UserControl>

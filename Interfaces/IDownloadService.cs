@@ -2,6 +2,6 @@
 {
     public interface IDownloadService
     {
-        Task DownloadFileAsync(string url, string destinationPath, string fileName);
+        Task<bool> DownloadFileAsync(string url, string destinationPath, string fileName);
     }
 }

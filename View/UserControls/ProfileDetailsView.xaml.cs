@@ -68,11 +68,6 @@ namespace TCM_Launcher.View.UserControls
             await viewModel.ImportModpackAsync();
         }
 
-        private async void Pin_Click(object sender, RoutedEventArgs e)
-        {
-            await viewModel.PinProfile();
-        }
-
         private async void ImportModButton_Click(object sender, RoutedEventArgs e)
         {
             await viewModel.ImportModAsync();

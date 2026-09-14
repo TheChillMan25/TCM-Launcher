@@ -3,6 +3,7 @@ using System.IO;
 using TCM_Launcher.Core.Utils;
 using TCM_Launcher.Model.DB;
 using TCM_Launcher.Model.DB.Versions;
+using TCML_Class_library;
 
 namespace TCM_Launcher.Core.DBContext
 {
@@ -15,6 +16,7 @@ namespace TCM_Launcher.Core.DBContext
         public DbSet<Server> SavedServers { get; set; }
         public DbSet<AppMetaData> AppMetaData { get; set; }
         public DbSet<AppSettings> AppSettings { get; set; }
+        public DbSet<FirestoreModpack> DownloadedModpacks { get; set; }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {

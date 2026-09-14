@@ -1,0 +1,60 @@
+﻿<UserControl x:Class="TCM_Launcher.View.UserControls.ControlItems.FriendView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:TCM_Launcher.View.UserControls.ControlItems"
+             mc:Ignorable="d" 
+             d:DesignHeight="70" d:DesignWidth="250">
+    <Border Background="#333"
+            Margin="10"
+            Padding="10 5"
+            CornerRadius="8">
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+            <TextBlock Text="{Binding Username,
+                FallbackValue='Username',
+                TargetNullValue='Username'}"
+                       Foreground="WhiteSmoke"
+                       FontSize="22"
+                       FontFamily="Calibri"
+                       VerticalAlignment="Center"/>
+            <Button x:Name="OptionsButton"
+                    Style="{StaticResource RoundButton}"
+                    Width="30"
+                    Height="30"
+                    Grid.Column="1"
+                    Click="OptionsButton_Click">
+                <Button.ContextMenu>
+                    <ContextMenu Style="{StaticResource DarkContextMenu}"
+                                 ItemContainerStyle="{StaticResource DarkMenuItem}">
+                        <ContextMenu.Resources>
+                            <SolidColorBrush x:Key="{x:Static SystemColors.MenuBrushKey}" Color="#333"/>
+                            <SolidColorBrush x:Key="{x:Static SystemColors.ControlBrushKey}" Color="#333"/>
+                        </ContextMenu.Resources>
+                        <MenuItem Header="Remove"
+                                  FontSize="15"
+                                  Click="RemoveFriend_Click">
+                            <MenuItem.Icon>
+                                <Path Data="{StaticResource DeleteIcon}"
+                                      Stroke="#ccc"
+                                      StrokeThickness="2"
+                                      Width="15"
+                                      Height="15"
+                                      Stretch="Uniform"/>
+                            </MenuItem.Icon>
+                        </MenuItem>
+                    </ContextMenu>
+                </Button.ContextMenu>
+                <Path Data="{StaticResource DotsIcon}"
+                      Fill="#f2c480"
+                      Width="15"
+                      Height="15"
+                      Stretch="Uniform"/>
+            </Button>
+        </Grid>    
+    </Border>
+</UserControl>

@@ -10,7 +10,7 @@
              d:DesignHeight="450" d:DesignWidth="900">
     <UserControl.Resources>
         <BooleanToVisibilityConverter x:Key="BoolToVis"/>
-        <converters:InverseBooleanConverter x:Key="InverseBool"/>
+        <converters:InverseBooleanToVisibilityConverter x:Key="InverseBoolToVis"/>
     </UserControl.Resources>
     <Grid x:Name="RootGrid">
         <Grid.RowDefinitions>
@@ -61,12 +61,27 @@
                         <RowDefinition/>
                         <RowDefinition/>
                     </Grid.RowDefinitions>
+                    <TextBlock Text="{Binding Playtime,
+                        TargetNullValue='Playtime',
+                        FallbackValue='Playtime',
+                        UpdateSourceTrigger=PropertyChanged}"
+                               Visibility="{Binding ProgressVisible,
+                        UpdateSourceTrigger=PropertyChanged,
+                        Converter={StaticResource InverseBoolToVis}}"
+                               FontSize="22"
+                               Foreground="WhiteSmoke"
+                               FontFamily="Calibri"
+                               HorizontalAlignment="Right"
+                               VerticalAlignment="Center"
+                               Grid.RowSpan="2"/>
                     <TextBlock Text="{Binding ProgressText,
-                        FallbackValue=Install status,
-                        TargetNullValue=Install status}"
+                        FallbackValue='Install status',
+                        TargetNullValue='Install status'}"
                               Visibility="{Binding ProgressVisible, 
                                         UpdateSourceTrigger=PropertyChanged,
-                                        Converter={StaticResource BoolToVis}}" 
+                                        Converter={StaticResource BoolToVis},
+                                        FallbackValue=Hidden,
+                                        TargetNullValue=Hidden}" 
                                FontSize="22"
                                FontFamily="Calibri"
                                Foreground="#f2c480"
@@ -77,7 +92,9 @@
                                 Value="{Binding ProgressNumber}" 
                                 Visibility="{Binding ProgressVisible, 
                                         UpdateSourceTrigger=PropertyChanged,
-                                        Converter={StaticResource BoolToVis}}" 
+                                        Converter={StaticResource BoolToVis},
+                                        FallbackValue=Hidden,
+                                        TargetNullValue=Hidden}" 
                                 Height="10"
                                 Foreground="#f2c480" 
                                 Background="#FF333333" 
@@ -134,16 +151,6 @@
                                 <SolidColorBrush x:Key="{x:Static SystemColors.MenuBrushKey}" Color="#333"/>
                                 <SolidColorBrush x:Key="{x:Static SystemColors.ControlBrushKey}" Color="#333"/>
                             </ContextMenu.Resources>
-
-                            <MenuItem Header="{Binding PinText}" 
-                                      Click="Pin_Click">
-                                <MenuItem.Icon>
-                                    <Path Data="{StaticResource PinIcon}"
-                                          Fill="#ccc" 
-                                          Stretch="Uniform"/>
-                                </MenuItem.Icon>
-                            </MenuItem>
-
                             <MenuItem Header="Open folder" 
                                       Click="OpenFolder_Click">
                                 <MenuItem.Icon>
@@ -152,7 +159,6 @@
                                           Stretch="Uniform"/>
                                 </MenuItem.Icon>
                             </MenuItem>
-
                             <MenuItem Header="Export modpack" 
                                       Click="ExportModpack_Click">
                                 <MenuItem.Icon>
@@ -161,14 +167,12 @@
                                           Stretch="Uniform"/>
                                 </MenuItem.Icon>
                             </MenuItem>
-
                             <MenuItem Header="Delete profile" 
                                       Click="DeleteProfile_Click">
                                 <MenuItem.Icon>
                                     <Path Data="{StaticResource DeleteIcon}" Stroke="#ccc" StrokeThickness="2" Stretch="Uniform"/>
                                 </MenuItem.Icon>
                             </MenuItem>
-
                         </ContextMenu>
                     </Button.ContextMenu>
                 </Button>

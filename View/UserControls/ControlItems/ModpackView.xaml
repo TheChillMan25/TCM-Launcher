@@ -1,0 +1,107 @@
+﻿<UserControl x:Class="TCM_Launcher.View.UserControls.ControlItems.ModpackView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:TCM_Launcher.View.UserControls.ControlItems"
+             xmlns:misc="clr-namespace:TCM_Launcher.View.UserControls.Misc">
+    <UserControl.Resources>
+        <BooleanToVisibilityConverter x:Key="BoolToVisConverter"/>
+    </UserControl.Resources>
+    <Border Background="#222"
+        CornerRadius="8"
+        Margin="10"
+        Padding="5">
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition />
+            </Grid.ColumnDefinitions>
+            <Grid.Resources>
+                <Style TargetType="TextBlock">
+                    <Setter Property="Foreground" Value="WhiteSmoke"/>
+                    <Setter Property="FontSize" Value="18"/>
+                    <Setter Property="FontFamily" Value="Calibri"/>
+                    <Setter Property="VerticalAlignment" Value="Center"/>
+                    <Setter Property="Margin" Value="5"/>
+                </Style>
+            </Grid.Resources>
+            <TextBlock Text="{Binding ModpackName,
+                FallbackValue='Modpack name',
+                TargetNullValue='Modpack name'}"
+                       Foreground="#f2c480"/>
+            <TextBlock Text="{Binding OwnerName,
+                FallbackValue='Owner',
+                TargetNullValue='Owner'}"
+                       Grid.Column="1"/>
+            <TextBlock Text="{Binding ModpackVersion,
+                FallbackValue='Minecraft version',
+                TargetNullValue='Minecraft version'}"
+                       Grid.Column="2"/>
+            <Grid Grid.Column="3"
+                  HorizontalAlignment="Right">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                <Button x:Name="ShareButton"
+                        Style="{StaticResource RoundButton}"
+                        Width="30"
+                        Height="30"
+                        HorizontalAlignment="Right"
+                        IsEnabled="{Binding ButtonsEnabled}"
+                        Visibility="{Binding IsOwner,
+                    Converter={StaticResource BoolToVisConverter}}"
+                        Click="ShareButton_Click">
+                    <Path Data="{StaticResource ExportIcon}"
+                          Fill="#f2c480"
+                          Width="15"
+                          Height="15"
+                          Stretch="Uniform"/>
+                    <Button.ToolTip>
+                        <misc:CustomTooltip TooltipLabelText="Share modpack"
+                                    TooltipContentText="Share this modpack with your friends."/>
+                    </Button.ToolTip>
+                </Button>
+                <Button x:Name="CreateProfileButton"
+                        Style="{StaticResource RoundButton}"
+                        Width="30"
+                        Height="30"
+                        Grid.Column="1"
+                        HorizontalAlignment="Right"
+                        IsEnabled="{Binding ButtonsEnabled}"
+                        Click="CreateProfileButton_Click">
+                    <Path Data="{StaticResource AddIcon}"
+                          Fill="#f2c480"
+                          Width="15"
+                          Height="15"
+                          Stretch="Uniform"/>
+                    <Button.ToolTip>
+                        <misc:CustomTooltip TooltipLabelText="Create profile"
+                                    TooltipContentText="Create a profile using this modpack."/>
+                    </Button.ToolTip>
+                </Button>
+                <Button x:Name="DeleteButton"
+                        Style="{StaticResource RoundButton}"
+                        Width="30"
+                        Height="30"
+                        Grid.Column="2"
+                        HorizontalAlignment="Right"
+                        IsEnabled="{Binding ButtonsEnabled}"
+                        Visibility="{Binding IsOwner,
+                    Converter={StaticResource BoolToVisConverter}}"
+                        Click="DeleteButton_Click">
+                    <Path Data="{StaticResource DeleteIcon}"
+                          Stroke="#f2c480"
+                          StrokeThickness="2"
+                          Width="15"
+                          Height="15"
+                          Stretch="Uniform"/>
+                </Button>
+            </Grid>
+        </Grid>
+    </Border>
+</UserControl>
