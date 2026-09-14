@@ -1,4 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using System.IO;
 using System.IO.Pipes;
@@ -42,6 +42,12 @@ namespace TCM_Launcher
                     MessageBoxButton.OK,
                     MessageBoxImage.Error);
                 e.Handled = true;
+            };
+
+            TaskScheduler.UnobservedTaskException += (sender, e) =>
+            {
+                Logger.Error("Unobserved task exception in background task.", e.Exception);
+                e.SetObserved();
             };
         }
 

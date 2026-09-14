@@ -1,4 +1,4 @@
-﻿using CmlLib.Core.Auth;
+using CmlLib.Core.Auth;
 using Microsoft.Extensions.DependencyInjection;
 using System.Collections.ObjectModel;
 using System.Windows.Media;
@@ -104,6 +104,14 @@ namespace TCM_Launcher.ViewModel.UserControls.Sidebars
             bool success = await microsoftService.MicrosoftSignOutAsync();
             if (success)
             {
+                await firebaseService.StopListeningAsync();
+                App.Current?.Dispatcher.Invoke(() =>
+                {
+                    Friends.Clear();
+                    Notifications.Clear();
+                    Modpacks.Clear();
+                    OnPropertyChange(nameof(HasNotifications));
+                });
                 MSession = null;
                 Username = offlineUsername;
                 OnPropertyChange(nameof(IsLoggedIn));
@@ -120,6 +128,10 @@ namespace TCM_Launcher.ViewModel.UserControls.Sidebars
                 else
                 {
                     await MicrosoftLoginAsync();
+                    if (IsLoggedIn)
+                    {
+                        await InitializeListener();
+                    }
                 }
             }
             catch (Exception ex)
@@ -130,6 +142,8 @@ namespace TCM_Launcher.ViewModel.UserControls.Sidebars
 
         public async Task InitializeListener()
         {
+            if (microsoftService.MSession == null || string.IsNullOrEmpty(microsoftService.MSession.UUID)) return;
+
             await firebaseService.ListenToRequestsAsync(
                 microsoftService.MSession.UUID,
                 onAdded: request =>

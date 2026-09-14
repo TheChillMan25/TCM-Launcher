@@ -1,4 +1,4 @@
-﻿using Google.Api.Gax;
+using Google.Api.Gax;
 using Google.Cloud.Firestore;
 using System.Net.Http;
 using System.Net.Http.Json;
@@ -14,16 +14,14 @@ namespace TCM_Launcher.Services
         private readonly HttpClient client = new();
         private readonly IBackendService backendService;
         private readonly IDownloadedModpacksService downloadedModpacksService;
-        private readonly IGameProfileService gameProfileService;
         private FirestoreDb firestoreDb;
 
         private FirebaseTokenResponse? authToken;
         private CancellationTokenSource? refreshCts;
-        public FirebaseService(IBackendService backendService, IDownloadedModpacksService downloadedModpacksService, IGameProfileService gameProfileService)
+        public FirebaseService(IBackendService backendService, IDownloadedModpacksService downloadedModpacksService)
         {
             this.backendService = backendService;
             this.downloadedModpacksService = downloadedModpacksService;
-            this.gameProfileService = gameProfileService;
         }
 
         public List<FirestoreUser> CachedFriends { get; private set; } = new();
@@ -101,6 +99,12 @@ namespace TCM_Launcher.Services
                 await InitializeFirebaseAsync();
             }
 
+            if (firestoreDb == null)
+            {
+                Logger.Error("Cannot listen to requests: firestoreDb is not initialized.");
+                return;
+            }
+
             Query query = firestoreDb.Collection("requests")
                 .WhereEqualTo("target", uuid)
                 .WhereEqualTo("status", FirestoreRequestStatus.PENDING);
@@ -128,6 +132,13 @@ namespace TCM_Launcher.Services
                     }
                 }
             });
+            _ = listener.ListenerTask.ContinueWith(t =>
+            {
+                if (t.IsFaulted)
+                {
+                    Logger.Error("Firestore requests listener encountered an error.", t.Exception);
+                }
+            });
             activeListeners.Add(listener);
         }
 
@@ -138,18 +149,33 @@ namespace TCM_Launcher.Services
                 await InitializeFirebaseAsync();
             }
 
+            if (firestoreDb == null)
+            {
+                Logger.Error("Cannot listen to friends list: firestoreDb is not initialized.");
+                return;
+            }
+
             DocumentReference userDocRef = firestoreDb.Collection("users").Document(uuid);
 
             var listener = userDocRef.Listen(snapshot =>
             {
-                if(snapshot.Exists && snapshot.ContainsField("friends"))
+                if (snapshot.Exists)
                 {
-                    CachedFriends = snapshot.GetValue<List<FirestoreUser>>("friends");
+                    CachedFriends = snapshot.ContainsField("friends")
+                        ? snapshot.GetValue<List<FirestoreUser>>("friends") ?? new List<FirestoreUser>()
+                        : new List<FirestoreUser>();
 
                     App.Current?.Dispatcher.Invoke(() =>
                     {
                         onFriendsChanged(CachedFriends);
                     });
+                }
+            });
+            _ = listener.ListenerTask.ContinueWith(t =>
+            {
+                if (t.IsFaulted)
+                {
+                    Logger.Error("Firestore friends listener encountered an error.", t.Exception);
                 }
             });
             activeListeners.Add(listener);
@@ -208,6 +234,12 @@ namespace TCM_Launcher.Services
                 await InitializeFirebaseAsync();
             }
 
+            if (firestoreDb == null)
+            {
+                Logger.Error("Cannot listen to modpacks: firestoreDb is not initialized.");
+                return;
+            }
+
             Query query = firestoreDb.Collection("modpacks")
                 .Where(Filter.Or(
                     Filter.EqualTo("ownerUUID", uuid),
@@ -248,6 +280,13 @@ namespace TCM_Launcher.Services
                 {
                     OnModpacksChanged(CachedModpacks);
                 });
+            });
+            _ = listener.ListenerTask.ContinueWith(t =>
+            {
+                if (t.IsFaulted)
+                {
+                    Logger.Error("Firestore modpacks listener encountered an error.", t.Exception);
+                }
             });
             activeListeners.Add(listener);
         }
