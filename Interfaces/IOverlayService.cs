@@ -5,6 +5,7 @@ using TCM_Launcher.Model.Mods;
 using TCM_Launcher.MVVM.ViewModel;
 using TCM_Launcher.ViewModel.UserControls.ControlItems;
 using TCM_Launcher.ViewModel.UserControls.Panels;
+using TCML_Class_library;
 
 namespace TCM_Launcher.Interfaces
 {
@@ -13,7 +14,7 @@ namespace TCM_Launcher.Interfaces
         public event Action<ViewModelBase>? ShowOverlayRequested;
         public event Action? CloseOverlayRequested;
 
-        Task<string?> ShowExportModpackPanelAsync(GameProfile profile, List<ProfileModViewModel> allProfileMods);
+        Task<FirestoreModpack?> ShowExportModpackPanelAsync(GameProfile profile, List<ProfileModViewModel> allProfileMods);
         void ShowFriendSearch();
         Task<(string? filePath, ProfileModInfo? modInfo)?> ShowModImportPanel(ProfileModInfo? details = null);
         Task ShowModpacksPanelAsync();

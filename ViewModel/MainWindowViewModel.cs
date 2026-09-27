@@ -243,10 +243,7 @@ namespace TCM_Launcher.ViewModel
                 appSettingsService.StartLoadingSettings();
                 progress.Report((30, "Checking profiles and versions"));
                 await profilesViewModel.Initialize();
-                progress.Report((60, "Communicating with Microsoft servers"));
-                await RightSidebarViewModel.MicrosoftLoginAsync(true);
-                progress.Report((90, "Connecting to backend services"));
-                await RightSidebarViewModel.InitializeListener();
+                await RightSidebarViewModel.MicrosoftLoginAsync(true, progress);
                 progress.Report((100, "Initialization successful"));
                 await Task.Delay(250);
                 vm.OnPanelCloseRequested?.Invoke();

@@ -91,12 +91,15 @@ namespace TCM_Launcher.ViewModel.UserControls.Sidebars
             }
         }
 
-        public async Task MicrosoftLoginAsync(bool silent = false)
+        public async Task MicrosoftLoginAsync(bool silent = false, IProgress<(double progress, string status)>? progress = null)
         {
+            progress?.Report((60, "Logging into Microsoft account"));
             MSession = await microsoftService.MicrosoftLoginAsync(silent);
             if (MSession != null && !string.IsNullOrEmpty(MSession.Username))
             {
                 Username = MSession.Username;
+                progress?.Report((85, "Connecting to database"));
+                await InitializeListener();
             }else Username = offlineUsername;
         }
         public async Task MicrosoftLogoutAsync()
@@ -128,10 +131,6 @@ namespace TCM_Launcher.ViewModel.UserControls.Sidebars
                 else
                 {
                     await MicrosoftLoginAsync();
-                    if (IsLoggedIn)
-                    {
-                        await InitializeListener();
-                    }
                 }
             }
             catch (Exception ex)

@@ -9,6 +9,7 @@ using TCM_Launcher.MVVM.ViewModel;
 using TCM_Launcher.ViewModel;
 using TCM_Launcher.ViewModel.UserControls.ControlItems;
 using TCM_Launcher.ViewModel.UserControls.Panels;
+using TCML_Class_library;
 
 namespace TCM_Launcher.Services
 {
@@ -24,19 +25,19 @@ namespace TCM_Launcher.Services
         public event Action<ViewModelBase>? ShowOverlayRequested;
         public event Action? CloseOverlayRequested;
 
-        public async Task<string?> ShowExportModpackPanelAsync(GameProfile profile, List<ProfileModViewModel> allProfileMods)
+        public async Task<FirestoreModpack?> ShowExportModpackPanelAsync(GameProfile profile, List<ProfileModViewModel> allProfileMods)
         {
             if (App.Current.Dispatcher == null) return null;
-            var tcs = new TaskCompletionSource<string?>();
+            var tcs = new TaskCompletionSource<FirestoreModpack?>();
             await App.Current.Dispatcher.InvokeAsync(async () =>
             {
                 var vm = serviceProvider.GetRequiredService<ExportModpackViewModel>();
                 await vm.Initialize(profile, allProfileMods);
 
-                vm.OnPanelCloseRequested = modpackId =>
+                vm.OnPanelCloseRequested = modpack =>
                 {
                     CloseOverlayRequested?.Invoke();
-                    tcs.SetResult(modpackId);
+                    tcs.SetResult(modpack);
                 };
                 ShowOverlayRequested?.Invoke(vm);
             });
@@ -96,11 +97,8 @@ namespace TCM_Launcher.Services
 
                 vm.OnPanelCloseRequested = (info) =>
                 {
-                    if(info != null)
-                    {
-                        CloseOverlayRequested?.Invoke();
-                        tcs.SetResult(info.Value.modInfo);
-                    }
+                    CloseOverlayRequested?.Invoke();
+                    tcs.SetResult(info != null ?  info.Value.modInfo : null);
                 };
                 ShowOverlayRequested?.Invoke(vm);
             });

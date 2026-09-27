@@ -61,6 +61,8 @@ namespace TCM_Launcher
                 {
                     SendFilePathToRunningInstance(e.Args[0]);
                 }
+                mutex?.Dispose();
+                mutex = null;
                 Shutdown();
                 return;
             }
@@ -129,10 +131,13 @@ namespace TCM_Launcher
         {
 
             pipeCts?.Cancel();
-            mutex?.ReleaseMutex();
-            mutex?.Dispose();
+            if(mutex != null)
+            {
+                mutex?.ReleaseMutex();
+                mutex?.Dispose();
+            }
             notifyIcon?.Dispose();
-            var firebaseService = ServiceProvider.GetRequiredService<IFirebaseService>();
+            var firebaseService = ServiceProvider?.GetRequiredService<IFirebaseService>();
             firebaseService?.StopListeningAsync();
             base.OnExit(e);
         }

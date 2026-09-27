@@ -47,7 +47,7 @@ namespace TCM_Launcher.ViewModel.UserControls
                 OnPropertyChange();
                 if(profile != null)
                 {
-                    HeaderText = $"Forge {profile?.MCVersion}";
+                    HeaderText = $"{profile?.MCVersion} - {profile?.ForgeVersion}";
                     IsEnable = (profile.Installed == true && !profile.IsPlaying);
                     PlayButtonText = profile.IsPlaying ? "Running" : "Play";
                 }
@@ -353,8 +353,13 @@ namespace TCM_Launcher.ViewModel.UserControls
 
         public async Task ExportModpackAsync()
         {
-            var modpackId = await overlayService.ShowExportModpackPanelAsync(Profile, allProfileMods);
-            if (modpackId != null) Profile.ModpackId = modpackId;
+            var modpack = await overlayService.ShowExportModpackPanelAsync(Profile, allProfileMods);
+            if (modpack != null)
+            {
+                Profile.ModpackId = modpack.Id;
+                Profile.PackReleaseNumber = modpack.ReleaseNumber;
+                await gameProfileService.UpdateProfileAsync(new GameProfile { Id = Profile.Id, PackReleaseNumber = modpack.ReleaseNumber });
+            }
         }
         public async Task ImportModpackAsync()
         {

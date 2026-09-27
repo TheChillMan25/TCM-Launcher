@@ -5,6 +5,7 @@ using TCM_Launcher.Interfaces;
 using TCM_Launcher.Model.DB;
 using TCM_Launcher.MVVM.ViewModel;
 using TCM_Launcher.ViewModel.UserControls.ControlItems;
+using TCML_Class_library;
 
 namespace TCM_Launcher.ViewModel.UserControls.Panels
 {
@@ -29,7 +30,7 @@ namespace TCM_Launcher.ViewModel.UserControls.Panels
             this.gameProfileService = gameProfileService;
         }
 
-        public Action<string?>? OnPanelCloseRequested { get; set; }
+        public Action<FirestoreModpack?>? OnPanelCloseRequested { get; set; }
 
         private bool exportJARFiles = true;
         public bool ExportJARFiles
@@ -148,25 +149,24 @@ namespace TCM_Launcher.ViewModel.UserControls.Panels
                 Constants.MessageBoxError("Modpack export failed.");
                 return;
             }
-            string? packId = null;
+            FirestoreModpack? modpack = null;
             if (selectedFriends.Count > 0)
             {
-                var modpack = await backendService.UploadModpackAsync(filePath, ProfileName, ProfileVersion, ProfileModpackId, selectedFriends, IsUpdate);
+                modpack = await backendService.UploadModpackAsync(filePath, ProfileName, ProfileVersion, ProfileModpackId, selectedFriends, IsUpdate);
                 if (modpack == null)
                 {
                     Constants.MessageBoxError("Modpack upload failed.");
                     return;
                 }
-                packId = modpack.Id;
                 await downloadedModpacksService.AddModpackAsync(modpack);
                 await gameProfileService.UpdateProfileAsync(new GameProfile { Id = ProfileId, ModpackId = modpack.Id });
             }
-            Close(packId);
+            Close(modpack);
         }
 
-        public void Close(string? packId = null)
+        public void Close(FirestoreModpack? modpack = null)
         {
-            OnPanelCloseRequested?.Invoke(packId);
+            OnPanelCloseRequested?.Invoke(modpack);
         }
     }
 }

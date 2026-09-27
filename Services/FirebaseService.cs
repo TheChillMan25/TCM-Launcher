@@ -184,16 +184,23 @@ namespace TCM_Launcher.Services
 
         public async Task StopListeningAsync()
         {
-            if(activeListeners.Count > 0)
+            try
             {
-                foreach (var change in activeListeners)
+                if(activeListeners.Count > 0)
                 {
-                    await change.StopAsync();
+                    foreach (var change in activeListeners)
+                    {
+                        await change.StopAsync();
+                    }
+                    activeListeners.Clear();
                 }
-                activeListeners.Clear();
+                CachedFriends.Clear();
+                CachedModpacks.Clear();
             }
-            CachedFriends.Clear();
-            CachedModpacks.Clear();
+            catch (Exception ex)
+            {
+                Logger.Error("There was an exception when stopping listeners.", ex);
+            }
         }
 
         private async Task InitializeFirebaseAsync()

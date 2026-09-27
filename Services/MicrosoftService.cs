@@ -73,8 +73,6 @@ namespace TCM_Launcher.Services
                 {
                     File.Delete(Constants.AccountsJSONPath);
                 }
-                var firebaseService = App.ServiceProvider.GetRequiredService<FirebaseService>();
-                firebaseService?.StopListeningAsync();
                 MSession = null;
                 return true;
             }
