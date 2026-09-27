@@ -395,7 +395,9 @@ namespace TCM_Launcher.ViewModel.UserControls
                         Panels.PopupAction.UPDATE);
                     if (res == true)
                     {
+                        IsEnable = false;
                         await backendService.DownloadModpackAsync(modpack, true, Profile);
+                        IsEnable = true;
                     }
                 }
             }
