@@ -20,14 +20,10 @@ namespace TCM_Launcher.ViewModel.UserControls.Sidebars
     public class LeftSidebarViewModel : ViewModelBase
     {
         private readonly IServerService serverService;
-        private readonly IBackendService backendService;
-        private readonly IMicrosoftService microsoftService;
         private readonly IOverlayService overlayService;
-        public LeftSidebarViewModel(IServerService serverService, IBackendService backendService, IMicrosoftService microsoftService, IOverlayService overlayService)
+        public LeftSidebarViewModel(IServerService serverService, IOverlayService overlayService)
         {
             this.serverService = serverService;
-            this.backendService = backendService;
-            this.microsoftService = microsoftService;
             this.overlayService = overlayService;
         }
 
@@ -45,6 +41,7 @@ namespace TCM_Launcher.ViewModel.UserControls.Sidebars
                 OnPropertyChange();
             }
         }
+
 
         private ObservableCollection<ServerCardViewModel> servers = new ObservableCollection<ServerCardViewModel>();
         public ObservableCollection<ServerCardViewModel> Servers
@@ -116,6 +113,7 @@ namespace TCM_Launcher.ViewModel.UserControls.Sidebars
             if (update == true)
             {
                 AvailableUpdate.IsUpdating = true;
+                OnPropertyChange(nameof(AvailableUpdate));
                 await AvailableUpdate.Manager.PrepareUpdateAsync(AvailableUpdate.Version);
                 AvailableUpdate.Manager.LaunchUpdater(AvailableUpdate.Version);
                 Application.Current.Shutdown();
