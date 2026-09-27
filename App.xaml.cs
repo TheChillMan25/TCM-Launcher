@@ -57,10 +57,9 @@ namespace TCM_Launcher
 
             if (!isFirstInstance)
             {
-                if (e.Args.Length > 0 && File.Exists(e.Args[0]))
-                {
-                    SendFilePathToRunningInstance(e.Args[0]);
-                }
+                string file = e.Args.FirstOrDefault() ?? string.Empty;
+                SendFilePathToRunningInstance(file);
+
                 mutex?.Dispose();
                 mutex = null;
                 Shutdown();
@@ -124,6 +123,9 @@ namespace TCM_Launcher
                 MainWindow.Show();
                 MainWindow.WindowState = WindowState.Maximized;
                 MainWindow.Activate();
+                MainWindow.Topmost = true;
+                MainWindow.Topmost = false;
+                MainWindow.Focus();
             }
         }
 
@@ -169,14 +171,14 @@ namespace TCM_Launcher
                         using var reader = new StreamReader(server, Encoding.UTF8);
                         string? filePath = await reader.ReadLineAsync();
 
-                        if (!string.IsNullOrWhiteSpace(filePath) && File.Exists(filePath))
+                        await Dispatcher.InvokeAsync(async () =>
                         {
-                            await Dispatcher.InvokeAsync(async () =>
+                            ShowMainWindow();
+                            if (!string.IsNullOrWhiteSpace(filePath) && File.Exists(filePath))
                             {
-                                ShowMainWindow();
                                 await HandleModpackImportAsync(filePath);
-                            });
-                        }
+                            }
+                        });
                     }
                     catch (OperationCanceledException) { break; }
                     catch { }
